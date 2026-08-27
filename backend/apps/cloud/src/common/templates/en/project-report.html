@@ -1,828 +1,810 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html>
+<!doctype html>
+<html lang="en">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <meta name="supported-color-schemes" content="light" />
     <title>
       Swetrix {{#ifEquals type "w"}}weekly{{/ifEquals}}{{#ifEquals type
       "M"}}monthly{{/ifEquals}}{{#ifEquals type "Q"}}quarterly{{/ifEquals}}
       report
     </title>
+    <style type="text/css">
+      :root {
+        color-scheme: light;
+        supported-color-schemes: light;
+      }
+
+      table,
+      td {
+        border-collapse: collapse;
+      }
+
+      img {
+        border: 0;
+        display: block;
+        outline: none;
+        text-decoration: none;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      @media only screen and (max-width: 600px) {
+        .page-gutter {
+          width: 16px !important;
+        }
+
+        .report-header {
+          padding: 28px 24px 30px !important;
+        }
+
+        .report-content {
+          padding: 0 24px 32px !important;
+        }
+
+        .report-title {
+          font-size: 30px !important;
+          line-height: 36px !important;
+        }
+
+        .project-body {
+          padding: 20px !important;
+        }
+
+        .project-heading,
+        .project-meta {
+          display: block !important;
+          width: 100% !important;
+          text-align: left !important;
+        }
+
+        .project-meta {
+          padding-top: 5px !important;
+        }
+
+        .metric-cell,
+        .secondary-metric {
+          display: block !important;
+          width: auto !important;
+          border-right: 0 !important;
+          border-bottom: 1px solid #e6e6e1 !important;
+        }
+
+        .metric-cell-last,
+        .secondary-metric-last {
+          border-bottom: 0 !important;
+        }
+      }
+    </style>
   </head>
 
-  <body style="margin: 0; padding: 0; background-color: #f0f4f7">
+  <body
+    style="
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f1;
+      color: #20201e;
+      -webkit-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
+    "
+  >
+    <div
+      style="
+        display: none;
+        max-height: 0;
+        overflow: hidden;
+        opacity: 0;
+        color: transparent;
+      "
+    >
+      Your Swetrix analytics summary for {{date}}.
+    </div>
+
     <table
+      role="presentation"
       cellpadding="0"
       cellspacing="0"
       border="0"
       width="100%"
+      bgcolor="#f4f4f1"
       style="
-        background: #f0f4f7;
-        min-width: 340px;
-        font-size: 1px;
-        line-height: normal;
+        width: 100%;
+        background-color: #f4f4f1;
+        font-family:
+          -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica,
+          Arial, sans-serif;
       "
     >
       <tr>
-        <td align="center" valign="top" bgcolor="#f0f4f7">
-          <!--[if (gte mso 9)|(IE)]>
-         <table border="0" cellspacing="0" cellpadding="0">
-         <tr><td align="center" valign="top" width="750"><![endif]-->
+        <td class="page-gutter" width="24" style="width: 24px">&nbsp;</td>
+        <td align="center" valign="top">
+          <div style="height: 32px; line-height: 32px; font-size: 32px">
+            &nbsp;
+          </div>
+
+          <!--[if mso]>
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="640">
+            <tr>
+              <td>
+          <![endif]-->
           <table
+            role="presentation"
             cellpadding="0"
             cellspacing="0"
             border="0"
-            width="750"
+            width="640"
+            bgcolor="#ffffff"
             style="
               width: 100%;
-              max-width: 750px;
-              min-width: 340px;
-              background: #f0f4f7;
+              max-width: 640px;
+              background-color: #ffffff;
+              border: 1px solid #e6e6e1;
+              border-radius: 12px;
+              overflow: hidden;
+              font-family:
+                -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;,
+                Helvetica, Arial, sans-serif;
             "
           >
             <tr>
               <td
-                width="25"
-                style="width: 25px; max-width: 25px; min-width: 25px"
+                class="report-header"
+                align="left"
+                style="padding: 36px 40px 38px"
               >
-                &nbsp;
-              </td>
-              <td align="center" valign="top" style="background: #ffffff">
                 <table
+                  role="presentation"
                   cellpadding="0"
                   cellspacing="0"
                   border="0"
-                  width="100%"
-                  style="
-                    width: 100% !important;
-                    min-width: 100%;
-                    max-width: 100%;
-                    background: #f0f4f7;
-                  "
                 >
                   <tr>
-                    <td align="right" valign="top">
-                      <div
-                        style="height: 25px; line-height: 25px; font-size: 23px"
+                    <td width="34" valign="middle" style="width: 34px">
+                      <a
+                        href="https://swetrix.com"
+                        target="_blank"
+                        style="display: block; text-decoration: none"
                       >
-                        &nbsp;
-                      </div>
+                        <img
+                          src="https://swetrix.com/logo192.png"
+                          alt=""
+                          width="34"
+                          height="34"
+                          style="width: 34px; height: 34px; border-radius: 9px"
+                        />
+                      </a>
                     </td>
-                  </tr>
-                </table>
-                <table
-                  cellpadding="0"
-                  cellspacing="0"
-                  border="0"
-                  width="88%"
-                  style="width: 88% !important; min-width: 88%; max-width: 88%"
-                >
-                  <tr>
-                    <td align="center" valign="top">
-                      <div
-                        style="height: 40px; line-height: 40px; font-size: 38px"
-                      >
-                        &nbsp;
-                      </div>
+                    <td width="11" style="width: 11px">&nbsp;</td>
+                    <td valign="middle">
                       <a
                         href="https://swetrix.com"
                         target="_blank"
                         style="
                           display: block;
-                          max-width: 173px;
+                          font-size: 21px;
+                          line-height: 26px;
+                          font-weight: 700;
+                          letter-spacing: -0.5px;
+                          color: #20201e;
                           text-decoration: none;
                         "
                       >
-                        <img
-                          src="https://swetrix.com/assets/logo_blue.png"
-                          alt="Swetrix"
-                          width="175"
-                          border="0"
-                          style="display: block; width: 175px; font-size: 32px"
-                        />
+                        Swetrix
                       </a>
-                      <div
-                        style="height: 40px; line-height: 40px; font-size: 40px"
-                      >
-                        &nbsp;
-                      </div>
                     </td>
                   </tr>
                 </table>
+
+                <div style="height: 42px; line-height: 42px; font-size: 42px">
+                  &nbsp;
+                </div>
+
+                <div
+                  style="
+                    font-size: 12px;
+                    line-height: 18px;
+                    font-weight: 700;
+                    letter-spacing: 1.2px;
+                    text-transform: uppercase;
+                    color: #6f6f69;
+                  "
+                >
+                  Analytics summary
+                </div>
+                <div style="height: 8px; line-height: 8px; font-size: 8px">
+                  &nbsp;
+                </div>
+                <div
+                  class="report-title"
+                  style="
+                    font-size: 38px;
+                    line-height: 44px;
+                    font-weight: 650;
+                    letter-spacing: -1.4px;
+                    color: #20201e;
+                  "
+                >
+                  Your {{#ifEquals type "w"}}weekly{{/ifEquals}}{{#ifEquals type
+                  "M"}}monthly{{/ifEquals}}{{#ifEquals type
+                  "Q"}}quarterly{{/ifEquals}} report
+                </div>
+                <div style="height: 9px; line-height: 9px; font-size: 9px">
+                  &nbsp;
+                </div>
+                <div
+                  style="
+                    font-size: 16px;
+                    line-height: 24px;
+                    font-weight: 400;
+                    color: #6f6f69;
+                    font-variant-numeric: tabular-nums;
+                  "
+                >
+                  {{date}}
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td class="report-content" style="padding: 0 40px 38px">
+                {{#each projects}}
                 <table
+                  role="presentation"
                   cellpadding="0"
                   cellspacing="0"
                   border="0"
-                  width="88%"
-                  style="width: 88% !important; min-width: 88%; max-width: 88%"
+                  width="100%"
+                  style="
+                    width: 100%;
+                    margin-bottom: 20px;
+                    border: 1px solid #e6e6e1;
+                    border-radius: 10px;
+                  "
                 >
                   <tr>
-                    <td align="center" valign="top">
-                      <font
-                        align="center"
-                        style="
-                          font-size: 52px;
-                          line-height: 55px;
-                          font-weight: 300;
-                          letter-spacing: -1.5px;
-                        "
-                      >
-                        <span
-                          align="center"
-                          style="
-                            font-family:
-                              -apple-system, BlinkMacSystemFont, 'Segoe UI',
-                              'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell',
-                              'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-                              sans-serif;
-                            font-size: 38px;
-                            color: #1a1a1a;
-                            font-weight: 600;
-                          "
-                        >
-                          Your {{#ifEquals type
-                          "w"}}weekly{{/ifEquals}}{{#ifEquals type
-                          "M"}}monthly{{/ifEquals}}{{#ifEquals type
-                          "Q"}}quarterly{{/ifEquals}} report
-                        </span>
-                      </font>
-                      <div
-                        style="height: 8px; line-height: 8px; font-size: 6px"
-                      >
-                        &nbsp;
-                      </div>
-                      <font
-                        style="
-                          font-size: 36px;
-                          line-height: 45px;
-                          font-weight: 300;
-                          letter-spacing: -1px;
-                        "
-                      >
-                        <span
-                          style="
-                            font-family:
-                              -apple-system, BlinkMacSystemFont, 'Segoe UI',
-                              'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell',
-                              'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-                              sans-serif;
-                            color: #5e5e5e;
-                            font-size: 18px;
-                            line-height: 28px;
-                            font-weight: 400;
-                          "
-                        >
-                          {{date}}
-                        </span>
-                      </font>
-                      <div
-                        style="height: 30px; line-height: 30px; font-size: 28px"
-                      >
-                        &nbsp;
-                      </div>
-
-                      {{#each projects}}
-                      <!-- Project Card -->
+                    <td class="project-body" style="padding: 24px">
                       <table
+                        role="presentation"
                         cellpadding="0"
                         cellspacing="0"
                         border="0"
                         width="100%"
-                        style="
-                          background: #f8fafc;
-                          border-radius: 12px;
-                          margin-bottom: 24px;
-                          border: 1px solid #e2e8f0;
-                        "
                       >
                         <tr>
-                          <td style="padding: 24px">
-                            <!-- Project Name -->
-                            <table
-                              cellpadding="0"
-                              cellspacing="0"
-                              border="0"
-                              width="100%"
-                            >
-                              <tr>
-                                <td>
-                                  <span
-                                    style="
-                                      font-family:
-                                        -apple-system, BlinkMacSystemFont,
-                                        'Segoe UI', 'Roboto', 'Oxygen',
-                                        'Ubuntu', 'Cantarell', 'Fira Sans',
-                                        'Droid Sans', 'Helvetica Neue',
-                                        sans-serif;
-                                      font-size: 22px;
-                                      font-weight: 600;
-                                      color: #1e293b;
-                                    "
-                                    >{{name}}</span
-                                  >
-                                  {{#if topCountry}}
-                                  <span
-                                    style="
-                                      font-family:
-                                        -apple-system, BlinkMacSystemFont,
-                                        'Segoe UI', 'Roboto', 'Oxygen',
-                                        'Ubuntu', 'Cantarell', 'Fira Sans',
-                                        'Droid Sans', 'Helvetica Neue',
-                                        sans-serif;
-                                      font-size: 14px;
-                                      color: #64748b;
-                                      margin-left: 8px;
-                                    "
-                                    >Top country: {{topCountry}}</span
-                                  >
-                                  {{/if}}
-                                </td>
-                              </tr>
-                            </table>
+                          <td class="project-heading" align="left" valign="top">
                             <div
                               style="
-                                height: 20px;
-                                line-height: 20px;
-                                font-size: 18px;
+                                font-size: 20px;
+                                line-height: 26px;
+                                font-weight: 650;
+                                letter-spacing: -0.3px;
+                                color: #20201e;
                               "
                             >
-                              &nbsp;
+                              {{name}}
                             </div>
-
-                            <!-- Primary Metrics Grid -->
-                            <table
-                              cellpadding="0"
-                              cellspacing="0"
-                              border="0"
-                              width="100%"
-                            >
-                              <tr>
-                                <!-- Active Users -->
-                                <td
-                                  width="33%"
-                                  valign="top"
-                                  style="padding-right: 12px"
-                                >
-                                  <table
-                                    cellpadding="0"
-                                    cellspacing="0"
-                                    border="0"
-                                    width="100%"
-                                    style="
-                                      background: #ffffff;
-                                      border-radius: 8px;
-                                      border: 1px solid #e2e8f0;
-                                    "
-                                  >
-                                    <tr>
-                                      <td style="padding: 16px">
-                                        <span
-                                          style="
-                                            font-family:
-                                              -apple-system, BlinkMacSystemFont,
-                                              'Segoe UI', 'Roboto', 'Oxygen',
-                                              'Ubuntu', 'Cantarell',
-                                              'Fira Sans', 'Droid Sans',
-                                              'Helvetica Neue', sans-serif;
-                                            font-size: 12px;
-                                            font-weight: 500;
-                                            color: #64748b;
-                                            text-transform: uppercase;
-                                            letter-spacing: 0.5px;
-                                          "
-                                          >Active users</span
-                                        >
-                                        <div
-                                          style="
-                                            height: 8px;
-                                            line-height: 8px;
-                                            font-size: 6px;
-                                          "
-                                        >
-                                          &nbsp;
-                                        </div>
-                                        <span
-                                          style="
-                                            font-family:
-                                              -apple-system, BlinkMacSystemFont,
-                                              'Segoe UI', 'Roboto', 'Oxygen',
-                                              'Ubuntu', 'Cantarell',
-                                              'Fira Sans', 'Droid Sans',
-                                              'Helvetica Neue', sans-serif;
-                                            font-size: 28px;
-                                            font-weight: 700;
-                                            color: #0f172a;
-                                          "
-                                          >{{data.activeUsers}}</span
-                                        >
-                                        <span
-                                          style="
-                                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-                                        font-size: 14px;
-                                        font-weight: 500;
-                                        margin-left: 6px;
-                                        {{#greater data.percChangeUsers 0}}color: #059669;{{else}}{{#less data.percChangeUsers 0}}color: #DC2626;{{else}}color: #64748b;{{/less}}{{/greater}}
-                                      "
-                                          >{{#greater data.percChangeUsers
-                                          0}}+{{/greater}}{{data.percChangeUsers}}%</span
-                                        >
-                                      </td>
-                                    </tr>
-                                  </table>
-                                </td>
-                                <!-- Unique Visitors -->
-                                <td
-                                  width="33%"
-                                  valign="top"
-                                  style="padding-right: 12px"
-                                >
-                                  <table
-                                    cellpadding="0"
-                                    cellspacing="0"
-                                    border="0"
-                                    width="100%"
-                                    style="
-                                      background: #ffffff;
-                                      border-radius: 8px;
-                                      border: 1px solid #e2e8f0;
-                                    "
-                                  >
-                                    <tr>
-                                      <td style="padding: 16px">
-                                        <span
-                                          style="
-                                            font-family:
-                                              -apple-system, BlinkMacSystemFont,
-                                              'Segoe UI', 'Roboto', 'Oxygen',
-                                              'Ubuntu', 'Cantarell',
-                                              'Fira Sans', 'Droid Sans',
-                                              'Helvetica Neue', sans-serif;
-                                            font-size: 12px;
-                                            font-weight: 500;
-                                            color: #64748b;
-                                            text-transform: uppercase;
-                                            letter-spacing: 0.5px;
-                                          "
-                                          >Unique visitors</span
-                                        >
-                                        <div
-                                          style="
-                                            height: 8px;
-                                            line-height: 8px;
-                                            font-size: 6px;
-                                          "
-                                        >
-                                          &nbsp;
-                                        </div>
-                                        <span
-                                          style="
-                                            font-family:
-                                              -apple-system, BlinkMacSystemFont,
-                                              'Segoe UI', 'Roboto', 'Oxygen',
-                                              'Ubuntu', 'Cantarell',
-                                              'Fira Sans', 'Droid Sans',
-                                              'Helvetica Neue', sans-serif;
-                                            font-size: 28px;
-                                            font-weight: 700;
-                                            color: #0f172a;
-                                          "
-                                          >{{data.uniqueVisitors}}</span
-                                        >
-                                        <span
-                                          style="
-                                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-                                        font-size: 14px;
-                                        font-weight: 500;
-                                        margin-left: 6px;
-                                        {{#greater data.percChangeUnique 0}}color: #059669;{{else}}{{#less data.percChangeUnique 0}}color: #DC2626;{{else}}color: #64748b;{{/less}}{{/greater}}
-                                      "
-                                          >{{#greater data.percChangeUnique
-                                          0}}+{{/greater}}{{data.percChangeUnique}}%</span
-                                        >
-                                      </td>
-                                    </tr>
-                                  </table>
-                                </td>
-                                <!-- Pageviews -->
-                                <td width="33%" valign="top">
-                                  <table
-                                    cellpadding="0"
-                                    cellspacing="0"
-                                    border="0"
-                                    width="100%"
-                                    style="
-                                      background: #ffffff;
-                                      border-radius: 8px;
-                                      border: 1px solid #e2e8f0;
-                                    "
-                                  >
-                                    <tr>
-                                      <td style="padding: 16px">
-                                        <span
-                                          style="
-                                            font-family:
-                                              -apple-system, BlinkMacSystemFont,
-                                              'Segoe UI', 'Roboto', 'Oxygen',
-                                              'Ubuntu', 'Cantarell',
-                                              'Fira Sans', 'Droid Sans',
-                                              'Helvetica Neue', sans-serif;
-                                            font-size: 12px;
-                                            font-weight: 500;
-                                            color: #64748b;
-                                            text-transform: uppercase;
-                                            letter-spacing: 0.5px;
-                                          "
-                                          >Pageviews</span
-                                        >
-                                        <div
-                                          style="
-                                            height: 8px;
-                                            line-height: 8px;
-                                            font-size: 6px;
-                                          "
-                                        >
-                                          &nbsp;
-                                        </div>
-                                        <span
-                                          style="
-                                            font-family:
-                                              -apple-system, BlinkMacSystemFont,
-                                              'Segoe UI', 'Roboto', 'Oxygen',
-                                              'Ubuntu', 'Cantarell',
-                                              'Fira Sans', 'Droid Sans',
-                                              'Helvetica Neue', sans-serif;
-                                            font-size: 28px;
-                                            font-weight: 700;
-                                            color: #0f172a;
-                                          "
-                                          >{{data.pageviews}}</span
-                                        >
-                                        <span
-                                          style="
-                                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-                                        font-size: 14px;
-                                        font-weight: 500;
-                                        margin-left: 6px;
-                                        {{#greater data.percChangePageviews 0}}color: #059669;{{else}}{{#less data.percChangePageviews 0}}color: #DC2626;{{else}}color: #64748b;{{/less}}{{/greater}}
-                                      "
-                                          >{{#greater data.percChangePageviews
-                                          0}}+{{/greater}}{{data.percChangePageviews}}%</span
-                                        >
-                                      </td>
-                                    </tr>
-                                  </table>
-                                </td>
-                              </tr>
-                            </table>
-
-                            <div
-                              style="
-                                height: 12px;
-                                line-height: 12px;
-                                font-size: 10px;
-                              "
-                            >
-                              &nbsp;
-                            </div>
-
-                            <!-- Secondary Metrics -->
-                            <table
-                              cellpadding="0"
-                              cellspacing="0"
-                              border="0"
-                              width="100%"
-                            >
-                              <tr>
-                                <!-- Avg. Session Duration -->
-                                <td
-                                  width="50%"
-                                  valign="top"
-                                  style="padding-right: 12px"
-                                >
-                                  <table
-                                    cellpadding="0"
-                                    cellspacing="0"
-                                    border="0"
-                                    width="100%"
-                                    style="
-                                      background: #ffffff;
-                                      border-radius: 8px;
-                                      border: 1px solid #e2e8f0;
-                                    "
-                                  >
-                                    <tr>
-                                      <td style="padding: 14px 16px">
-                                        <span
-                                          style="
-                                            font-family:
-                                              -apple-system, BlinkMacSystemFont,
-                                              'Segoe UI', 'Roboto', 'Oxygen',
-                                              'Ubuntu', 'Cantarell',
-                                              'Fira Sans', 'Droid Sans',
-                                              'Helvetica Neue', sans-serif;
-                                            font-size: 12px;
-                                            font-weight: 500;
-                                            color: #64748b;
-                                            text-transform: uppercase;
-                                            letter-spacing: 0.5px;
-                                          "
-                                          >Avg. session</span
-                                        >
-                                        <span
-                                          style="
-                                            font-family:
-                                              -apple-system, BlinkMacSystemFont,
-                                              'Segoe UI', 'Roboto', 'Oxygen',
-                                              'Ubuntu', 'Cantarell',
-                                              'Fira Sans', 'Droid Sans',
-                                              'Helvetica Neue', sans-serif;
-                                            font-size: 18px;
-                                            font-weight: 600;
-                                            color: #0f172a;
-                                            float: right;
-                                          "
-                                          >{{data.avgDuration}}</span
-                                        >
-                                      </td>
-                                    </tr>
-                                  </table>
-                                </td>
-                                <!-- Bounce Rate -->
-                                <td width="50%" valign="top">
-                                  <table
-                                    cellpadding="0"
-                                    cellspacing="0"
-                                    border="0"
-                                    width="100%"
-                                    style="
-                                      background: #ffffff;
-                                      border-radius: 8px;
-                                      border: 1px solid #e2e8f0;
-                                    "
-                                  >
-                                    <tr>
-                                      <td style="padding: 14px 16px">
-                                        <span
-                                          style="
-                                            font-family:
-                                              -apple-system, BlinkMacSystemFont,
-                                              'Segoe UI', 'Roboto', 'Oxygen',
-                                              'Ubuntu', 'Cantarell',
-                                              'Fira Sans', 'Droid Sans',
-                                              'Helvetica Neue', sans-serif;
-                                            font-size: 12px;
-                                            font-weight: 500;
-                                            color: #64748b;
-                                            text-transform: uppercase;
-                                            letter-spacing: 0.5px;
-                                          "
-                                          >Bounce rate</span
-                                        >
-                                        <span
-                                          style="
-                                            font-family:
-                                              -apple-system, BlinkMacSystemFont,
-                                              'Segoe UI', 'Roboto', 'Oxygen',
-                                              'Ubuntu', 'Cantarell',
-                                              'Fira Sans', 'Droid Sans',
-                                              'Helvetica Neue', sans-serif;
-                                            font-size: 18px;
-                                            font-weight: 600;
-                                            color: #0f172a;
-                                            float: right;
-                                          "
-                                          >{{data.bounceRate}}%</span
-                                        >
-                                      </td>
-                                    </tr>
-                                  </table>
-                                </td>
-                              </tr>
-                            </table>
-
-                            {{#if goals}}
-                            <div
-                              style="
-                                height: 16px;
-                                line-height: 16px;
-                                font-size: 14px;
-                              "
-                            >
-                              &nbsp;
-                            </div>
-                            <!-- Goals Section -->
-                            <table
-                              cellpadding="0"
-                              cellspacing="0"
-                              border="0"
-                              width="100%"
-                              style="
-                                background: #ecfdf5;
-                                border-radius: 8px;
-                                border: 1px solid #a7f3d0;
-                              "
-                            >
-                              <tr>
-                                <td style="padding: 14px 16px">
-                                  <span
-                                    style="
-                                      font-family:
-                                        -apple-system, BlinkMacSystemFont,
-                                        'Segoe UI', 'Roboto', 'Oxygen',
-                                        'Ubuntu', 'Cantarell', 'Fira Sans',
-                                        'Droid Sans', 'Helvetica Neue',
-                                        sans-serif;
-                                      font-size: 12px;
-                                      font-weight: 600;
-                                      color: #059669;
-                                      text-transform: uppercase;
-                                      letter-spacing: 0.5px;
-                                    "
-                                    >Goal conversions</span
-                                  >
-                                  <div
-                                    style="
-                                      height: 10px;
-                                      line-height: 10px;
-                                      font-size: 8px;
-                                    "
-                                  >
-                                    &nbsp;
-                                  </div>
-                                  {{#each goals}}
-                                  <div
-                                    style="
-                                      font-family:
-                                        -apple-system, BlinkMacSystemFont,
-                                        'Segoe UI', 'Roboto', 'Oxygen',
-                                        'Ubuntu', 'Cantarell', 'Fira Sans',
-                                        'Droid Sans', 'Helvetica Neue',
-                                        sans-serif;
-                                      font-size: 14px;
-                                      color: #065f46;
-                                      margin-bottom: 4px;
-                                    "
-                                  >
-                                    <strong>{{name}}:</strong> {{conversions}}
-                                    conversions ({{conversionRate}}% rate)
-                                  </div>
-                                  {{/each}}
-                                </td>
-                              </tr>
-                            </table>
-                            {{/if}} {{#if errors}}
-                            <div
-                              style="
-                                height: 12px;
-                                line-height: 12px;
-                                font-size: 10px;
-                              "
-                            >
-                              &nbsp;
-                            </div>
-                            <!-- Errors Section -->
-                            <table
-                              cellpadding="0"
-                              cellspacing="0"
-                              border="0"
-                              width="100%"
-                              style="
-                                background: #fef2f2;
-                                border-radius: 8px;
-                                border: 1px solid #fecaca;
-                              "
-                            >
-                              <tr>
-                                <td style="padding: 14px 16px">
-                                  <span
-                                    style="
-                                      font-family:
-                                        -apple-system, BlinkMacSystemFont,
-                                        'Segoe UI', 'Roboto', 'Oxygen',
-                                        'Ubuntu', 'Cantarell', 'Fira Sans',
-                                        'Droid Sans', 'Helvetica Neue',
-                                        sans-serif;
-                                      font-size: 12px;
-                                      font-weight: 600;
-                                      color: #dc2626;
-                                      text-transform: uppercase;
-                                      letter-spacing: 0.5px;
-                                    "
-                                    >Errors found</span
-                                  >
-                                  <span
-                                    style="
-                                      font-family:
-                                        -apple-system, BlinkMacSystemFont,
-                                        'Segoe UI', 'Roboto', 'Oxygen',
-                                        'Ubuntu', 'Cantarell', 'Fira Sans',
-                                        'Droid Sans', 'Helvetica Neue',
-                                        sans-serif;
-                                      font-size: 14px;
-                                      color: #991b1b;
-                                      float: right;
-                                    "
-                                    >{{errors.count}} total
-                                    ({{errors.uniqueErrors}} unique)</span
-                                  >
-                                </td>
-                              </tr>
-                            </table>
-                            {{/if}}
                           </td>
-                        </tr>
-                      </table>
-                      {{/each}}
-
-                      <!-- Tip Section -->
-                      <table
-                        cellpadding="0"
-                        cellspacing="0"
-                        border="0"
-                        width="100%"
-                        style="
-                          background: #fffbeb;
-                          border-radius: 8px;
-                          border: 1px solid #fde68a;
-                          margin-top: 8px;
-                        "
-                      >
-                        <tr>
-                          <td style="padding: 16px">
-                            <span
+                          {{#if topCountry}}
+                          <td
+                            class="project-meta"
+                            align="right"
+                            valign="top"
+                            style="padding-top: 3px"
+                          >
+                            <div
                               style="
-                                font-family:
-                                  -apple-system, BlinkMacSystemFont, 'Segoe UI',
-                                  'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell',
-                                  'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-                                  sans-serif;
-                                font-size: 14px;
-                                color: #92400e;
-                                line-height: 1.6;
+                                font-size: 12px;
+                                line-height: 18px;
+                                font-weight: 500;
+                                color: #6f6f69;
+                                white-space: nowrap;
                               "
                             >
-                              <span style="font-size: 16px">💡</span>
-                              <strong>Tip:</strong> {{tip}}
-                            </span>
-                          </td>
-                        </tr>
-                      </table>
-
-                      <div
-                        style="height: 24px; line-height: 24px; font-size: 22px"
-                      >
-                        &nbsp;
-                      </div>
-
-                      <!-- Unsubscribe -->
-                      <table
-                        cellpadding="0"
-                        cellspacing="0"
-                        border="0"
-                        width="100%"
-                      >
-                        <tr>
-                          <td align="center" style="padding-bottom: 24px">
-                            <span
-                              style="
-                                font-family:
-                                  -apple-system, BlinkMacSystemFont, 'Segoe UI',
-                                  'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell',
-                                  'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-                                  sans-serif;
-                                font-size: 13px;
-                                color: #94a3b8;
-                              "
-                            >
-                              No longer need these reports?
-                              <a
-                                href="{{unsubscribeUrl}}"
-                                target="_blank"
-                                style="
-                                  color: #64748b;
-                                  text-decoration: underline;
-                                "
-                                >Unsubscribe from reports</a
+                              Top country&nbsp;&nbsp;<strong
+                                style="font-weight: 650; color: #3c3c39"
+                                >{{topCountry}}</strong
                               >
-                            </span>
+                            </div>
+                          </td>
+                          {{/if}}
+                        </tr>
+                      </table>
+
+                      <div
+                        style="height: 19px; line-height: 19px; font-size: 19px"
+                      >
+                        &nbsp;
+                      </div>
+
+                      <table
+                        role="presentation"
+                        cellpadding="0"
+                        cellspacing="0"
+                        border="0"
+                        width="100%"
+                        bgcolor="#f7f7f4"
+                        style="
+                          width: 100%;
+                          background-color: #f7f7f4;
+                          border: 1px solid #e6e6e1;
+                          border-radius: 8px;
+                          overflow: hidden;
+                        "
+                      >
+                        <tr>
+                          <td
+                            class="metric-cell"
+                            width="33.33%"
+                            valign="top"
+                            style="
+                              width: 33.33%;
+                              padding: 17px 16px 18px;
+                              border-right: 1px solid #e6e6e1;
+                            "
+                          >
+                            <div
+                              style="
+                                font-size: 11px;
+                                line-height: 16px;
+                                font-weight: 650;
+                                letter-spacing: 0.6px;
+                                text-transform: uppercase;
+                                color: #777770;
+                              "
+                            >
+                              Active users
+                            </div>
+                            <div
+                              style="
+                                height: 7px;
+                                line-height: 7px;
+                                font-size: 7px;
+                              "
+                            >
+                              &nbsp;
+                            </div>
+                            <span
+                              style="
+                                font-size: 27px;
+                                line-height: 32px;
+                                font-weight: 650;
+                                letter-spacing: -0.7px;
+                                color: #20201e;
+                                font-variant-numeric: tabular-nums;
+                              "
+                              >{{data.activeUsers}}</span
+                            >
+                            <span
+                              style="
+                                padding-left: 5px;
+                                font-size: 12px;
+                                line-height: 18px;
+                                font-weight: 650;
+                                font-variant-numeric: tabular-nums;
+                                {{#greater data.percChangeUsers 0}}color: #397657;{{else}}{{#less data.percChangeUsers 0}}color: #a14a48;{{else}}color: #777770;{{/less}}{{/greater}}
+                              "
+                              >{{#greater data.percChangeUsers
+                              0}}+{{/greater}}{{data.percChangeUsers}}%</span
+                            >
+                          </td>
+                          <td
+                            class="metric-cell"
+                            width="33.33%"
+                            valign="top"
+                            style="
+                              width: 33.33%;
+                              padding: 17px 16px 18px;
+                              border-right: 1px solid #e6e6e1;
+                            "
+                          >
+                            <div
+                              style="
+                                font-size: 11px;
+                                line-height: 16px;
+                                font-weight: 650;
+                                letter-spacing: 0.6px;
+                                text-transform: uppercase;
+                                color: #777770;
+                              "
+                            >
+                              Unique visitors
+                            </div>
+                            <div
+                              style="
+                                height: 7px;
+                                line-height: 7px;
+                                font-size: 7px;
+                              "
+                            >
+                              &nbsp;
+                            </div>
+                            <span
+                              style="
+                                font-size: 27px;
+                                line-height: 32px;
+                                font-weight: 650;
+                                letter-spacing: -0.7px;
+                                color: #20201e;
+                                font-variant-numeric: tabular-nums;
+                              "
+                              >{{data.uniqueVisitors}}</span
+                            >
+                            <span
+                              style="
+                                padding-left: 5px;
+                                font-size: 12px;
+                                line-height: 18px;
+                                font-weight: 650;
+                                font-variant-numeric: tabular-nums;
+                                {{#greater data.percChangeUnique 0}}color: #397657;{{else}}{{#less data.percChangeUnique 0}}color: #a14a48;{{else}}color: #777770;{{/less}}{{/greater}}
+                              "
+                              >{{#greater data.percChangeUnique
+                              0}}+{{/greater}}{{data.percChangeUnique}}%</span
+                            >
+                          </td>
+                          <td
+                            class="metric-cell metric-cell-last"
+                            width="33.33%"
+                            valign="top"
+                            style="width: 33.33%; padding: 17px 16px 18px"
+                          >
+                            <div
+                              style="
+                                font-size: 11px;
+                                line-height: 16px;
+                                font-weight: 650;
+                                letter-spacing: 0.6px;
+                                text-transform: uppercase;
+                                color: #777770;
+                              "
+                            >
+                              Pageviews
+                            </div>
+                            <div
+                              style="
+                                height: 7px;
+                                line-height: 7px;
+                                font-size: 7px;
+                              "
+                            >
+                              &nbsp;
+                            </div>
+                            <span
+                              style="
+                                font-size: 27px;
+                                line-height: 32px;
+                                font-weight: 650;
+                                letter-spacing: -0.7px;
+                                color: #20201e;
+                                font-variant-numeric: tabular-nums;
+                              "
+                              >{{data.pageviews}}</span
+                            >
+                            <span
+                              style="
+                                padding-left: 5px;
+                                font-size: 12px;
+                                line-height: 18px;
+                                font-weight: 650;
+                                font-variant-numeric: tabular-nums;
+                                {{#greater data.percChangePageviews 0}}color: #397657;{{else}}{{#less data.percChangePageviews 0}}color: #a14a48;{{else}}color: #777770;{{/less}}{{/greater}}
+                              "
+                              >{{#greater data.percChangePageviews
+                              0}}+{{/greater}}{{data.percChangePageviews}}%</span
+                            >
                           </td>
                         </tr>
                       </table>
+
+                      <div
+                        style="height: 12px; line-height: 12px; font-size: 12px"
+                      >
+                        &nbsp;
+                      </div>
+
+                      <table
+                        role="presentation"
+                        cellpadding="0"
+                        cellspacing="0"
+                        border="0"
+                        width="100%"
+                        style="
+                          width: 100%;
+                          border-top: 1px solid #e6e6e1;
+                          border-bottom: 1px solid #e6e6e1;
+                        "
+                      >
+                        <tr>
+                          <td
+                            class="secondary-metric"
+                            width="50%"
+                            style="
+                              width: 50%;
+                              padding: 13px 14px;
+                              border-right: 1px solid #e6e6e1;
+                            "
+                          >
+                            <table
+                              role="presentation"
+                              cellpadding="0"
+                              cellspacing="0"
+                              border="0"
+                              width="100%"
+                            >
+                              <tr>
+                                <td
+                                  style="
+                                    font-size: 12px;
+                                    line-height: 18px;
+                                    font-weight: 500;
+                                    color: #777770;
+                                  "
+                                >
+                                  Avg. session
+                                </td>
+                                <td
+                                  align="right"
+                                  style="
+                                    font-size: 15px;
+                                    line-height: 20px;
+                                    font-weight: 650;
+                                    color: #20201e;
+                                    font-variant-numeric: tabular-nums;
+                                  "
+                                >
+                                  {{data.avgDuration}}
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                          <td
+                            class="secondary-metric secondary-metric-last"
+                            width="50%"
+                            style="width: 50%; padding: 13px 14px"
+                          >
+                            <table
+                              role="presentation"
+                              cellpadding="0"
+                              cellspacing="0"
+                              border="0"
+                              width="100%"
+                            >
+                              <tr>
+                                <td
+                                  style="
+                                    font-size: 12px;
+                                    line-height: 18px;
+                                    font-weight: 500;
+                                    color: #777770;
+                                  "
+                                >
+                                  Bounce rate
+                                </td>
+                                <td
+                                  align="right"
+                                  style="
+                                    font-size: 15px;
+                                    line-height: 20px;
+                                    font-weight: 650;
+                                    color: #20201e;
+                                    font-variant-numeric: tabular-nums;
+                                  "
+                                >
+                                  {{data.bounceRate}}%
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                      </table>
+
+                      {{#if goals}}
+                      <div
+                        style="height: 20px; line-height: 20px; font-size: 20px"
+                      >
+                        &nbsp;
+                      </div>
+                      <div
+                        style="
+                          font-size: 11px;
+                          line-height: 16px;
+                          font-weight: 650;
+                          letter-spacing: 0.6px;
+                          text-transform: uppercase;
+                          color: #397657;
+                        "
+                      >
+                        Goal conversions
+                      </div>
+                      <div
+                        style="height: 7px; line-height: 7px; font-size: 7px"
+                      >
+                        &nbsp;
+                      </div>
+                      <table
+                        role="presentation"
+                        cellpadding="0"
+                        cellspacing="0"
+                        border="0"
+                        width="100%"
+                        style="width: 100%; border-top: 1px solid #e6e6e1"
+                      >
+                        {{#each goals}}
+                        <tr>
+                          <td
+                            style="
+                              padding: 10px 0;
+                              border-bottom: 1px solid #e6e6e1;
+                              font-size: 13px;
+                              line-height: 19px;
+                              font-weight: 550;
+                              color: #3c3c39;
+                            "
+                          >
+                            {{name}}
+                          </td>
+                          <td
+                            align="right"
+                            style="
+                              padding: 10px 0;
+                              border-bottom: 1px solid #e6e6e1;
+                              font-size: 13px;
+                              line-height: 19px;
+                              font-weight: 650;
+                              color: #20201e;
+                              font-variant-numeric: tabular-nums;
+                            "
+                          >
+                            {{conversions}} &middot; {{conversionRate}}%
+                          </td>
+                        </tr>
+                        {{/each}}
+                      </table>
+                      {{/if}} {{#if errors}}
+                      <div
+                        style="height: 20px; line-height: 20px; font-size: 20px"
+                      >
+                        &nbsp;
+                      </div>
+                      <table
+                        role="presentation"
+                        cellpadding="0"
+                        cellspacing="0"
+                        border="0"
+                        width="100%"
+                        bgcolor="#fbf3f2"
+                        style="
+                          width: 100%;
+                          background-color: #fbf3f2;
+                          border: 1px solid #efdedd;
+                          border-radius: 7px;
+                        "
+                      >
+                        <tr>
+                          <td
+                            style="
+                              padding: 12px 14px;
+                              font-size: 12px;
+                              line-height: 18px;
+                              font-weight: 650;
+                              color: #8f4240;
+                            "
+                          >
+                            Errors found
+                          </td>
+                          <td
+                            align="right"
+                            style="
+                              padding: 12px 14px;
+                              font-size: 12px;
+                              line-height: 18px;
+                              font-weight: 550;
+                              color: #8f4240;
+                              font-variant-numeric: tabular-nums;
+                            "
+                          >
+                            {{errors.count}} total &middot;
+                            {{errors.uniqueErrors}} unique
+                          </td>
+                        </tr>
+                      </table>
+                      {{/if}}
+                    </td>
+                  </tr>
+                </table>
+                {{/each}}
+
+                <table
+                  role="presentation"
+                  cellpadding="0"
+                  cellspacing="0"
+                  border="0"
+                  width="100%"
+                  style="width: 100%; margin-top: 26px"
+                >
+                  <tr>
+                    <td
+                      valign="top"
+                      width="42"
+                      style="
+                        width: 42px;
+                        padding-top: 1px;
+                        font-size: 11px;
+                        line-height: 18px;
+                        font-weight: 700;
+                        letter-spacing: 0.7px;
+                        text-transform: uppercase;
+                        color: #4f46e5;
+                      "
+                    >
+                      Tip
+                    </td>
+                    <td
+                      valign="top"
+                      style="
+                        padding-left: 14px;
+                        border-left: 1px solid #d9d8d3;
+                        font-size: 13px;
+                        line-height: 20px;
+                        font-weight: 400;
+                        color: #62625d;
+                      "
+                    >
+                      {{tip}}
+                    </td>
+                  </tr>
+                </table>
+
+                <div style="height: 34px; line-height: 34px; font-size: 34px">
+                  &nbsp;
+                </div>
+
+                <table
+                  role="presentation"
+                  cellpadding="0"
+                  cellspacing="0"
+                  border="0"
+                  width="100%"
+                  style="width: 100%; border-top: 1px solid #e6e6e1"
+                >
+                  <tr>
+                    <td
+                      align="left"
+                      style="
+                        padding-top: 20px;
+                        font-size: 12px;
+                        line-height: 18px;
+                        font-weight: 400;
+                        color: #85857f;
+                      "
+                    >
+                      Sent by Swetrix. No longer need these reports?
+                      <a
+                        href="{{unsubscribeUrl}}"
+                        target="_blank"
+                        style="color: #5f5f5a; text-decoration: underline"
+                        >Unsubscribe</a
+                      >.
                     </td>
                   </tr>
                 </table>
               </td>
-              <td
-                width="25"
-                style="width: 25px; max-width: 25px; min-width: 25px"
-              >
-                &nbsp;
+            </tr>
+          </table>
+          <!--[if mso]>
               </td>
             </tr>
           </table>
-          <!--[if (gte mso 9)|(IE)]>
-         </td></tr>
-         </table><![endif]-->
+          <![endif]-->
+
+          <div style="height: 32px; line-height: 32px; font-size: 32px">
+            &nbsp;
+          </div>
         </td>
+        <td class="page-gutter" width="24" style="width: 24px">&nbsp;</td>
       </tr>
     </table>
   </body>
