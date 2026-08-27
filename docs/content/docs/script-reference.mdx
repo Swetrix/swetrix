@@ -98,8 +98,8 @@ Here's an example of how to use this function with all the available options:
 swetrix.trackViews({
   unique: false,
   heartbeatOnBackground: false,
-  hash: false,
-  search: false,
+  hash: ["pricing", "features"],
+  search: ["query", "page"],
   callback: undefined,
 });
 ```
@@ -109,8 +109,8 @@ swetrix.trackViews({
 | unique                | If true, only unique events will be saved. This param is useful when tracking single-page landing websites.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | `false`       |
 | callback              | A callback used to edit / prevent sending pageviews.<br />It accepts an object with pageview event data as a parameter which has the following structure: <br />lc: string \| undefined<br />tz: string \| undefined<br />ref: string \| undefined<br />so: string \| undefined<br />me: string \| undefined<br />ca: string \| undefined<br />te: string \| undefined<br />co: string \| undefined<br />qs: string \| undefined<br />meta: object \| undefined ("object" values must be string, number, boolean, null, or undefined)<br />pg: string \| null \| undefined<br />profileId: string \| undefined<br /><br />The callback is supposed to return the edited payload or `false` to prevent sending the pageview. If `true` is returned, the payload will be sent as-is. | `undefined`   |
 | heartbeatOnBackground | Send Heartbeat requests when the website tab is not active in the browser.<br />Setting this to `true` means users who keep your website open in an inactive browser tab or window can still be counted in realtime statistics.<br />Setting this to true is usually useful for services like Spotify or Youtube.                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | `false`       |
-| hash                  | Set to `true` to enable hash-based routing. For example if you have pages like `/#/path` or want to track pages like `/path#hash`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | `false`       |
-| search                | Set to `true` to enable search-based routing. For example if you have pages like `/path?search`. Although it's not recommended in most cases, you can set both `hash` and `search` to `true` at the same time, in which case the pageview event will be fired when either the hash or the search part of the URL changes (again, both the hash and the search are sent to the server).                                                                                                                                                                                                                                                                                                                                                                                             | `false`       |
+| hash                  | Set to `true` to enable hash-based routing for every hash, or provide an array of exact hash values to include. For example, `['pricing', 'features']` includes `/path#pricing` and `/path#features` while ignoring other hashes. A leading `#` is optional in array values.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | `false`       |
+| search                | Set to `true` to enable search-based routing for every query parameter, or provide an array of parameter names to include. For example, `['search', 'page']` includes those parameters while ignoring unrelated ones. You can enable both `hash` and `search`; a pageview is fired only when an included part of the URL changes.                                                                                                                                                                                                                                                                                                                                                                                                                                                  | `false`       |
 
 The `trackViews` function returns a `Promise` with an object with some methods allowing you to alter the behaviour of page tracking:
 
@@ -241,7 +241,7 @@ The data we collect includes the following params if available:
 6. `message` - error message (e.g. Malformed input)
 7. `lineno` / `colno` - on what line and column in your code did the error occur
 8. `filename` - in what file did the error occur
-9. `stackTrace` - the stack trace of the error (e.g. `Uncaught Error\n    at query (:10:11)\n    at database (:6:5)`)
+9. `stackTrace` - the stack trace of the error, up to 64,000 characters (e.g. `Uncaught Error\n    at query (:10:11)\n    at database (:6:5)`)
 10. `meta` - an object that contains event-related metadata. You can set it via a `callback` function.
 
 Here's an example of how to use this function with all the available options:
@@ -278,7 +278,7 @@ This function takes a payload object with the following fields:
 3. (optional) `lineno` - on what line in your code did the error occur (e.g. 1520)
 4. (optional) `colno` - on what column in your code did the error occur (e.g. 26)
 5. (optional) `filename` - in what file did the error occur (e.g. https://example.com/broken.js)
-6. (optional) `stackTrace` - the stack trace of the error (e.g. `Uncaught Error\n    at query (:10:11)\n    at database (:6:5)`)
+6. (optional) `stackTrace` - the stack trace of the error, up to 64,000 characters (e.g. `Uncaught Error\n    at query (:10:11)\n    at database (:6:5)`)
 7. (optional) `meta` - an object that contains event-related metadata. The values of the object must be a primitive type (string, number, boolean, null) which will be converted to a string, the maximum number of keys allowed is `100` and the total length of the values combined must be less than `2000` characters.
 
 Here is an example of how to use this function:

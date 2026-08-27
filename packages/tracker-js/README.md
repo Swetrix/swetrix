@@ -69,14 +69,14 @@ init('YOUR_PROJECT_ID', {
 })
 ```
 
-| Option | Description | Default |
-|---|---|---|
-| `apiURL` | API endpoint. Change this if you're self-hosting. | `'https://api.swetrix.com/log'` |
-| `devMode` | When `true`, localhost events are sent to the server. | `false` |
-| `disabled` | When `true`, no data is sent. Useful for dev environments. | `false` |
-| `respectDNT` | When `true`, disables tracking for users with Do Not Track enabled. | `false` |
-| `profileId` | Profile ID for long-term user tracking (MAU/DAU). | `undefined` |
-| `preloadSessionReplay` | Preload the session replay recorder after `init()`. Recording only starts after `startSessionReplay()`. | `undefined` |
+| Option                 | Description                                                                                             | Default                         |
+| ---------------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------- |
+| `apiURL`               | API endpoint. Change this if you're self-hosting.                                                       | `'https://api.swetrix.com/log'` |
+| `devMode`              | When `true`, localhost events are sent to the server.                                                   | `false`                         |
+| `disabled`             | When `true`, no data is sent. Useful for dev environments.                                              | `false`                         |
+| `respectDNT`           | When `true`, disables tracking for users with Do Not Track enabled.                                     | `false`                         |
+| `profileId`            | Profile ID for long-term user tracking (MAU/DAU).                                                       | `undefined`                     |
+| `preloadSessionReplay` | Preload the session replay recorder after `init()`. Recording only starts after `startSessionReplay()`. | `undefined`                     |
 
 ### `trackViews(options?)`
 
@@ -84,8 +84,8 @@ Automatically tracks page views, including navigation changes in SPAs. Returns a
 
 ```javascript
 const { stop } = await trackViews({
-  hash: false,
-  search: false,
+  hash: ['pricing', 'features'],
+  search: ['query', 'page'],
   unique: false,
   heartbeatOnBackground: false,
   callback: undefined,
@@ -95,13 +95,13 @@ const { stop } = await trackViews({
 stop()
 ```
 
-| Option | Description | Default |
-|---|---|---|
-| `hash` | Track hash-based routing (e.g. `/#/path`). | `false` |
-| `search` | Track search/query-based routing (e.g. `/path?query`). | `false` |
-| `unique` | Only count unique page views per session. | `false` |
-| `heartbeatOnBackground` | Send heartbeat when the tab is not active. | `false` |
-| `callback` | A function to edit or prevent pageview payloads. Return `false` to block, `true` to send as-is, or return a modified payload object. | `undefined` |
+| Option                  | Description                                                                                                                                                                          | Default     |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------- |
+| `hash`                  | Set to `true` to track every hash (e.g. `/#/path`), or provide an array of exact hash values to include (e.g. `['pricing', 'features']`). A leading `#` is optional in array values. | `false`     |
+| `search`                | Set to `true` to track every query parameter (e.g. `/path?query=value`), or provide an array of parameter names to include (e.g. `['query', 'page']`).                               | `false`     |
+| `unique`                | Only count unique page views per session.                                                                                                                                            | `false`     |
+| `heartbeatOnBackground` | Send heartbeat when the tab is not active.                                                                                                                                           | `false`     |
+| `callback`              | A function to edit or prevent pageview payloads. Return `false` to block, `true` to send as-is, or return a modified payload object.                                                 | `undefined` |
 
 ### `track(event)`
 
@@ -116,12 +116,12 @@ track({
 })
 ```
 
-| Option | Description | Default |
-|---|---|---|
-| `ev` | Event name (max 256 chars). | **required** |
-| `unique` | Only count once per session. | `false` |
-| `meta` | Key-value metadata (max 20 keys, 1000 chars total). | `{}` |
-| `profileId` | Optional profile ID. Overrides the global `profileId` for this event. | `undefined` |
+| Option      | Description                                                           | Default      |
+| ----------- | --------------------------------------------------------------------- | ------------ |
+| `ev`        | Event name (max 256 chars).                                           | **required** |
+| `unique`    | Only count once per session.                                          | `false`      |
+| `meta`      | Key-value metadata (max 20 keys, 1000 chars total).                   | `{}`         |
+| `profileId` | Optional profile ID. Overrides the global `profileId` for this event. | `undefined`  |
 
 ### `trackErrors(options?)`
 
@@ -134,10 +134,10 @@ const { stop } = trackErrors({
 })
 ```
 
-| Option | Description | Default |
-|---|---|---|
-| `sampleRate` | Fraction of errors to send (`0` to `1`). | `1` |
-| `callback` | Edit or prevent error payloads. Return `false` to block. | `undefined` |
+| Option       | Description                                              | Default     |
+| ------------ | -------------------------------------------------------- | ----------- |
+| `sampleRate` | Fraction of errors to send (`0` to `1`).                 | `1`         |
+| `callback`   | Edit or prevent error payloads. Return `false` to block. | `undefined` |
 
 ### `trackError(payload)`
 
@@ -217,19 +217,19 @@ await replay.flush()
 await replay.stop()
 ```
 
-| Option | Description | Default |
-|---|---|---|
-| `privacy` | Privacy mode: `total`, `normal`, or `none`. | `'total'` |
-| `maskAllText` | Mask all non-input text with asterisks. Defaults to `true` when `privacy` is `total`, otherwise `false`. | privacy-based |
-| `sampleRate` | Fraction of sessions to record (`0` to `1`). | `1` |
-| `maxDurationMs` | Stop recording after this duration. | `undefined` |
-| `idleTimeoutMs` | Stop recording after this much visitor inactivity. | `undefined` |
-| `flushIntervalMs` | Upload buffered replay events at this interval. | `5000` |
-| `maxEventsPerChunk` | Upload once this many events are buffered. | `100` |
-| `maxBytesPerChunk` | Upload once buffered replay events reach this approximate byte size. | `524288` |
-| `maxBytesPerEvent` | Drop a single replay event if it is larger than this many bytes. | `5242880` |
-| `recordIframes` | Allow iframe elements to be captured. Iframes are blocked by default to reduce replay size and avoid recording embedded third-party content. | `false` |
-| `rrweb` | Additional rrweb record options. | `undefined` |
+| Option              | Description                                                                                                                                  | Default       |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| `privacy`           | Privacy mode: `total`, `normal`, or `none`.                                                                                                  | `'total'`     |
+| `maskAllText`       | Mask all non-input text with asterisks. Defaults to `true` when `privacy` is `total`, otherwise `false`.                                     | privacy-based |
+| `sampleRate`        | Fraction of sessions to record (`0` to `1`).                                                                                                 | `1`           |
+| `maxDurationMs`     | Stop recording after this duration.                                                                                                          | `undefined`   |
+| `idleTimeoutMs`     | Stop recording after this much visitor inactivity.                                                                                           | `undefined`   |
+| `flushIntervalMs`   | Upload buffered replay events at this interval.                                                                                              | `5000`        |
+| `maxEventsPerChunk` | Upload once this many events are buffered.                                                                                                   | `100`         |
+| `maxBytesPerChunk`  | Upload once buffered replay events reach this approximate byte size.                                                                         | `524288`      |
+| `maxBytesPerEvent`  | Drop a single replay event if it is larger than this many bytes.                                                                             | `5242880`     |
+| `recordIframes`     | Allow iframe elements to be captured. Iframes are blocked by default to reduce replay size and avoid recording embedded third-party content. | `false`       |
+| `rrweb`             | Additional rrweb record options.                                                                                                             | `undefined`   |
 
 To mask text while keeping media less restricted than `total` privacy, combine `normal` privacy with `maskAllText`:
 

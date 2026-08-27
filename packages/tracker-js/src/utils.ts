@@ -1,7 +1,9 @@
 interface IGetPath {
-  hash?: boolean
-  search?: boolean
+  hash?: boolean | readonly string[]
+  search?: boolean | readonly string[]
 }
+
+type RouteTrackingOption = boolean | readonly string[] | undefined
 
 const findInSearch = (exp: RegExp): string | undefined => {
   const res = location.search.match(exp)
@@ -80,6 +82,36 @@ export const getUTMTerm = () => findInSearch(utmTermRegex)
 
 export const getUTMContent = () => findInSearch(utmContentRegex)
 
+const filterSearch = (search: string, option: RouteTrackingOption): string => {
+  if (option === true) return search
+  if (!Array.isArray(option) || !search) return ''
+
+  const allowedParams = new Set(option)
+  const params = search
+    .slice(1)
+    .split('&')
+    .filter((param) => {
+      const separatorIndex = param.indexOf('=')
+      const rawName = separatorIndex === -1 ? param : param.slice(0, separatorIndex)
+
+      try {
+        return allowedParams.has(decodeURIComponent(rawName.replace(/\+/g, ' ')))
+      } catch {
+        return allowedParams.has(rawName)
+      }
+    })
+
+  return params.length ? `?${params.join('&')}` : ''
+}
+
+const filterHash = (hash: string, option: RouteTrackingOption): string => {
+  if (option === true) return hash
+  if (!Array.isArray(option) || !hash) return ''
+
+  const hashValue = hash.slice(1)
+  return option.some((value) => value.replace(/^#/, '') === hashValue) ? hash : ''
+}
+
 /**
  * Function used to track the current page (path) of the application.
  * Will work in cases where the path looks like:
@@ -90,8 +122,8 @@ export const getUTMContent = () => findInSearch(utmContentRegex)
  * - /path#hash?search
  *
  * @param options - Options for the function.
- * @param options.hash - Whether to trigger on hash change.
- * @param options.search - Whether to trigger on search change.
+ * @param options.hash - Whether to include hashes, or an allowlist of hash values to include.
+ * @param options.search - Whether to include query parameters, or an allowlist of parameter names to include.
  * @returns The path of the current page.
  */
 export const getPath = (options: IGetPath): string => {
@@ -100,13 +132,13 @@ export const getPath = (options: IGetPath): string => {
   if (options.hash) {
     const hashIndex = location.hash.indexOf('?')
     const hashString = hashIndex > -1 ? location.hash.substring(0, hashIndex) : location.hash
-    result += hashString
+    result += filterHash(hashString, options.hash)
   }
 
   if (options.search) {
     const hashIndex = location.hash.indexOf('?')
     const searchString = location.search || (hashIndex > -1 ? location.hash.substring(hashIndex) : '')
-    result += searchString
+    result += filterSearch(searchString, options.search)
   }
 
   return result

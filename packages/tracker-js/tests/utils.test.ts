@@ -119,6 +119,29 @@ describe('Utility Functions', () => {
     expect(utils.getPath({ hash: true, search: true })).toBe('/test-page#section1?param=value')
   })
 
+  test('getPath should include only allowlisted query parameters', () => {
+    setLocation({
+      pathname: '/products',
+      search: '?category=analytics&noise=123&category=privacy&empty=&encoded%5Fname=value',
+    })
+
+    expect(utils.getPath({ search: ['category', 'empty', 'encoded_name'] })).toBe(
+      '/products?category=analytics&category=privacy&empty=&encoded%5Fname=value',
+    )
+    expect(utils.getPath({ search: ['missing'] })).toBe('/products')
+    expect(utils.getPath({ search: [] })).toBe('/products')
+  })
+
+  test('getPath should include only allowlisted hash values', () => {
+    setLocation({ pathname: '/docs', hash: '#installation' })
+    expect(utils.getPath({ hash: ['installation', 'configuration'] })).toBe('/docs#installation')
+    expect(utils.getPath({ hash: ['#installation'] })).toBe('/docs#installation')
+    expect(utils.getPath({ hash: ['configuration'] })).toBe('/docs')
+
+    setLocation({ pathname: '/', hash: '#/dashboard?tab=overview&noise=123' })
+    expect(utils.getPath({ hash: ['/dashboard'], search: ['tab'] })).toBe('/#/dashboard?tab=overview')
+  })
+
   test('getUTM* functions should extract UTM parameters', () => {
     setLocation({
       pathname: '/landing',

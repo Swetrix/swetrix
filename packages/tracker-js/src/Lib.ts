@@ -219,8 +219,7 @@ export interface ErrorActions {
 
 const SESSION_REPLAY_PRIVACY_VALUES = ['total', 'normal', 'none'] as const
 
-export type SessionReplayPrivacy =
-  (typeof SESSION_REPLAY_PRIVACY_VALUES)[number]
+export type SessionReplayPrivacy = (typeof SESSION_REPLAY_PRIVACY_VALUES)[number]
 
 export interface SessionReplayOptions {
   privacy?: SessionReplayPrivacy
@@ -279,16 +278,16 @@ export interface PageViewsOptions {
   heartbeatOnBackground?: boolean
 
   /**
-   * Set to `true` to enable hash-based routing.
-   * For example if you have pages like /#/path or want to track pages like /path#hash
+   * Set to `true` to enable hash-based routing, or provide an array of hash values to include.
+   * For example, use `true` for pages like /#/path, or `['pricing', 'features']` to include only those hashes.
    */
-  hash?: boolean
+  hash?: boolean | readonly string[]
 
   /**
-   * Set to `true` to enable search-based routing.
-   * For example if you have pages like /path?search
+   * Set to `true` to enable search-based routing, or provide an array of query parameter names to include.
+   * For example, use `true` for /path?search, or `['search', 'page']` to ignore all other parameters.
    */
-  search?: boolean
+  search?: boolean | readonly string[]
 
   /**
    * Callback to edit / prevent sending pageviews.
@@ -353,14 +352,7 @@ const SESSION_REPLAY_CHUNK_RETRY_DELAYS_MS = [2_000, 5_000, 15_000]
 // rejects every re-seed too. Cap the attempts rather than re-uploading a
 // multi-megabyte snapshot on a loop for the rest of the session.
 const SESSION_REPLAY_MAX_SNAPSHOT_RESEEDS = 3
-const SESSION_REPLAY_ACTIVITY_EVENTS = [
-  'click',
-  'keydown',
-  'mousedown',
-  'mousemove',
-  'scroll',
-  'touchstart',
-] as const
+const SESSION_REPLAY_ACTIVITY_EVENTS = ['click', 'keydown', 'mousedown', 'mousemove', 'scroll', 'touchstart'] as const
 
 // Default cache duration: 5 minutes
 const DEFAULT_CACHE_DURATION = 5 * 60 * 1000
@@ -393,7 +385,10 @@ export class Lib {
   // The last profile ID sent to the identify API (to avoid duplicate requests)
   private lastIdentifySent: string | null = null
 
-  constructor(private projectID: string, private options?: LibOptions) {
+  constructor(
+    private projectID: string,
+    private options?: LibOptions,
+  ) {
     this.trackPathChange = this.trackPathChange.bind(this)
     this.heartbeat = this.heartbeat.bind(this)
     this.captureError = this.captureError.bind(this)
@@ -971,9 +966,7 @@ export class Lib {
     }
   }
 
-  async startSessionReplay(
-    options: SessionReplayOptions = {},
-  ): Promise<SessionReplayActions> {
+  async startSessionReplay(options: SessionReplayOptions = {}): Promise<SessionReplayActions> {
     if (this.sessionReplayActions) {
       return this.sessionReplayActions
     }
@@ -994,9 +987,7 @@ export class Lib {
     }
   }
 
-  private async initialiseSessionReplay(
-    options: SessionReplayOptions,
-  ): Promise<SessionReplayActions> {
+  private async initialiseSessionReplay(options: SessionReplayOptions): Promise<SessionReplayActions> {
     if (this.sessionReplayActions) {
       return this.sessionReplayActions
     }
@@ -1040,30 +1031,19 @@ export class Lib {
         ? options.flushIntervalMs
         : DEFAULT_SESSION_REPLAY_FLUSH_INTERVAL
     const maxEventsPerChunk =
-      typeof options.maxEventsPerChunk === 'number' &&
-      options.maxEventsPerChunk > 0
+      typeof options.maxEventsPerChunk === 'number' && options.maxEventsPerChunk > 0
         ? Math.floor(options.maxEventsPerChunk)
         : DEFAULT_SESSION_REPLAY_MAX_EVENTS
     const maxBytesPerChunkCandidate =
-      typeof options.maxBytesPerChunk === 'number'
-        ? Math.floor(options.maxBytesPerChunk)
-        : Number.NaN
+      typeof options.maxBytesPerChunk === 'number' ? Math.floor(options.maxBytesPerChunk) : Number.NaN
     const maxBytesPerChunk =
-      maxBytesPerChunkCandidate >= 1
-        ? maxBytesPerChunkCandidate
-        : DEFAULT_SESSION_REPLAY_MAX_CHUNK_BYTES
+      maxBytesPerChunkCandidate >= 1 ? maxBytesPerChunkCandidate : DEFAULT_SESSION_REPLAY_MAX_CHUNK_BYTES
     const maxBytesPerEventCandidate =
-      typeof options.maxBytesPerEvent === 'number'
-        ? Math.floor(options.maxBytesPerEvent)
-        : Number.NaN
+      typeof options.maxBytesPerEvent === 'number' ? Math.floor(options.maxBytesPerEvent) : Number.NaN
     const maxBytesPerEvent =
-      maxBytesPerEventCandidate >= 1
-        ? maxBytesPerEventCandidate
-        : DEFAULT_SESSION_REPLAY_MAX_EVENT_BYTES
+      maxBytesPerEventCandidate >= 1 ? maxBytesPerEventCandidate : DEFAULT_SESSION_REPLAY_MAX_EVENT_BYTES
     const idleTimeoutMs =
-      typeof options.idleTimeoutMs === 'number' && options.idleTimeoutMs > 0
-        ? options.idleTimeoutMs
-        : null
+      typeof options.idleTimeoutMs === 'number' && options.idleTimeoutMs > 0 ? options.idleTimeoutMs : null
 
     let chunkIndex = started.nextChunkIndex
     let snapshotReseeds = 0
@@ -1085,13 +1065,7 @@ export class Lib {
       flushing = flushing
         .catch(() => undefined)
         .then(async () => {
-          const delivered = await this.sendSessionReplayChunk(
-            replayId,
-            privacy,
-            currentChunkIndex,
-            chunk,
-            useBeacon,
-          )
+          const delivered = await this.sendSessionReplayChunk(replayId, privacy, currentChunkIndex, chunk, useBeacon)
 
           // Losing a full snapshot makes every later event unrenderable, so
           // re-seed the stream instead of recording into the void.
@@ -1132,19 +1106,13 @@ export class Lib {
           return
         }
 
-        if (
-          events.length &&
-          eventsByteLength + eventByteLength > maxBytesPerChunk
-        ) {
+        if (events.length && eventsByteLength + eventByteLength > maxBytesPerChunk) {
           void flush()
         }
 
         events.push(event)
         eventsByteLength += eventByteLength
-        if (
-          events.length >= maxEventsPerChunk ||
-          eventsByteLength >= maxBytesPerChunk
-        ) {
+        if (events.length >= maxEventsPerChunk || eventsByteLength >= maxBytesPerChunk) {
           void flush()
         }
       },
@@ -1193,10 +1161,7 @@ export class Lib {
     window.addEventListener('pagehide', flushOnPageExit)
     document.addEventListener('visibilitychange', flushOnHidden)
 
-    maxDurationTimer = setTimeout(
-      () => void stopSessionReplay(),
-      maxDurationMs,
-    )
+    maxDurationTimer = setTimeout(() => void stopSessionReplay(), maxDurationMs)
 
     if (idleTimeoutMs) {
       SESSION_REPLAY_ACTIVITY_EVENTS.forEach((eventName) => {
@@ -1232,9 +1197,7 @@ export class Lib {
   }
 
   private getSessionReplayPrivacy(privacy: unknown): SessionReplayPrivacy {
-    return SESSION_REPLAY_PRIVACY_VALUES.includes(
-      privacy as SessionReplayPrivacy,
-    )
+    return SESSION_REPLAY_PRIVACY_VALUES.includes(privacy as SessionReplayPrivacy)
       ? (privacy as SessionReplayPrivacy)
       : DEFAULT_SESSION_REPLAY_PRIVACY
   }
@@ -1349,11 +1312,7 @@ export class Lib {
 
   private getSessionReplayUrl(): string {
     const replayOption = this.getSessionReplayPreloadOption()
-    if (
-      replayOption &&
-      typeof replayOption === 'object' &&
-      replayOption.rrwebUrl
-    ) {
+    if (replayOption && typeof replayOption === 'object' && replayOption.rrwebUrl) {
       return replayOption.rrwebUrl
     }
 
@@ -1373,10 +1332,7 @@ export class Lib {
 
     if (trackerScript?.src) {
       const { hostname, pathname } = new URL(trackerScript.src)
-      if (
-        hostname === 'swetrix.org' &&
-        /^\/swetrix(\.min)?\.js$/i.test(pathname)
-      ) {
+      if (hostname === 'swetrix.org' && /^\/swetrix(\.min)?\.js$/i.test(pathname)) {
         return DEFAULT_RRWEB_URL
       }
 
@@ -1466,8 +1422,7 @@ export class Lib {
 
   private async loadSessionReplayRecorder(): Promise<void> {
     const replayOption = this.getSessionReplayPreloadOption()
-    const hasCustomReplayUrl =
-      replayOption && typeof replayOption === 'object' && replayOption.rrwebUrl
+    const hasCustomReplayUrl = replayOption && typeof replayOption === 'object' && replayOption.rrwebUrl
 
     if (hasCustomReplayUrl || this.getTrackerScript()) {
       await this.loadSessionReplayScript(this.getSessionReplayUrl())
@@ -1516,12 +1471,8 @@ export class Lib {
     recordIframes: boolean,
     maskAllText?: boolean,
   ): RrwebRecordOptions {
-    const hasUserSampling =
-      userOptions &&
-      Object.prototype.hasOwnProperty.call(userOptions, 'sampling')
-    const hasUserSlimDOMOptions =
-      userOptions &&
-      Object.prototype.hasOwnProperty.call(userOptions, 'slimDOMOptions')
+    const hasUserSampling = userOptions && Object.prototype.hasOwnProperty.call(userOptions, 'sampling')
+    const hasUserSlimDOMOptions = userOptions && Object.prototype.hasOwnProperty.call(userOptions, 'slimDOMOptions')
     const sampling =
       typeof userOptions?.sampling === 'object' && userOptions.sampling !== null
         ? {
@@ -1532,8 +1483,7 @@ export class Lib {
           ? userOptions?.sampling
           : DEFAULT_SESSION_REPLAY_SAMPLING
     const slimDOMOptions =
-      typeof userOptions?.slimDOMOptions === 'object' &&
-      userOptions.slimDOMOptions !== null
+      typeof userOptions?.slimDOMOptions === 'object' && userOptions.slimDOMOptions !== null
         ? {
             ...DEFAULT_SESSION_REPLAY_SLIM_DOM_OPTIONS,
             ...(userOptions.slimDOMOptions as Record<string, unknown>),
@@ -1553,20 +1503,14 @@ export class Lib {
     }
 
     const maskInputOptions =
-      typeof options.maskInputOptions === 'object' &&
-      options.maskInputOptions !== null
+      typeof options.maskInputOptions === 'object' && options.maskInputOptions !== null
         ? (options.maskInputOptions as Record<string, unknown>)
         : {}
 
     const resolvedPrivacy = this.getSessionReplayPrivacy(privacy)
     const defaultBlockSelector = recordIframes ? undefined : 'iframe'
-    const resolvedMaskAllText =
-      typeof maskAllText === 'boolean'
-        ? maskAllText
-        : resolvedPrivacy === 'total'
-    const textMaskingOptions = resolvedMaskAllText
-      ? { maskTextSelector: '*' }
-      : {}
+    const resolvedMaskAllText = typeof maskAllText === 'boolean' ? maskAllText : resolvedPrivacy === 'total'
+    const textMaskingOptions = resolvedMaskAllText ? { maskTextSelector: '*' } : {}
 
     if (resolvedPrivacy === 'total') {
       return {
@@ -1588,10 +1532,7 @@ export class Lib {
         ...options,
         ...textMaskingOptions,
         maskAllInputs: true,
-        blockSelector: this.mergeSelectors(
-          options.blockSelector,
-          defaultBlockSelector,
-        ),
+        blockSelector: this.mergeSelectors(options.blockSelector, defaultBlockSelector),
         emit,
       }
     }
@@ -1599,10 +1540,7 @@ export class Lib {
     return {
       ...options,
       ...textMaskingOptions,
-      blockSelector: this.mergeSelectors(
-        options.blockSelector,
-        defaultBlockSelector,
-      ),
+      blockSelector: this.mergeSelectors(options.blockSelector, defaultBlockSelector),
       maskInputOptions: {
         ...maskInputOptions,
         password: true,
@@ -1611,10 +1549,7 @@ export class Lib {
     }
   }
 
-  private mergeSelectors(
-    existing: unknown,
-    required?: string,
-  ): string | undefined {
+  private mergeSelectors(existing: unknown, required?: string): string | undefined {
     if (!required) {
       return typeof existing === 'string' ? existing : undefined
     }
@@ -1670,10 +1605,7 @@ export class Lib {
           replayId: unknown
           nextChunkIndex: unknown
         }>
-        const resolvedReplayId =
-          typeof result.replayId === 'string' && result.replayId
-            ? result.replayId
-            : replayId
+        const resolvedReplayId = typeof result.replayId === 'string' && result.replayId ? result.replayId : replayId
         const resolvedChunkIndex =
           typeof result.nextChunkIndex === 'number' &&
           Number.isFinite(result.nextChunkIndex) &&
@@ -1716,23 +1648,16 @@ export class Lib {
     if (useBeacon && typeof navigator.sendBeacon === 'function') {
       // sendBeacon refuses payloads over its ~64 KB quota; fall through to
       // fetch when it does.
-      const sent = navigator.sendBeacon(
-        url,
-        new Blob([payload], { type: 'application/json' }),
-      )
+      const sent = navigator.sendBeacon(url, new Blob([payload], { type: 'application/json' }))
       if (sent) return true
     }
 
     // On the beacon path the page is unloading, so there is no time to retry.
-    const attempts = useBeacon
-      ? 1
-      : SESSION_REPLAY_CHUNK_RETRY_DELAYS_MS.length + 1
+    const attempts = useBeacon ? 1 : SESSION_REPLAY_CHUNK_RETRY_DELAYS_MS.length + 1
 
     for (let attempt = 0; attempt < attempts; attempt++) {
       if (attempt > 0) {
-        await new Promise((resolve) =>
-          setTimeout(resolve, SESSION_REPLAY_CHUNK_RETRY_DELAYS_MS[attempt - 1]),
-        )
+        await new Promise((resolve) => setTimeout(resolve, SESSION_REPLAY_CHUNK_RETRY_DELAYS_MS[attempt - 1]))
       }
 
       try {
@@ -1753,11 +1678,7 @@ export class Lib {
 
         // Client errors (except timeouts and rate limits) won't succeed on
         // retry.
-        if (
-          response.status < 500 &&
-          response.status !== 408 &&
-          response.status !== 429
-        ) {
+        if (response.status < 500 && response.status !== 408 && response.status !== 429) {
           return false
         }
       } catch {}
