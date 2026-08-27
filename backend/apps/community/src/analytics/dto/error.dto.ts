@@ -20,6 +20,8 @@ import {
   transformMetadataJsonPrimitivesToString,
 } from './events.dto'
 
+const MAX_STACK_TRACE_LENGTH = 64_000
+
 export class ErrorDto {
   @ApiProperty({
     example: 'aUn1quEid-3',
@@ -115,11 +117,11 @@ export class ErrorDto {
     example:
       'Error: Malformed input\n    at parseInput (convert.js:12:5)\n    at main (app.js:45:12)',
     description: 'Stack trace of the error',
-    maxLength: 7500,
+    maxLength: MAX_STACK_TRACE_LENGTH,
   })
   @IsOptional()
   @IsString()
-  @MaxLength(7500)
+  @MaxLength(MAX_STACK_TRACE_LENGTH)
   stackTrace?: string
 
   @ApiProperty({

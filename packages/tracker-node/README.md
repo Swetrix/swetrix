@@ -290,7 +290,7 @@ export interface TrackErrorOptions {
   filename?: string | null
 
   /**
-   * Stack trace of the error.
+   * Stack trace of the error, up to 64,000 characters.
    */
   stackTrace?: string | null
 

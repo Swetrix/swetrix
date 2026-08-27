@@ -43,7 +43,7 @@ Each error event includes:
 
 - **Error name and message** — e.g. `TypeError: Cannot read properties of undefined`
 - **File, line, and column** — pinpoints where the error occurred
-- **Stack trace** — the full call stack for debugging
+- **Stack trace** — the captured call stack for debugging, up to 64,000 characters
 - **Page URL** — which page the user was on
 - **Locale and timezone** — user's language and region
 - **Custom metadata** — attach your own context via the `callback` option
@@ -84,7 +84,7 @@ See the full [tracking script reference](/swetrix-js-reference#trackerrors) for 
 Once errors start coming in, the **Errors** tab in your project dashboard gives you:
 
 - **Aggregated error list** — errors grouped by signature with occurrence counts, affected users, and last-seen timestamps
-- **Error details** — full stack traces, metadata, and affected sessions for each error
+- **Error details** — captured stack traces, metadata, and affected sessions for each error
 - **Status management** — mark errors as Resolved; Swetrix auto-detects regressions
 - **Breakdowns** — slice error data by country, browser, OS, device type, and page
 - **Real-time alerts** — get notified via Email, Slack, Discord, or Telegram when new errors appear

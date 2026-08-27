@@ -178,7 +178,7 @@ export interface TrackErrorOptions {
   filename?: string | null
 
   /**
-   * Stack trace of the error.
+   * Stack trace of the error, up to 64,000 characters.
    */
   stackTrace?: string | null
 
@@ -248,7 +248,10 @@ const toStoredProfileId = (profileId: string) => `${USER_PROFILE_PREFIX}${profil
  * @param options LibOptions
  */
 export class Swetrix {
-  constructor(private projectID: string, private options?: LibOptions) {
+  constructor(
+    private projectID: string,
+    private options?: LibOptions,
+  ) {
     this.heartbeat = this.heartbeat.bind(this)
   }
 
