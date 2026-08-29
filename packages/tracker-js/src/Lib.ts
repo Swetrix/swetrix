@@ -1291,6 +1291,10 @@ export class Lib {
       }
     }
 
+    if (evokeCallback) {
+      this.activePage = pvPayload.pg || null
+    }
+
     Object.assign(pvPayload, privateData)
 
     this.sendRequest('', pvPayload)
