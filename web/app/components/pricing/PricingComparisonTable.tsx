@@ -79,11 +79,11 @@ const getCategories = (t: TFunction): FeatureCategory[] => [
         ],
       },
       {
-        label: t('pricing.benefits.unlimitedMembers'),
+        label: t('pricing.comparison.features.teamMembers'),
         values: [
-          { key: 'pricing.comparison.values.unlimited' },
-          { key: 'pricing.comparison.values.unlimited' },
-          { key: 'pricing.comparison.values.unlimited' },
+          { key: 'pricing.comparison.values.teamMembersStandard' },
+          { key: 'pricing.comparison.values.teamMembersPlus' },
+          { key: 'pricing.custom' },
         ],
       },
       {

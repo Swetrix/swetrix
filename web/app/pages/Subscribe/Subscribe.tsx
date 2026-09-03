@@ -1,4 +1,5 @@
 import type { TFunction } from 'i18next'
+import { ArrowUpIcon, CheckCircleIcon } from '@phosphor-icons/react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { useFetcher, useLoaderData, useNavigate } from 'react-router'
@@ -6,6 +7,7 @@ import { toast } from 'sonner'
 
 import {
   PricingInternal,
+  type MarketingPricingContext,
   type MarketingPricingSelection,
 } from '~/components/pricing/MarketingPricing'
 import { usePaddle } from '~/hooks/usePaddle'
@@ -20,11 +22,16 @@ import { useTheme } from '~/providers/ThemeProvider'
 import type { SubscribeLoaderData } from '~/routes/subscribe'
 import type { UserSettingsActionData } from '~/routes/user-settings'
 import Alert from '~/ui/Alert'
+import Button from '~/ui/Button'
 import { FAQ } from '~/ui/FAQ'
 import { Text } from '~/ui/Text'
 import { getRevenueAttribution, trackCustom } from '~/utils/analytics'
 import routes from '~/utils/routes'
 
+import { SubscribeFeatures } from './SubscribeFeatures'
+import { SubscribeIncluded } from './SubscribeIncluded'
+import { SubscribeProof } from './SubscribeProof'
+import { SubscribeRating } from './SubscribeRating'
 import { TrialTimeline } from './TrialTimeline'
 
 type PayLinkResponse = {
@@ -53,10 +60,12 @@ const Subscribe = () => {
   const { theme } = useTheme()
   const { user, loadUser } = useAuth()
   const navigate = useNavigate()
-  const { metainfo } = useLoaderData<SubscribeLoaderData>()
+  const { metainfo, stats } = useLoaderData<SubscribeLoaderData>()
 
   const [selectionLoading, setSelectionLoading] =
     useState<MarketingPricingSelection | null>(null)
+  const [pricingContext, setPricingContext] =
+    useState<MarketingPricingContext | null>(null)
   const [hasCompletedCheckout, setHasCompletedCheckout] = useState(false)
   const checkoutInProgressRef = useRef(false)
 
@@ -240,58 +249,73 @@ const Subscribe = () => {
   }
 
   const faqItems = useMemo(() => {
-    const faqValues = {
-      lowestPlanEventsAmount:
-        EVENT_TIERS['100k'].monthlyEvents.toLocaleString('en-US'),
-      moderatePlanEventsAmount:
-        EVENT_TIERS['500k'].monthlyEvents.toLocaleString('en-US'),
-    }
-
-    const reusedItems = [0, 1, 4].map((idx) => ({
+    return Array.from({ length: 7 }, (_, index) => ({
       question: (
-        <Trans t={t} i18nKey={`main.faq.items.${idx}.q`} values={faqValues} />
+        <Trans
+          t={t}
+          i18nKey={`checkout.faq.items.${index}.q`}
+          values={{ days: TRIAL_DAYS }}
+        />
       ),
       answer: (
-        <Trans t={t} i18nKey={`main.faq.items.${idx}.a`} values={faqValues} />
+        <Trans
+          t={t}
+          i18nKey={`checkout.faq.items.${index}.a`}
+          values={{ days: TRIAL_DAYS }}
+        />
       ),
     }))
-
-    return [
-      {
-        question: <Trans t={t} i18nKey='checkout.faqTrial.q' />,
-        answer: (
-          <Trans
-            t={t}
-            i18nKey='checkout.faqTrial.a'
-            values={{ days: TRIAL_DAYS }}
-          />
-        ),
-      },
-      ...reusedItems,
-    ]
   }, [t])
+
+  const scrollToPricing = () => {
+    trackCustom('SUBSCRIBE_BOTTOM_CTA')
+    const pricing = document.getElementById('start-trial')
+
+    if (!pricing) return
+
+    pricing.focus({ preventScroll: true })
+    pricing.scrollIntoView({
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        ? 'auto'
+        : 'smooth',
+      block: 'start',
+    })
+  }
 
   return (
     <>
       <main className='min-h-min-footer bg-gray-50 pb-16 dark:bg-slate-950'>
-        <div className='mx-auto max-w-3xl px-4 pt-10 text-center sm:px-6 lg:px-8'>
-          <Text
-            as='h1'
-            size='4xl'
-            weight='bold'
-            colour='primary'
-            className='text-balance'
-          >
-            {t('checkout.title')}
-          </Text>
-          <Text
-            as='p'
-            size='lg'
-            colour='secondary'
-            className='mx-auto mt-4 max-w-xl text-pretty'
-          >
-            {t('checkout.subtitle', { days: TRIAL_DAYS })}
-          </Text>
+        <div className='mx-auto max-w-5xl px-4 pt-8 sm:px-6 lg:px-8'>
+          <section className='rounded-2xl bg-white p-5 ring-1 ring-gray-200 sm:p-6 dark:bg-slate-900 dark:ring-white/10'>
+            <div className='flex items-start gap-4'>
+              <span className='grid size-10 shrink-0 place-items-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-400/10 dark:text-emerald-300'>
+                <CheckCircleIcon weight='fill' className='size-5' />
+              </span>
+              <div>
+                <Text as='p' size='xs' weight='semibold' colour='secondary'>
+                  {t('checkout.ready.eyebrow')}
+                </Text>
+                <Text
+                  as='h1'
+                  size='3xl'
+                  weight='bold'
+                  colour='primary'
+                  tracking='tight'
+                  className='mt-1 text-balance sm:text-4xl'
+                >
+                  {t('checkout.ready.title')}
+                </Text>
+                <Text
+                  as='p'
+                  size='base'
+                  colour='secondary'
+                  className='mt-2 max-w-2xl leading-relaxed text-pretty'
+                >
+                  {t('checkout.ready.subtitle', { days: TRIAL_DAYS })}
+                </Text>
+              </div>
+            </div>
+          </section>
         </div>
 
         {hasCompletedCheckout ? (
@@ -300,23 +324,80 @@ const Subscribe = () => {
           </div>
         ) : null}
 
-        <div className='mt-2'>
+        <div
+          id='start-trial'
+          tabIndex={-1}
+          className='scroll-mt-6 outline-none focus-visible:ring-2 focus-visible:ring-slate-900 dark:focus-visible:ring-slate-300'
+        >
           <PricingInternal
             metainfo={metainfo}
             onSelectPlan={handlePlanSelection}
+            onSelectionChange={setPricingContext}
             loadingPlanType={selectionLoading?.planType ?? null}
             disabled={Boolean(selectionLoading) || hasCompletedCheckout}
             showVatNote
           />
         </div>
 
+        <SubscribeRating websiteCount={stats?.projects} />
+
         <TrialTimeline />
 
-        <div className='mx-auto w-full max-w-4xl px-4 pt-10 sm:px-6 lg:px-8'>
-          <Text as='h2' size='2xl' weight='bold'>
-            {t('main.faq.title')}
-          </Text>
-          <FAQ items={faqItems} className='mt-3' defaultOpenFirst />
+        <div className='mx-auto w-full max-w-5xl space-y-16 px-4 pt-16 sm:px-6 sm:pt-20 lg:px-8'>
+          <SubscribeFeatures />
+
+          <SubscribeIncluded
+            monthlyEvents={
+              pricingContext?.monthlyEvents ?? EVENT_TIERS['100k'].monthlyEvents
+            }
+            isCustomEventTier={pricingContext?.isCustomEventTier ?? false}
+          />
+
+          <SubscribeProof />
+
+          <section className='mx-auto max-w-4xl'>
+            <Text as='h2' size='2xl' weight='bold' tracking='tight'>
+              {t('checkout.faq.title')}
+            </Text>
+            <Text
+              as='p'
+              size='base'
+              colour='secondary'
+              className='mt-2 leading-relaxed text-pretty'
+            >
+              {t('checkout.faq.subtitle')}
+            </Text>
+            <FAQ items={faqItems} className='mt-5' defaultOpenFirst />
+          </section>
+
+          <section className='rounded-2xl bg-white px-5 py-8 text-center ring-1 ring-gray-200 sm:px-8 sm:py-10 dark:bg-slate-900 dark:ring-white/10'>
+            <Text
+              as='h2'
+              size='2xl'
+              weight='bold'
+              tracking='tight'
+              className='text-balance'
+            >
+              {t('checkout.finalCta.title')}
+            </Text>
+            <Text
+              as='p'
+              size='sm'
+              colour='secondary'
+              className='mx-auto mt-2 max-w-xl leading-relaxed text-pretty'
+            >
+              {t('checkout.finalCta.subtitle', { days: TRIAL_DAYS })}
+            </Text>
+            <Button
+              type='button'
+              size='lg'
+              onClick={scrollToPricing}
+              className='mt-6 justify-center gap-2'
+            >
+              {t('checkout.finalCta.button')}
+              <ArrowUpIcon weight='bold' className='size-4' />
+            </Button>
+          </section>
         </div>
       </main>
 
