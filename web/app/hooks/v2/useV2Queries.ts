@@ -367,10 +367,16 @@ export const useErrorsListQuery = (
   })
 }
 
-export const useErrorsOverviewQuery = (opts: { enabled?: boolean } = {}) => {
+export const useErrorsOverviewQuery = (
+  opts: { showResolved?: boolean; enabled?: boolean } = {},
+) => {
   const { pid, common } = useV2CommonParams('errors')
   const { timeBucket } = useViewProjectContext()
-  const params = { ...common, timeBucket: timeBucket || undefined }
+  const params = {
+    ...common,
+    timeBucket: timeBucket || undefined,
+    show_resolved: opts.showResolved,
+  }
 
   return useQuery({
     queryKey: ['v2', pid, 'errors', 'overview', params],

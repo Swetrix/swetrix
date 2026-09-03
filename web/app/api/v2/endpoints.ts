@@ -177,7 +177,7 @@ export const getErrorsList = (
 
 export const getErrorsOverview = (
   pid: string,
-  params: Common & { timeBucket?: string },
+  params: Common & { timeBucket?: string; show_resolved?: boolean },
   signal?: AbortSignal,
 ) =>
   fetchV2<Record<string, any>>(

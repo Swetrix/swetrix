@@ -702,7 +702,10 @@ const ErrorsViewInner = () => {
     showResolved,
     enabled: !activeEID,
   })
-  const overviewQuery = useErrorsOverviewQuery({ enabled: !activeEID })
+  const overviewQuery = useErrorsOverviewQuery({
+    showResolved,
+    enabled: !activeEID,
+  })
   const detailsQuery = useErrorDetailsQuery(activeEID)
 
   const errors = useMemo(
