@@ -1397,8 +1397,13 @@ export interface Experiment {
 export async function getExperimentServer(
   request: Request,
   experimentId: string,
+  password?: string,
 ): Promise<ServerFetchResult<Experiment>> {
-  return serverFetch<Experiment>(request, `experiment/${experimentId}`)
+  const headers = password ? { 'x-password': password } : undefined
+
+  return serverFetch<Experiment>(request, `experiment/${experimentId}`, {
+    headers,
+  })
 }
 
 export interface ExperimentVariantResult {
@@ -1451,6 +1456,7 @@ export async function getExperimentResultsServer(
   to = '',
   timezone?: string,
   filters: V2Filter[] = [],
+  password?: string,
 ): Promise<ServerFetchResult<ExperimentResults>> {
   const params = new URLSearchParams({ period, timeBucket })
   if (from) params.append('from', from)
@@ -1461,14 +1467,18 @@ export async function getExperimentResultsServer(
   return serverFetch<ExperimentResults>(
     request,
     `experiment/${experimentId}/results?${params.toString()}`,
+    { headers: password ? { 'x-password': password } : undefined },
   )
 }
 
 export async function getGoalServer(
   request: Request,
   goalId: string,
+  password?: string,
 ): Promise<ServerFetchResult<Goal>> {
-  return serverFetch<Goal>(request, `goal/${goalId}`)
+  return serverFetch<Goal>(request, `goal/${goalId}`, {
+    headers: password ? { 'x-password': password } : undefined,
+  })
 }
 
 // ============================================================================

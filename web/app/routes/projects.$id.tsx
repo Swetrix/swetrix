@@ -1755,6 +1755,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
     // Experiments
     case 'get-project-experiments': {
+      const password = getPassword()
       const take = Number(formData.get('take') || '20')
       const skip = Number(formData.get('skip') || '0')
       const search = formData.get('search')?.toString() || ''
@@ -1770,6 +1771,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
         `experiment/project/${projectId}?${params.toString()}`,
         {
           method: 'GET',
+          headers: password ? { 'x-password': password } : undefined,
         },
       )
 
@@ -1788,9 +1790,11 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
     case 'get-experiment': {
       const experimentId = formData.get('experimentId')?.toString()
+      const password = getPassword()
 
       const result = await serverFetch(request, `experiment/${experimentId}`, {
         method: 'GET',
+        headers: password ? { 'x-password': password } : undefined,
       })
 
       if (result.error) {
@@ -2014,6 +2018,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
     case 'get-experiment-results': {
       const experimentId = formData.get('experimentId')?.toString()
+      const password = getPassword()
       const period = formData.get('period')?.toString() || '7d'
       const timeBucket = formData.get('timeBucket')?.toString() || 'day'
       const fromDate = formData.get('from')?.toString() || ''
@@ -2032,6 +2037,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
         `experiment/${experimentId}/results?${params.toString()}`,
         {
           method: 'GET',
+          headers: password ? { 'x-password': password } : undefined,
         },
       )
 

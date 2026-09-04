@@ -33,7 +33,10 @@ import {
   useViewProjectContext,
   useRefreshTriggers,
 } from '~/pages/Project/View/ViewProject'
-import { useCurrentProject } from '~/providers/CurrentProjectProvider'
+import {
+  useCurrentProject,
+  useProjectPassword,
+} from '~/providers/CurrentProjectProvider'
 import type { ProjectViewActionData } from '~/routes/projects.$id'
 import Button from '~/ui/Button'
 import { Badge } from '~/ui/Badge'
@@ -169,6 +172,7 @@ const ExperimentWinningRail = ({
   filters: V2Filter[]
 }) => {
   const { t } = useTranslation()
+  const projectPassword = useProjectPassword(experiment.pid)
   const {
     data: winningData,
     state: winningState,
@@ -190,6 +194,7 @@ const ExperimentWinningRail = ({
         to,
         timezone: timezone || '',
         filters: filtersPayload,
+        password: projectPassword,
       },
       { method: 'POST' },
     )
@@ -198,6 +203,7 @@ const ExperimentWinningRail = ({
     filtersPayload,
     from,
     period,
+    projectPassword,
     shouldLoadResults,
     submitWinning,
     timeBucket,
@@ -843,6 +849,7 @@ const ExperimentsView = ({
   timezone,
 }: ExperimentsViewProps) => {
   const { id } = useCurrentProject()
+  const projectPassword = useProjectPassword(id)
   const { experimentsRefreshTrigger } = useRefreshTriggers()
   const { filters, timeBucket } = useViewProjectContext()
   const { t } = useTranslation()
@@ -914,12 +921,13 @@ const ExperimentsView = ({
           take: String(take),
           skip: String(skip),
           search: search || '',
+          password: projectPassword,
         },
         { method: 'POST' },
       )
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [listFetcher.submit],
+    [listFetcher.submit, projectPassword],
   )
 
   // Handle list fetcher response

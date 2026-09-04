@@ -12,6 +12,7 @@ import {
   HttpCode,
   HttpStatus,
   ParseIntPipe,
+  Headers,
 } from '@nestjs/common'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
@@ -124,10 +125,11 @@ export class GoalController {
   ) {}
 
   @Get('/:goalId')
-  @Auth()
+  @Auth(false, true)
   async getGoal(
     @CurrentUserId() userId: string,
     @Param('goalId') goalId: string,
+    @Headers() headers: { 'x-password'?: string },
   ) {
     this.logger.log({ userId, goalId }, 'GET /goal/:goalId')
 
@@ -139,7 +141,7 @@ export class GoalController {
 
     const project = await this.projectService.getFullProject(goal.projectId)
 
-    this.projectService.allowedToView(project, userId)
+    this.projectService.allowedToView(project, userId, headers['x-password'])
 
     return {
       ...goal,

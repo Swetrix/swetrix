@@ -71,7 +71,7 @@ export const SubscribeIncluded = ({
       body: t('checkout.included.cards.websites.description'),
       icon: GlobeIcon,
       tint: 'text-cyan-500/[0.12] dark:text-cyan-300/[0.08]',
-      placement: '-left-6 -bottom-9 rotate-6',
+      placement: '-right-6 -bottom-9 rotate-6',
     },
     {
       figure: '10 / 25',
@@ -87,7 +87,7 @@ export const SubscribeIncluded = ({
       body: t('checkout.included.cards.replays.description'),
       icon: MonitorPlayIcon,
       tint: 'text-pink-500/[0.1] dark:text-pink-300/[0.08]',
-      placement: '-left-5 -bottom-9 -rotate-6',
+      placement: '-right-5 -bottom-9 -rotate-6',
     },
   ]
 

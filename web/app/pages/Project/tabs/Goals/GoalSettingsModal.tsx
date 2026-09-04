@@ -205,7 +205,7 @@ const GoalSettingsModal = ({
   isOpen,
   onClose,
   onSuccess,
-  projectId: _projectId,
+  projectId,
   goalId,
   tnMapping,
 }: GoalSettingsModalProps) => {
@@ -261,7 +261,7 @@ const GoalSettingsModal = ({
     if (!goalId) return
     setIsLoading(true)
     try {
-      const goal = await goalProxy.fetchGoal(goalId)
+      const goal = await goalProxy.fetchGoal(goalId, projectId)
       if (!goal) {
         throw new Error('Failed to load goal')
       }

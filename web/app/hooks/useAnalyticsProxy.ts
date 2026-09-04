@@ -395,13 +395,18 @@ export function useExperimentResultsProxy() {
   const [isLoading, setIsLoading] = useState(false)
 
   const fetchResults = useCallback(
-    async (experimentId: string, params: ClientAnalyticsParams) => {
+    async (
+      experimentId: string,
+      params: ClientAnalyticsParams,
+      projectId?: string,
+    ) => {
       setIsLoading(true)
       setError(null)
 
       try {
         const result = await postAnalytics<ExperimentResults>({
           action: 'getExperimentResults',
+          projectId,
           experimentId,
           params,
         })
@@ -426,26 +431,30 @@ export function useExperimentProxy() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
-  const fetchExperiment = useCallback(async (experimentId: string) => {
-    setIsLoading(true)
-    setError(null)
+  const fetchExperiment = useCallback(
+    async (experimentId: string, projectId?: string) => {
+      setIsLoading(true)
+      setError(null)
 
-    try {
-      const result = await postAnalytics<Experiment>({
-        action: 'getExperiment',
-        experimentId,
-        params: {},
-      })
-      setData(result.data)
-      setError(result.error)
-      return result.data
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error')
-      return null
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
+      try {
+        const result = await postAnalytics<Experiment>({
+          action: 'getExperiment',
+          projectId,
+          experimentId,
+          params: {},
+        })
+        setData(result.data)
+        setError(result.error)
+        return result.data
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error')
+        return null
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [],
+  )
 
   return { fetchExperiment, data, error, isLoading }
 }
@@ -455,13 +464,14 @@ export function useGoalProxy() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
-  const fetchGoal = useCallback(async (goalId: string) => {
+  const fetchGoal = useCallback(async (goalId: string, projectId?: string) => {
     setIsLoading(true)
     setError(null)
 
     try {
       const result = await postAnalytics<Goal>({
         action: 'getGoal',
+        projectId,
         goalId,
         params: {},
       })

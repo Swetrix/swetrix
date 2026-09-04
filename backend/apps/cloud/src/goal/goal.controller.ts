@@ -145,6 +145,7 @@ export class GoalController {
   async getGoal(
     @CurrentUserId() userId: string,
     @Param('goalId') goalId: string,
+    @Headers() headers: { 'x-password'?: string },
   ) {
     this.logger.log({ userId, goalId }, 'GET /goal/:goalId')
 
@@ -159,7 +160,7 @@ export class GoalController {
 
     const project = await this.projectService.getFullProject(goal.project.id)
 
-    this.projectService.allowedToView(project, userId)
+    this.projectService.allowedToView(project, userId, headers['x-password'])
 
     return {
       ..._omit(goal, ['project']),
