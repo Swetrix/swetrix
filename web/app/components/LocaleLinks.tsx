@@ -1,7 +1,6 @@
 import _map from 'lodash/map'
-import _some from 'lodash/some'
 import { useMemo } from 'react'
-import { useLocation, type Location } from 'react-router'
+import { useLocation, useMatches, type Location } from 'react-router'
 
 import {
   whitelist,
@@ -9,6 +8,7 @@ import {
   MAIN_URL,
   localisePath,
   stripLangFromPath,
+  isUnlocalisedPath,
 } from '~/lib/constants'
 
 const buildHref = (lang: string, pathname: string, search: string): string => {
@@ -43,20 +43,13 @@ const getAlternateLinks = (location: Location) => {
   }
 }
 
-const NO_ALTERNATE_LINKS = [/^\/blog/i, /^\/glossary/i]
-
-const getShouldBeIgnored = (location: Location) => {
-  const unprefixed = stripLangFromPath(location.pathname)
-  return _some(NO_ALTERNATE_LINKS, (regex) => regex.test(unprefixed))
-}
-
 export const LocaleLinks = () => {
   const location = useLocation()
+  const matches = useMatches()
 
-  const shouldBeIgnored = useMemo(
-    () => getShouldBeIgnored(location),
-    [location],
-  )
+  const shouldBeIgnored =
+    isUnlocalisedPath(stripLangFromPath(location.pathname)) ||
+    matches.some((match) => match.id === 'routes/$')
   const altLinks = useMemo(() => getAlternateLinks(location), [location])
 
   if (shouldBeIgnored) {

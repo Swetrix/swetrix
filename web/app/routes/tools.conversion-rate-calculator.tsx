@@ -14,10 +14,9 @@ import { Text } from '~/ui/Text'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 
 export const meta: MetaFunction = () => {
-  const title =
-    'Free Conversion Rate Calculator - Calculate Your Website Conversion Rate'
+  const title = 'Free Conversion Rate Calculator'
   const description =
-    "Calculate your website's conversion rate instantly. Enter visitors and conversions to get your rate, performance rating, and actionable insights. Free conversion rate calculator for ecommerce, SaaS, and landing pages."
+    'Calculate conversion rate from visitors and conversions, then use the result to evaluate ecommerce, SaaS, and landing-page performance.'
   return [
     ...getTitle(title),
     ...getDescription(description),

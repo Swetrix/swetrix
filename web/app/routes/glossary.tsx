@@ -16,7 +16,7 @@ import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 
 const title = 'Web Analytics Glossary'
 const description =
-  'A clear web analytics glossary for marketers, founders, and developers. Learn common website metrics, traffic sources, attribution terms, privacy concepts, SEO terms, and conversion analytics definitions.'
+  'Understand web analytics metrics, traffic sources, attribution, privacy, SEO, and conversion terms with clear definitions and examples.'
 
 const recommendedSlugs = [
   'web-analytics',

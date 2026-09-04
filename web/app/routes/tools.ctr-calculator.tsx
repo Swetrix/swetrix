@@ -16,7 +16,7 @@ import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 export const meta: MetaFunction = () => {
   const title = 'Free CTR Calculator tool - Calculate your CTR'
   const description =
-    "Use Swetrix's free CTR Calculator to instantly compute click‑through rate from clicks and impressions, learn what a good CTR looks like, and get tips to improve campaign performance—privacy-first and easy to use."
+    'Calculate click-through rate from clicks and impressions, compare CTR, and learn how to measure and improve campaign performance.'
   return [
     ...getTitle(title),
     ...getDescription(description),

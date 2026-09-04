@@ -21,12 +21,12 @@ export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const { t } = useTranslation('common')
 
-  const title = data?.title || 'Blog'
-  const intro = data?.intro || t('description.blog')
+  const title = data?.seoTitle || data?.title || 'Blog'
+  const intro = data?.seoDescription || data?.intro || t('description.blog')
   const ogImageUrl = getOgImageUrl(title, intro)
 
   return [
-    ...getTitle(title),
+    ...getTitle(title, title.length <= 50),
     ...getDescription(intro),
     ...getPreviewImage(ogImageUrl),
   ]

@@ -22,9 +22,9 @@ import { FAQ } from '~/ui/FAQ'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 
 export const meta: MetaFunction = () => {
-  const title = 'Free Sitemap Validator tool - Validate your sitemap.xml'
+  const title = 'Free Sitemap Validator tool'
   const description =
-    'Validate your sitemap.xml for errors, warnings, and SEO best practices. Our free XML Sitemap Validator checks sitemap protocol compliance, URL formatting, required tags, lastmod/date formats, and size limits—so search engines can crawl and index your site correctly.'
+    'Check your sitemap.xml for URL errors, required tags, date formats, protocol compliance, and size limits with this free sitemap validator.'
   return [
     ...getTitle(title),
     ...getDescription(description),

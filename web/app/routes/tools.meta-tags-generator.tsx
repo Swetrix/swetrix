@@ -16,7 +16,7 @@ import Tooltip from '~/ui/Tooltip'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 
 export const meta: MetaFunction = () => {
-  const title = 'Free Meta Tags & Open Graph Generator - Swetrix'
+  const title = 'Free Meta Tags & Open Graph Generator'
   const description =
     'Generate perfect HTML meta tags, Open Graph for Facebook/LinkedIn, and Twitter Cards to make your links look great when shared on social media.'
   return [
@@ -86,7 +86,7 @@ export default function MetaTagsGenerator() {
     description:
       'Cookie-less, open source, and privacy-focused web analytics alternative to Google Analytics.',
     url: 'https://swetrix.com',
-    imageUrl: 'https://swetrix.com/assets/seo/banner.png',
+    imageUrl: 'https://swetrix.com/assets/og_image.png',
     siteName: 'Swetrix',
     twitterHandle: '@Swetrix',
   })

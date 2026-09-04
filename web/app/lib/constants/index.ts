@@ -440,6 +440,8 @@ const UNLOCALISED_PATH_PATTERNS: RegExp[] = [
   /^\/admin(\/|$)/,
   /^\/blog(\/|$)/,
   /^\/glossary(\/|$)/,
+  /^\/comparison(\/|$)/,
+  /^\/(privacy|imprint|security|dpa|cookie-policy|terms|data-policy|how-to-measure-core-web-vitals)(\/|$)/,
   /^\/api(\/|$)/,
   /^\/backend(\/|$)/,
   /^\/_internal_data/,

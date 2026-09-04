@@ -178,6 +178,8 @@ function replaceSwetrixLogo(html: string): string {
 interface GetPost {
   slug: string
   title?: string
+  seoTitle?: string
+  seoDescription?: string
   html: string
   hidden?: boolean
   standalone?: boolean
@@ -310,6 +312,8 @@ export async function getPost(
   return {
     slug,
     title: post.attributes?.title,
+    seoTitle: post.attributes?.seoTitle,
+    seoDescription: post.attributes?.seoDescription,
     html,
     hidden: post.attributes?.hidden,
     intro: post.attributes?.intro,

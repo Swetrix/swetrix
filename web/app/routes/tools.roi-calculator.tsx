@@ -20,7 +20,7 @@ import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 export const meta: MetaFunction = () => {
   const title = 'Free ROI Calculator tool - Calculate your ROI'
   const description =
-    'Free Marketing ROI Calculator: quickly calculate ROAS, ROI, profit, CAC, CPC, CPM, CTR, conversion rate, and break-even ROAS to measure and improve your campaign performance.'
+    'Calculate marketing ROI, ROAS, profit, acquisition cost, and break-even ROAS to understand campaign costs and returns.'
   return [
     ...getTitle(title),
     ...getDescription(description),

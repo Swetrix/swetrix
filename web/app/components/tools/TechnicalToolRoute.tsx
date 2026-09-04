@@ -436,7 +436,7 @@ const TOOL_CONTENT: Record<TechnicalToolSlug, ToolContent> = {
     title: 'DNS Lookup',
     metaTitle: 'Free DNS Lookup Tool - Check DNS Records Online',
     metaDescription:
-      'Check DNS records for any domain, including A, AAAA, MX, NS, TXT, CNAME, CAA, and SOA records. Free DNS lookup tool for website owners, developers, and hosting teams.',
+      'Look up A, AAAA, MX, NS, TXT, CNAME, CAA, and SOA records to inspect a domain’s DNS configuration and diagnose connection problems.',
     description:
       'Look up the public DNS records for any domain and verify where traffic, email, and verification records point.',
     inputLabel: 'Domain',
@@ -490,9 +490,9 @@ const TOOL_CONTENT: Record<TechnicalToolSlug, ToolContent> = {
   },
   'http-headers-checker': {
     title: 'HTTP Headers Checker',
-    metaTitle: 'Free HTTP Headers Checker - Inspect Website Response Headers',
+    metaTitle: 'Free HTTP Headers Checker',
     metaDescription:
-      'Check HTTP response headers for any website. Inspect status codes, cache rules, content type, server headers, HSTS, CSP, X-Frame-Options, and other security headers.',
+      'Inspect a website’s HTTP status, cache rules, content type, HSTS, CSP, and other response headers with this free checker.',
     description:
       'Inspect a website response and see status, timing, cache headers, security headers, and exposed server details.',
     inputLabel: 'Website URL',
@@ -541,7 +541,7 @@ const TOOL_CONTENT: Record<TechnicalToolSlug, ToolContent> = {
   },
   'ssl-certificate-checker': {
     title: 'SSL Certificate Checker',
-    metaTitle: 'Free SSL Certificate Checker - Check HTTPS Expiry and Issuer',
+    metaTitle: 'Free SSL Certificate Checker',
     metaDescription:
       'Check an SSL certificate for any domain. See certificate issuer, subject, SANs, validity dates, expiry countdown, fingerprint, and authorization status.',
     description:
@@ -643,7 +643,7 @@ const TOOL_CONTENT: Record<TechnicalToolSlug, ToolContent> = {
   },
   'cookie-checker': {
     title: 'Cookie Checker',
-    metaTitle: 'Free Cookie Checker - Inspect Website Set-Cookie Headers',
+    metaTitle: 'Free Cookie Checker',
     metaDescription:
       'Check cookies set by a website response. Inspect Set-Cookie headers, Secure, HttpOnly, SameSite, expiry, domain, path, and privacy-related cookie attributes.',
     description:
@@ -694,9 +694,9 @@ const TOOL_CONTENT: Record<TechnicalToolSlug, ToolContent> = {
   },
   'csp-checker': {
     title: 'CSP Checker',
-    metaTitle: 'Free CSP Checker and Generator - Content Security Policy Tool',
+    metaTitle: 'Free CSP Checker and Generator',
     metaDescription:
-      'Check Content-Security-Policy headers and generate a starter CSP for your website. Find missing directives, unsafe-inline, frame-ancestors, base-uri, and security header gaps.',
+      'Check Content-Security-Policy headers for missing or unsafe directives and generate a starter CSP for your website.',
     description:
       'Check a website Content-Security-Policy header and generate a practical starter policy for scripts, styles, images, frames, and connections.',
     inputLabel: 'Website URL',
@@ -745,8 +745,7 @@ const TOOL_CONTENT: Record<TechnicalToolSlug, ToolContent> = {
   },
   'canonical-url-checker': {
     title: 'Canonical URL Checker',
-    metaTitle:
-      'Free Canonical URL Checker - Check Canonical Tags and SEO Signals',
+    metaTitle: 'Free Canonical URL Checker',
     metaDescription:
       'Check canonical tags, page title, meta description, robots directives, og:url, final URL, and common SEO issues for any website page.',
     description:
@@ -797,7 +796,7 @@ const TOOL_CONTENT: Record<TechnicalToolSlug, ToolContent> = {
   },
   'page-size-checker': {
     title: 'Page Size Checker',
-    metaTitle: 'Free Page Size Checker - Estimate Website Page Weight',
+    metaTitle: 'Free Page Size Checker',
     metaDescription:
       'Check website page size, HTML weight, linked resource count, known transfer size, largest assets, and performance budget warnings for any URL.',
     description:
@@ -848,9 +847,9 @@ const TOOL_CONTENT: Record<TechnicalToolSlug, ToolContent> = {
   },
   'indexability-checker': {
     title: 'Indexability Checker',
-    metaTitle: 'Free Indexability Checker - Can Google Index This Page?',
+    metaTitle: 'Free Indexability Checker',
     metaDescription:
-      'Check whether Google can index a page. Audit status code, final URL, robots.txt, meta robots, X-Robots-Tag, canonical URL, title, description, and sitemap hints.',
+      'Check page status, robots.txt, meta robots, X-Robots-Tag, canonicals, and sitemap hints to diagnose Google indexing barriers.',
     description:
       'Audit one URL and answer the practical question: can Google crawl and index this page?',
     inputLabel: 'Page URL',
@@ -894,7 +893,7 @@ const TOOL_CONTENT: Record<TechnicalToolSlug, ToolContent> = {
   },
   'robots-txt-tester': {
     title: 'Robots.txt Tester',
-    metaTitle: 'Free Robots.txt Tester - Check Googlebot and AI Crawler Access',
+    metaTitle: 'Free Robots.txt Tester',
     metaDescription:
       'Test robots.txt rules for a URL path and user agent. Check Googlebot, Bingbot, GPTBot, ChatGPT-User, ClaudeBot, PerplexityBot, and other crawler access.',
     description:
@@ -940,7 +939,7 @@ const TOOL_CONTENT: Record<TechnicalToolSlug, ToolContent> = {
   },
   'broken-link-checker': {
     title: 'Broken Link Checker',
-    metaTitle: 'Free Broken Link Checker - Find 404 and Redirect Issues',
+    metaTitle: 'Free Broken Link Checker',
     metaDescription:
       'Check a page or sitemap for broken links. Find internal and external 404s, 5xx errors, redirects, invalid URLs, and empty anchor text with safe request limits.',
     description:
@@ -986,7 +985,7 @@ const TOOL_CONTENT: Record<TechnicalToolSlug, ToolContent> = {
   },
   'hreflang-checker': {
     title: 'Hreflang Checker',
-    metaTitle: 'Free Hreflang Checker - Validate International SEO Tags',
+    metaTitle: 'Free Hreflang Checker',
     metaDescription:
       'Check hreflang tags for any page. Validate language-region codes, x-default, duplicates, absolute URLs, canonical conflicts, and reciprocal hreflang hints.',
     description:
@@ -1032,7 +1031,7 @@ const TOOL_CONTENT: Record<TechnicalToolSlug, ToolContent> = {
   },
   'serp-snippet-preview': {
     title: 'SERP Snippet Preview',
-    metaTitle: 'Free SERP Snippet Preview - Google Title and Description Tool',
+    metaTitle: 'Free SERP Snippet Preview',
     metaDescription:
       'Preview Google desktop and mobile search snippets. Test SEO titles, meta descriptions, URL display, pixel guidance, character length, and truncation warnings.',
     description:
@@ -1075,9 +1074,9 @@ const TOOL_CONTENT: Record<TechnicalToolSlug, ToolContent> = {
   },
   'on-page-seo-checker': {
     title: 'On-Page SEO Checker',
-    metaTitle: 'Free On-Page SEO Checker - Audit Titles, H1s, Links and Schema',
+    metaTitle: 'Free On-Page SEO Checker',
     metaDescription:
-      'Run a single-page SEO audit. Check title length, meta description, H1 and H2 structure, canonical, robots, word count, image alt text, links, structured data, Open Graph, and text-to-HTML ratio.',
+      'Audit a page’s title, description, headings, canonical, robots, images, links, and structured data with this free on-page SEO checker.',
     description:
       'Scan one page for core on-page SEO signals, content structure, metadata, links, images, and schema presence.',
     inputLabel: 'Page URL',
@@ -1121,7 +1120,7 @@ const TOOL_CONTENT: Record<TechnicalToolSlug, ToolContent> = {
   },
   'image-seo-checker': {
     title: 'Image SEO Checker',
-    metaTitle: 'Free Image SEO Checker - Audit Alt Text, Sizes and Formats',
+    metaTitle: 'Free Image SEO Checker',
     metaDescription:
       'Check images on a page for missing alt text, empty alt text, large known files, missing width and height, lazy loading, modern formats, and largest image URLs.',
     description:
@@ -1167,8 +1166,7 @@ const TOOL_CONTENT: Record<TechnicalToolSlug, ToolContent> = {
   },
   'internal-link-analyzer': {
     title: 'Internal Link Analyzer',
-    metaTitle:
-      'Free Internal Link Analyzer - Audit Anchors and Link Attributes',
+    metaTitle: 'Free Internal Link Analyzer',
     metaDescription:
       'Analyze links on a page. Group internal and external links, anchor text, nofollow, sponsored, ugc, duplicate anchors, fragments, mailto, tel, and empty anchors.',
     description:
@@ -1214,10 +1212,9 @@ const TOOL_CONTENT: Record<TechnicalToolSlug, ToolContent> = {
   },
   'ai-search-llm-crawlability-checker': {
     title: 'AI Search / LLM Crawlability Checker',
-    metaTitle:
-      'Free AI Search Crawlability Checker - Robots.txt, llms.txt and Schema',
+    metaTitle: 'Free AI Search Crawlability Checker',
     metaDescription:
-      'Check AI search and LLM crawlability signals. Audit robots.txt rules for common AI crawlers, llms.txt, llms-full.txt, sitemap, canonical, title, description, and structured data.',
+      'Check robots.txt access for AI crawlers, llms.txt files, sitemap hints, canonicals, and structured data for AI search crawlability.',
     description:
       'Check whether common AI crawlers can access a site and whether machine-readable discovery signals are present.',
     inputLabel: 'Website URL',
@@ -1261,9 +1258,9 @@ const TOOL_CONTENT: Record<TechnicalToolSlug, ToolContent> = {
   },
   'gsc-export-analyzer': {
     title: 'GSC Export Analyzer',
-    metaTitle: 'Free GSC Export Analyzer - Find SEO CTR and Ranking Quick Wins',
+    metaTitle: 'Free GSC Export Analyzer',
     metaDescription:
-      'Upload a Google Search Console CSV export and find high-impression low-CTR opportunities, declining pages, keyword cannibalization candidates, and quick-win pages.',
+      'Analyse a Google Search Console CSV for low-CTR opportunities, declining pages, keyword overlap, and pages close to ranking gains.',
     description:
       'Upload a Search Console CSV export and surface CTR opportunities, declining pages, cannibalization candidates, and quick wins.',
     seoTitle: 'Free Google Search Console Export Analyzer',
@@ -1304,7 +1301,7 @@ const TOOL_CONTENT: Record<TechnicalToolSlug, ToolContent> = {
   },
   'http-status-bulk-checker': {
     title: 'HTTP Status Bulk Checker',
-    metaTitle: 'Free HTTP Status Bulk Checker - Check Multiple URLs Online',
+    metaTitle: 'Free HTTP Status Bulk Checker',
     metaDescription:
       'Paste multiple URLs and check HTTP status codes, final URLs, redirect counts, content types, errors, and CSV output. Safe request limit included.',
     description:
@@ -1350,10 +1347,9 @@ const TOOL_CONTENT: Record<TechnicalToolSlug, ToolContent> = {
   },
   'seo-migration-redirect-validator': {
     title: 'SEO Migration Redirect Validator',
-    metaTitle:
-      'Free SEO Migration Redirect Validator - Check Old to New URL Redirects',
+    metaTitle: 'Free SEO Migration Redirect Validator',
     metaDescription:
-      'Validate SEO migration redirects from old URL to new URL pairs. Check expected final targets, status code type, chain length, query preservation, mismatches, and CSV output.',
+      'Validate old-to-new URL redirects for final targets, status codes, chain length, and query preservation, and export the results as CSV.',
     description:
       'Paste old URL,new URL pairs and verify permanent redirects, final targets, chain length, and query preservation.',
     inputLabel: 'Old URL,new URL pairs',
@@ -1398,7 +1394,7 @@ const TOOL_CONTENT: Record<TechnicalToolSlug, ToolContent> = {
   },
   'uptime-sla-calculator': {
     title: 'Uptime SLA Calculator',
-    metaTitle: 'Free Uptime SLA Calculator - Downtime and Availability Tool',
+    metaTitle: 'Free Uptime SLA Calculator',
     metaDescription:
       'Calculate uptime percentage, downtime allowance, monthly SLA targets, availability from incident minutes, and hosting reliability impact.',
     description:
@@ -1446,10 +1442,9 @@ const TOOL_CONTENT: Record<TechnicalToolSlug, ToolContent> = {
   },
   'website-bandwidth-calculator': {
     title: 'Website Bandwidth Calculator',
-    metaTitle:
-      'Free Website Bandwidth Calculator - Estimate Hosting Traffic Usage',
+    metaTitle: 'Free Website Bandwidth Calculator',
     metaDescription:
-      'Estimate monthly website bandwidth from visits, pages per visit, page weight, cache hit rate, and traffic growth. Useful for hosting, CDN, and analytics planning.',
+      'Estimate monthly website bandwidth from visits, page weight, cache hit rate, and traffic growth to plan hosting and CDN capacity.',
     description:
       'Estimate monthly hosting bandwidth from visits, pages per visit, average page weight, cache hit rate, and expected traffic growth.',
     seoTitle: 'Free Website Bandwidth Calculator',

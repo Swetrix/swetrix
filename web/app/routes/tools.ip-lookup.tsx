@@ -26,9 +26,9 @@ import { cn } from '~/utils/generic'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 
 export const meta: MetaFunction = () => {
-  const title = 'Free IP Address Lookup tool - What is my IP address?'
+  const title = 'Free IP Address Lookup tool'
   const description =
-    'Find your public IP address instantly and look up any IPv4 or IPv6 for detailed geolocation and network data: country, region, city, coordinates, timezone, ISP, organization, connection type, and EU status, plus an interactive map. Free, no registration or limits.'
+    'Find your public IP address or look up an IPv4 or IPv6 address for location, timezone, ISP, and network details on an interactive map.'
   return [
     ...getTitle(title),
     ...getDescription(description),

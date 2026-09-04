@@ -17,6 +17,7 @@ const SLUG_MAP: Record<string, string[]> = {
 
   // API files → flat URLs
   "api/stats": ["statistics-api"],
+  "api/stats-v2": ["statistics-api-v2"],
   "api/events": ["events-api"],
   "api/admin": ["admin-api"],
 
@@ -29,6 +30,7 @@ const SLUG_MAP: Record<string, string[]> = {
   "sitesettings/get-analytics-email-reports": ["get-analytics-email-reports"],
   "sitesettings/reset-sites-data": ["reset-sites-data"],
   "sitesettings/annotations": ["annotations"],
+  "sitesettings/bot-protection": ["bot-protection"],
 
   // Account settings → mixed flat/nested URLs
   "accountsettings/two-factor-authentication": ["settings", "2-factor-authentication"],

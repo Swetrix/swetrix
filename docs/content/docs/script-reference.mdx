@@ -2,6 +2,7 @@
 title: Tracking script reference
 slug: /swetrix-js-reference
 icon: FileCode
+description: "Configure the Swetrix JavaScript tracker to record pageviews, custom events, user properties, and errors on your website."
 ---
 
 The Swetrix.js is a highly customisable tracking script. The following is a reference of all the available functions and options it provides.
@@ -277,7 +278,7 @@ This function takes a payload object with the following fields:
 2. (optional) `message` - error message (e.g. Malformed input)
 3. (optional) `lineno` - on what line in your code did the error occur (e.g. 1520)
 4. (optional) `colno` - on what column in your code did the error occur (e.g. 26)
-5. (optional) `filename` - in what file did the error occur (e.g. https://example.com/broken.js)
+5. (optional) `filename` - in what file did the error occur (e.g. `https://example.com/broken.js`)
 6. (optional) `stackTrace` - the stack trace of the error, up to 64,000 characters (e.g. `Uncaught Error\n    at query (:10:11)\n    at database (:6:5)`)
 7. (optional) `meta` - an object that contains event-related metadata. The values of the object must be a primitive type (string, number, boolean, null) which will be converted to a string, the maximum number of keys allowed is `100` and the total length of the values combined must be less than `2000` characters.
 

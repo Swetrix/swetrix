@@ -631,6 +631,8 @@ interface BlogPostContent {
   body: string
   attributes?: {
     title?: string
+    seoTitle?: string
+    seoDescription?: string
     hidden?: boolean
     intro?: string
     date?: string
