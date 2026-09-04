@@ -3152,6 +3152,7 @@
       },
       "features": {
         "websites": "Websites",
+        "teamMembers": "Team members",
         "realtimeDashboard": "Real-time dashboard",
         "cookieless": "Cookieless tracking",
         "noDataSampling": "No data sampling",
@@ -3172,6 +3173,8 @@
         "unlimited": "Unlimited",
         "websitesStandard": "10",
         "websitesPlus": "100",
+        "teamMembersStandard": "10",
+        "teamMembersPlus": "25",
         "eventsUpTo": "Up to 50M",
         "apiRateStandard": "300 / hour",
         "apiRatePlus": "6,000 / hour"
@@ -3359,12 +3362,138 @@
     "title": "Start your free trial",
     "subtitle": "Try Swetrix free for {{days}} days. Cancel anytime.",
     "successRedirect": "Your checkout is complete. We're updating your subscription and will take you to your dashboard shortly.",
+    "rating": {
+      "ariaLabel": "4.8 out of 5 stars",
+      "score": "4.8/5",
+      "websites": "from {{count}} websites using Swetrix",
+      "websitesFallback": "from thousands of websites using Swetrix"
+    },
     "trial": {
       "today": "Today",
       "step1Label": "Your free trial starts with full access",
       "step2Label": "We'll email you a reminder",
       "step3Label": "Your first payment is taken unless you cancel",
       "footer": "Cancel anytime before the trial ends. We won't charge you before then."
+    },
+    "features": {
+      "title": "Here's what you'll see in Swetrix",
+      "subtitle": "Understand where visitors come from, what slows them down, what breaks and how they move through your website — all from one dashboard.",
+      "cards": {
+        "traffic": {
+          "title": "Understand your traffic",
+          "description": "See where visitors come from, which pages they use, what campaigns work and whether they convert — without digging through layers of reports.",
+          "alt": "Swetrix traffic dashboard with visitor, session and pageview trends"
+        },
+        "performance": {
+          "title": "Find what makes your site slow",
+          "description": "Measure real-user frontend, backend and network timing, then find the exact pages, browsers and regions that need attention.",
+          "alt": "Swetrix performance dashboard with frontend, backend and network timing"
+        },
+        "errors": {
+          "title": "Catch errors before they pile up",
+          "description": "See browser exceptions, stack traces, affected visitors and session context next to the analytics you already check.",
+          "alt": "Swetrix error dashboard with error trends and recent exceptions"
+        },
+        "sessions": {
+          "title": "Watch real visitor journeys",
+          "description": "Follow individual sessions to understand drop-offs, dead ends and unexpected behaviour. Plus plans can play back recorded sessions when recording is enabled.",
+          "alt": "Swetrix session replay timeline"
+        }
+      }
+    },
+    "included": {
+      "title": "What's included",
+      "subtitle": "The event allowance below follows the volume selected above. Standard includes the complete analytics toolkit; Plus raises workspace limits and adds replays and experiments.",
+      "cards": {
+        "events": {
+          "title": "events per month",
+          "description": "Pageviews, custom events, CAPTCHA completions and error events all count toward this shared allowance."
+        },
+        "websites": {
+          "title": "websites on Standard / Plus",
+          "description": "Keep 10 websites on Standard or 100 on Plus, with add-ons available if your portfolio grows."
+        },
+        "members": {
+          "title": "team members on Standard / Plus",
+          "description": "Invite collaborators, assign access and keep everyone in the same workspace without per-seat pricing."
+        },
+        "replays": {
+          "title": "session replays per month on Plus",
+          "description": "The replay allowance scales with your selected event volume. Recording starts only when you enable it."
+        }
+      },
+      "moreTitle": "Also included",
+      "more": {
+        "privacy": "Cookieless analytics and advanced bot filtering",
+        "imports": "Imports from Google Analytics and other platforms",
+        "reports": "Email reports, alerts and notification channels",
+        "api": "REST API, Events API and SDKs",
+        "sharing": "Public and password-protected dashboards",
+        "ownership": "EU-hosted data with full ownership",
+        "funnels": "Funnels, goals and complete user journeys",
+        "seo": "Search and AI referral insights",
+        "revenue": "Revenue attribution through Stripe, Paddle or the API",
+        "experiments": "Feature flags and A/B testing on Plus"
+      }
+    },
+    "testimonials": {
+      "title": "Don't take our word for it",
+      "subtitle": "Teams use Swetrix to get useful answers without handing their visitors over to an advertising platform.",
+      "items": {
+        "alex": {
+          "company": "Casterlabs",
+          "quote": "Swetrix has been a game changer for our analytics. They've always been on top of feature requests and bug reports and have been friendly every step of the way. I can't recommend them enough.",
+          "name": "Alex Bowles",
+          "role": "Co-founder of Casterlabs"
+        },
+        "alper": {
+          "company": "Phalcode",
+          "quote": "I was confused by Google Analytics so much that I was getting zero actionable insights. Swetrix changed everything — clean dashboard, instant understanding of user behavior, and features that actually matter. Finally, analytics that help me make better decisions instead of irritating me.",
+          "name": "Alper Alkan",
+          "role": "Co-founder of Phalcode"
+        }
+      },
+      "communityProof": "{{count}} websites understand their visitors with Swetrix",
+      "communityProofFallback": "Thousands of websites understand their visitors with Swetrix"
+    },
+    "faq": {
+      "title": "Questions before you start",
+      "subtitle": "The practical details that matter when you put real traffic through Swetrix.",
+      "items": [
+        {
+          "q": "What happens during my {{days}}-day trial?",
+          "a": "Your trial starts as soon as checkout finishes. You can connect your real website and use the Swetrix dashboard immediately. We'll email you two days before the first payment; cancel before the trial ends and you won't be charged."
+        },
+        {
+          "q": "What counts toward my monthly event limit?",
+          "a": "Pageviews, custom events, CAPTCHA completions and error events count toward the shared monthly allowance. Session replays have a separate quota on Plus plans."
+        },
+        {
+          "q": "Should I choose Standard or Plus?",
+          "a": "Choose Standard for the core analytics suite, including traffic, funnels, performance monitoring, error tracking, reports and API access. Choose Plus if you also need session replays, feature flags, A/B testing, higher workspace limits or priority support."
+        },
+        {
+          "q": "What happens if I exceed my event limit?",
+          "a": "Swetrix keeps collecting your data. We'll notify you as you approach the limit, and you can move to a higher event tier to keep full access to your statistics. Occasional small traffic spikes do not immediately lock your dashboard."
+        },
+        {
+          "q": "Can I change my plan or cancel?",
+          "a": "Yes. You can change or cancel your plan from account settings. Paid plan changes are prorated, and cancelling before the trial ends prevents the first charge."
+        },
+        {
+          "q": "Can I bring my existing analytics data?",
+          "a": "Yes. Swetrix can import historical data from Google Analytics, Plausible, Fathom, Umami, Simple Analytics and other supported platforms."
+        },
+        {
+          "q": "Will I need a cookie banner?",
+          "a": "Swetrix is cookieless by default and does not use persistent cross-site identifiers. Many websites can therefore use it without analytics consent banners, but your exact obligations still depend on your configuration and local rules."
+        }
+      ]
+    },
+    "finalCta": {
+      "title": "Ready to understand what your visitors are doing?",
+      "subtitle": "Choose a plan and use Swetrix with your real traffic for {{days}} days. You won't be charged today, and you can cancel before the trial ends.",
+      "button": "Choose your plan"
     },
     "faqTrial": {
       "q": "What happens when my trial ends?",

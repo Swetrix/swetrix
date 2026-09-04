@@ -3152,6 +3152,7 @@
       },
       "features": {
         "websites": "Strony internetowe",
+        "teamMembers": "Członkowie zespołu",
         "realtimeDashboard": "Dashboard w czasie rzeczywistym",
         "cookieless": "Śledzenie bez plików cookie",
         "noDataSampling": "Brak próbkowania danych",
@@ -3172,6 +3173,8 @@
         "unlimited": "Bez limitu",
         "websitesStandard": "10",
         "websitesPlus": "100",
+        "teamMembersStandard": "10",
+        "teamMembersPlus": "25",
         "eventsUpTo": "Do 50 mln",
         "apiRateStandard": "300 / godzinę",
         "apiRatePlus": "6000 / godzinę"
@@ -3359,12 +3362,138 @@
     "title": "Rozpocznij bezpłatny okres próbny",
     "subtitle": "Wypróbuj Swetrix za darmo przez {{days}} dni. Anuluj w dowolnym momencie.",
     "successRedirect": "Twój proces zakupu został zakończony. Aktualizujemy Twoją subskrypcję i wkrótce przeniesiemy Cię do panelu.",
+    "rating": {
+      "ariaLabel": "4,8 na 5 gwiazdek",
+      "score": "4,8/5",
+      "websites": "od {{count}} stron internetowych korzystających z Swetrix",
+      "websitesFallback": "z tysięcy stron internetowych korzystających z Swetrix"
+    },
     "trial": {
       "today": "Dzisiaj",
       "step1Label": "Twój bezpłatny okres próbny rozpoczyna się od pełnego dostępu",
       "step2Label": "Wyślemy Ci przypomnienie e-mailem",
       "step3Label": "Twoja pierwsza płatność zostanie pobrana, chyba że anulujesz",
       "footer": "Anuluj w dowolnym momencie przed zakończeniem okresu próbnego. Nie obciążymy Cię opłatą wcześniej."
+    },
+    "features": {
+      "title": "Oto, co zobaczysz w Swetrix",
+      "subtitle": "Zrozum skąd pochodzą odwiedzający, co ich spowalnia, co się psuje i jak poruszają się po Twojej witrynie — wszystko z jednego pulpitu nawigacyjnego.",
+      "cards": {
+        "traffic": {
+          "title": "Zrozum swój ruch",
+          "description": "Zobacz, skąd pochodzą odwiedzający, z jakich stron korzystają, jakie kampanie działają i czy konwertują — bez konieczności przebijania się przez warstwy raportów.",
+          "alt": "Pulpit nawigacyjny ruchu Swetrix z trendami odwiedzających, sesji i odsłon"
+        },
+        "performance": {
+          "title": "Dowiedz się, co spowalnia Twoją witrynę",
+          "description": "Zmierz czas interakcji na frontendzie, backendzie i sieci rzeczywistego użytkownika, a następnie znajdź dokładne strony, przeglądarki i regiony, które wymagają uwagi.",
+          "alt": "Pulpit nawigacyjny wydajności Swetrix z czasem po stronie frontendu, backendu i sieci"
+        },
+        "errors": {
+          "title": "Wychwytuj błędy zanim się nagromadzą",
+          "description": "Zobacz wyjątki przeglądarki, ślady stosu, dotkniętych odwiedzających i kontekst sesji tuż obok statystyk, które już sprawdzasz.",
+          "alt": "Pulpit nawigacyjny błędów Swetrix z trendami i najnowszymi wyjątkami"
+        },
+        "sessions": {
+          "title": "Obserwuj rzeczywiste podróże odwiedzających",
+          "description": "Śledź poszczególne sesje, aby zrozumieć porzucenia, ślepe zaułki i nieoczekiwane zachowania. Plany Plus umożliwiają odtwarzanie nagranych sesji, jeśli włączono nagrywanie.",
+          "alt": "Oś czasu powtórek sesji Swetrix"
+        }
+      }
+    },
+    "included": {
+      "title": "Co jest wliczone",
+      "subtitle": "Poniższy limit zdarzeń zależy od objętości wybranej powyżej. Plan Standard obejmuje kompletny zestaw narzędzi analitycznych; Plus zwiększa limity obszarów roboczych oraz dodaje powtórki i eksperymenty.",
+      "cards": {
+        "events": {
+          "title": "zdarzeń na miesiąc",
+          "description": "Odsłony, zdarzenia niestandardowe, wypełnienia CAPTCHA i zdarzenia błędów wliczają się do tego wspólnego limitu."
+        },
+        "websites": {
+          "title": "strony internetowe w planie Standard / Plus",
+          "description": "Utrzymaj 10 stron w planie Standard lub 100 w planie Plus, z dostępnymi dodatkami, jeśli Twoje portfolio się rozrośnie."
+        },
+        "members": {
+          "title": "członkowie zespołu w planie Standard / Plus",
+          "description": "Zaproś współpracowników, przydziel dostępy i trzymaj wszystkich w tym samym obszarze roboczym bez opłat za stanowisko."
+        },
+        "replays": {
+          "title": "nagrania sesji miesięcznie w planie Plus",
+          "description": "Limit nagrań skaluje się z wybranym wolumenem zdarzeń. Nagrywanie rozpoczyna się dopiero, gdy je włączysz."
+        }
+      },
+      "moreTitle": "Również w zestawie",
+      "more": {
+        "privacy": "Analityka bez plików cookie i zaawansowane filtrowanie botów",
+        "imports": "Importy z Google Analytics i innych platform",
+        "reports": "Raporty e-mail, powiadomienia i kanały alertów",
+        "api": "REST API, Events API i pakiety SDK",
+        "sharing": "Publiczne i chronione hasłem dashboardy",
+        "ownership": "Dane hostowane w UE z pełną własnością",
+        "funnels": "Lejki, cele i kompletne ścieżki użytkowników",
+        "seo": "Wyszukiwania i dane z poleceń AI",
+        "revenue": "Atrybucja przychodów przez Stripe, Paddle lub API",
+        "experiments": "Flagi funkcji i testy A/B w planie Plus"
+      }
+    },
+    "testimonials": {
+      "title": "Nie wierz nam na słowo",
+      "subtitle": "Zespoły używają Swetrix, aby uzyskać przydatne odpowiedzi bez przekazywania swoich odwiedzających platformom reklamowym.",
+      "items": {
+        "alex": {
+          "company": "Casterlabs",
+          "quote": "Swetrix okazał się przełomem w naszej analityce. Zawsze byli na bieżąco z prośbami o nowe funkcje i raportami o błędach, a także zawsze byli przyjaźni na każdym kroku. Zdecydowanie ich polecam.",
+          "name": "Alex Bowles",
+          "role": "Współzałożyciel Casterlabs"
+        },
+        "alper": {
+          "company": "Phalcode",
+          "quote": "Google Analytics tak mnie zdezorientowało, że nie otrzymywałem żadnych wniosków gotowych do wdrożenia. Swetrix zmienił wszystko — przejrzysty dashboard, natychmiastowe zrozumienie zachowań użytkowników i funkcje, które faktycznie mają znaczenie. W końcu analityka, która pomaga mi podejmować lepsze decyzje, zamiast mnie irytować.",
+          "name": "Alper Alkan",
+          "role": "Współzałożyciel Phalcode"
+        }
+      },
+      "communityProof": "{{count}} stron internetowych rozumie swoich odwiedzających dzięki Swetrix",
+      "communityProofFallback": "Tysiące stron internetowych rozumie swoich odwiedzających dzięki Swetrix"
+    },
+    "faq": {
+      "title": "Pytania przed rozpoczęciem",
+      "subtitle": "Praktyczne szczegóły, które mają znaczenie, gdy przyprowadzasz rzeczywisty ruch przez Swetrix.",
+      "items": [
+        {
+          "q": "Co się dzieje podczas mojego {{days}}-dniowego okresu próbnego?",
+          "a": "Twój okres próbny rozpoczyna się natychmiast po zakończeniu transakcji. Możesz podłączyć swoją prawdziwą stronę internetową i od razu zacząć korzystać z panelu Swetrix. Wyślemy Ci e-mail na dwa dni przed pierwszą płatnością; anuluj przed zakończeniem okresu próbnego, a nie poniesiesz żadnych opłat."
+        },
+        {
+          "q": "Co wlicza się do mojego miesięcznego limitu zdarzeń?",
+          "a": "Odsłony, zdarzenia niestandardowe, rozwiązania CAPTCHA oraz zdarzenia błędów wliczają się do wspólnego miesięcznego limitu. Powtórki sesji mają osobną pulę w planach Plus."
+        },
+        {
+          "q": "Czy powinienem wybrać plan Standard czy Plus?",
+          "a": "Wybierz plan Standard dla podstawowego pakietu analitycznego, w tym ruchu, lejków, monitorowania wydajności, śledzenia błędów, raportów i dostępu do API. Wybierz plan Plus, jeśli potrzebujesz również powtórek sesji, flag funkcji, testów A/B, wyższych limitów w przestrzeni roboczej lub priorytetowego wsparcia."
+        },
+        {
+          "q": "Co się stanie, jeśli przekroczę mój limit zdarzeń?",
+          "a": "Swetrix nadal zbiera Twoje dane. Powiadomimy Cię, gdy będziesz zbliżać się do limitu, a Ty będziesz mógł przejść na wyższy próg zdarzeń, aby zachować pełny dostęp do swoich statystyk. Sporadyczne małe skoki ruchu nie powodują natychmiastowego zablokowania panelu."
+        },
+        {
+          "q": "Czy mogę zmienić mój plan lub go anulować?",
+          "a": "Tak. Możesz zmienić lub anulować swój plan w ustawieniach konta. Zmiany w płatnych planach są rozliczane proporcjonalnie, a anulowanie przed zakończeniem okresu próbnego zapobiega pobraniu pierwszej opłaty."
+        },
+        {
+          "q": "Czy mogę zaimportować moje obecne dane analityczne?",
+          "a": "Tak. Swetrix może importować dane historyczne z Google Analytics, Plausible, Fathom, Umami, Simple Analytics i innych obsługiwanych platform."
+        },
+        {
+          "q": "Czy będę potrzebować banera cookies?",
+          "a": "Swetrix z założenia nie korzysta z plików cookie i nie używa trwałych identyfikatorów śledzących między witrynami. Wiele stron może z niego korzystać bez banerów zgody na analitykę, jednak Twoje dokładne obowiązki nadal zależą od Twojej konfiguracji i lokalnych przepisów."
+        }
+      ]
+    },
+    "finalCta": {
+      "title": "Gotowy, by zrozumieć, co robią Twoi odwiedzający?",
+      "subtitle": "Wybierz plan i używaj Swetrix z rzeczywistym ruchem przez {{days}} dni. Dziś nie poniesiesz żadnych opłat i możesz anulować w każdej chwili przed zakończeniem okresu próbnego.",
+      "button": "Wybierz swój plan"
     },
     "faqTrial": {
       "q": "Co się stanie po zakończeniu okresu próbnego?",

@@ -3152,6 +3152,7 @@
       },
       "features": {
         "websites": "Websites",
+        "teamMembers": "Teammitglieder",
         "realtimeDashboard": "Echtzeit-Dashboard",
         "cookieless": "Cookieless Tracking",
         "noDataSampling": "Kein Data-Sampling",
@@ -3172,6 +3173,8 @@
         "unlimited": "Unbegrenzt",
         "websitesStandard": "10",
         "websitesPlus": "100",
+        "teamMembersStandard": "10",
+        "teamMembersPlus": "25",
         "eventsUpTo": "Bis zu 50 Mio.",
         "apiRateStandard": "300 / Stunde",
         "apiRatePlus": "6.000 / Stunde"
@@ -3359,12 +3362,138 @@
     "title": "Starten Sie Ihre kostenlose Testversion",
     "subtitle": "Testen Sie Swetrix {{days}} Tage lang kostenlos. Jederzeit kündbar.",
     "successRedirect": "Ihre Kaufabwicklung ist abgeschlossen. Wir aktualisieren Ihr Abonnement und leiten Sie in Kürze zu Ihrem Dashboard weiter.",
+    "rating": {
+      "ariaLabel": "4,8 von 5 Sternen",
+      "score": "4,8/5",
+      "websites": "von {{count}} Websites, die Swetrix nutzen",
+      "websitesFallback": "von Tausenden Websites, die Swetrix nutzen"
+    },
     "trial": {
       "today": "Heute",
       "step1Label": "Ihre kostenlose Testphase beginnt mit vollem Zugriff",
       "step2Label": "Wir senden Ihnen eine Erinnerung per E-Mail",
       "step3Label": "Ihre erste Zahlung wird eingezogen, es sei denn, Sie kündigen",
       "footer": "Kündigen Sie jederzeit, bevor die Testphase endet. Wir berechnen Ihnen vorher nichts."
+    },
+    "features": {
+      "title": "Das erwartet Sie bei Swetrix",
+      "subtitle": "Verstehen Sie, woher Ihre Besucher kommen, was sie verlangsamt, was nicht funktioniert und wie sie sich auf Ihrer Website bewegen — alles in einem Dashboard.",
+      "cards": {
+        "traffic": {
+          "title": "Verstehen Sie Ihren Traffic",
+          "description": "Sehen Sie, woher Besucher kommen, welche Seiten sie nutzen, welche Kampagnen funktionieren und ob sie konvertieren — ohne sich durch unzählige Berichte zu graben.",
+          "alt": "Swetrix Traffic-Dashboard mit Besucher-, Sitzungs- und Seitenaufruf-Trends"
+        },
+        "performance": {
+          "title": "Finden Sie heraus, was Ihre Website verlangsamt",
+          "description": "Messen Sie Frontend-, Backend- und Netzwerk-Ladezeiten bei echten Nutzern und finden Sie die genauen Seiten, Browser und Regionen, die optimiert werden müssen.",
+          "alt": "Swetrix Performance-Dashboard mit Frontend-, Backend- und Netzwerk-Ladezeiten"
+        },
+        "errors": {
+          "title": "Fangen Sie Fehler ab, bevor sie sich häufen",
+          "description": "Sehen Sie Browserausnahmen, Stack-Traces, betroffene Besucher und Sitzungskontext direkt neben den Analytics, die Sie ohnehin prüfen.",
+          "alt": "Swetrix Fehler-Dashboard mit Fehlertrends und aktuellen Ausnahmen"
+        },
+        "sessions": {
+          "title": "Beobachten Sie echte Besucher-Journeys",
+          "description": "Verfolgen Sie einzelne Sitzungen, um Absprünge, Sackgassen und unerwartetes Verhalten zu verstehen. Plus-Tarife können aufgezeichnete Sitzungen abspielen, wenn die Aufzeichnung aktiviert ist.",
+          "alt": "Swetrix Session-Replay-Timeline"
+        }
+      }
+    },
+    "included": {
+      "title": "Was enthalten ist",
+      "subtitle": "Das untenstehende Event-Kontingent richtet sich nach dem oben ausgewählten Volumen. Standard beinhaltet das komplette Analytics-Toolkit; Plus erhöht die Workspace-Limits und fügt Replays und Experimente hinzu.",
+      "cards": {
+        "events": {
+          "title": "Events pro Monat",
+          "description": "Seitenaufrufe, benutzerdefinierte Events, CAPTCHA-Abschlüsse und Fehlerereignisse zählen alle zu diesem gemeinsamen Kontingent."
+        },
+        "websites": {
+          "title": "Websites auf Standard / Plus",
+          "description": "Behalten Sie 10 Websites auf Standard oder 100 auf Plus, mit verfügbaren Add-ons, falls Ihr Portfolio wächst."
+        },
+        "members": {
+          "title": "Teammitglieder auf Standard / Plus",
+          "description": "Laden Sie Mitarbeiter ein, weisen Sie Zugriffsrechte zu und behalten Sie alle im selben Workspace, ohne Pro-Nutzer-Preise."
+        },
+        "replays": {
+          "title": "Session-Replays pro Monat auf Plus",
+          "description": "Das Replay-Kontingent skaliert mit dem ausgewählten Event-Volumen. Die Aufzeichnung beginnt erst, wenn Sie sie aktivieren."
+        }
+      },
+      "moreTitle": "Außerdem enthalten",
+      "more": {
+        "privacy": "Cookieless Analytics und erweiterte Bot-Filterung",
+        "imports": "Importe von Google Analytics und anderen Plattformen",
+        "reports": "E-Mail-Berichte, Alarme und Benachrichtigungskanäle",
+        "api": "REST API, Events API und SDKs",
+        "sharing": "Öffentliche und passwortgeschützte Dashboards",
+        "ownership": "In der EU gehostete Daten mit vollem Eigentumsrecht",
+        "funnels": "Funnels, Ziele und vollständige User Journeys",
+        "seo": "Einblicke in Such- und KI-Referrals",
+        "revenue": "Umsatzzuordnung über Stripe, Paddle oder die API",
+        "experiments": "Feature-Flags und A/B-Testing auf Plus"
+      }
+    },
+    "testimonials": {
+      "title": "Verlassen Sie sich nicht nur auf unser Wort",
+      "subtitle": "Teams nutzen Swetrix, um nützliche Antworten zu erhalten, ohne ihre Besucher an eine Werbeplattform zu übergeben.",
+      "items": {
+        "alex": {
+          "company": "Casterlabs",
+          "quote": "Swetrix war ein echter Gamechanger für unsere Analytics. Sie haben immer sofort auf Feature-Anfragen und Fehlerberichte reagiert und waren stets freundlich. Ich kann sie nur wärmstens empfehlen.",
+          "name": "Alex Bowles",
+          "role": "Mitgründer von Casterlabs"
+        },
+        "alper": {
+          "company": "Phalcode",
+          "quote": "Ich war von Google Analytics so verwirrt, dass ich null verwertbare Erkenntnisse daraus ziehen konnte. Swetrix hat alles verändert – ein aufgeräumtes Dashboard, sofortiges Verständnis des Nutzerverhaltens und Funktionen, die wirklich wichtig sind. Endlich Analytics, die mir helfen, bessere Entscheidungen zu treffen, anstatt mich zu irritieren.",
+          "name": "Alper Alkan",
+          "role": "Mitgründer von Phalcode"
+        }
+      },
+      "communityProof": "{{count}} Websites verstehen ihre Besucher mit Swetrix",
+      "communityProofFallback": "Tausende von Websites verstehen ihre Besucher mit Swetrix"
+    },
+    "faq": {
+      "title": "Fragen, bevor Sie starten",
+      "subtitle": "Die praktischen Details, die zählen, wenn Sie echten Traffic über Swetrix leiten.",
+      "items": [
+        {
+          "q": "Was passiert während meiner {{days}}-tägigen Testversion?",
+          "a": "Ihre Testversion beginnt, sobald der Bestellvorgang abgeschlossen ist. Sie können Ihre echte Website verbinden und das Swetrix-Dashboard sofort nutzen. Wir werden Sie zwei Tage vor der ersten Zahlung per E-Mail benachrichtigen; kündigen Sie vor Ende der Testphase und es wird Ihnen nichts berechnet."
+        },
+        {
+          "q": "Was wird auf mein monatliches Event-Limit angerechnet?",
+          "a": "Seitenaufrufe, benutzerdefinierte Events, CAPTCHA-Abschlüsse und Fehler-Events werden auf das gemeinsame monatliche Kontingent angerechnet. Sitzungsaufzeichnungen haben in Plus-Tarifen eine separate Quote."
+        },
+        {
+          "q": "Sollte ich Standard oder Plus wählen?",
+          "a": "Wählen Sie Standard für die Kern-Analytics-Suite, einschließlich Traffic, Funnels, Performance-Monitoring, Fehler-Tracking, Berichte und API-Zugriff. Wählen Sie Plus, wenn Sie zusätzlich Sitzungsaufzeichnungen, Feature-Flags, A/B-Tests, höhere Workspace-Limits oder Priority-Support benötigen."
+        },
+        {
+          "q": "Was passiert, wenn ich mein Event-Limit überschreite?",
+          "a": "Swetrix sammelt Ihre Daten weiterhin. Wir benachrichtigen Sie, sobald Sie sich dem Limit nähern, und Sie können in eine höhere Event-Stufe wechseln, um weiterhin vollen Zugriff auf Ihre Statistiken zu haben. Gelegentliche kleine Traffic-Spitzen sperren Ihr Dashboard nicht sofort."
+        },
+        {
+          "q": "Kann ich meinen Tarif ändern oder kündigen?",
+          "a": "Ja. Sie können Ihren Tarif in den Kontoeinstellungen ändern oder kündigen. Änderungen bei kostenpflichtigen Tarifen werden anteilig berechnet, und eine Kündigung vor Ende der Testversion verhindert die erste Abbuchung."
+        },
+        {
+          "q": "Kann ich meine bestehenden Analytics-Daten mitbringen?",
+          "a": "Ja. Swetrix kann historische Daten aus Google Analytics, Plausible, Fathom, Umami, Simple Analytics und anderen unterstützten Plattformen importieren."
+        },
+        {
+          "q": "Benötige ich ein Cookie-Banner?",
+          "a": "Swetrix ist standardmäßig cookielos und verwendet keine dauerhaften seitenübergreifenden Kennungen. Viele Websites können es daher ohne Analytics-Einwilligungsbanner verwenden, aber Ihre genauen Verpflichtungen hängen weiterhin von Ihrer Konfiguration und den lokalen Vorschriften ab."
+        }
+      ]
+    },
+    "finalCta": {
+      "title": "Sind Sie bereit zu verstehen, was Ihre Besucher tun?",
+      "subtitle": "Wählen Sie einen Tarif und nutzen Sie Swetrix {{days}} Tage lang mit Ihrem echten Traffic. Ihnen wird heute nichts berechnet, und Sie können vor Ende der Testversion kündigen.",
+      "button": "Wählen Sie Ihren Tarif"
     },
     "faqTrial": {
       "q": "Was passiert, wenn meine Testphase endet?",

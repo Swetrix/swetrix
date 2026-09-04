@@ -387,6 +387,7 @@ export async function action({ request }: ActionFunctionArgs) {
           formatDateForBackend(params.to) || '',
           params.timezone,
           params.filters || [],
+          password || undefined,
         )
         return data<ProxyResponse<ExperimentResults>>({
           data: result.data,
@@ -405,7 +406,11 @@ export async function action({ request }: ActionFunctionArgs) {
             { status: 400 },
           )
         }
-        const result = await getExperimentServer(request, body.experimentId)
+        const result = await getExperimentServer(
+          request,
+          body.experimentId,
+          password || undefined,
+        )
         return data<ProxyResponse<Experiment>>({
           data: result.data,
           error: result.error
@@ -423,7 +428,11 @@ export async function action({ request }: ActionFunctionArgs) {
             { status: 400 },
           )
         }
-        const result = await getGoalServer(request, body.goalId)
+        const result = await getGoalServer(
+          request,
+          body.goalId,
+          password || undefined,
+        )
         return data<ProxyResponse<Goal>>({
           data: result.data,
           error: result.error

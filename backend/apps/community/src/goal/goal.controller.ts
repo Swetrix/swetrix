@@ -12,6 +12,7 @@ import {
   HttpCode,
   HttpStatus,
   ParseIntPipe,
+  Headers,
 } from '@nestjs/common'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
@@ -124,10 +125,11 @@ export class GoalController {
   ) {}
 
   @Get('/:goalId')
-  @Auth()
+  @Auth(false, true)
   async getGoal(
     @CurrentUserId() userId: string,
     @Param('goalId') goalId: string,
+    @Headers() headers: { 'x-password'?: string },
   ) {
     this.logger.log({ userId, goalId }, 'GET /goal/:goalId')
 
@@ -139,7 +141,7 @@ export class GoalController {
 
     const project = await this.projectService.getFullProject(goal.projectId)
 
-    this.projectService.allowedToView(project, userId)
+    this.projectService.allowedToView(project, userId, headers['x-password'])
 
     return {
       ...goal,
@@ -148,10 +150,11 @@ export class GoalController {
   }
 
   @Get('/project/:projectId')
-  @Auth()
+  @Auth(false, true)
   async getProjectGoals(
     @CurrentUserId() userId: string,
     @Param('projectId') projectId: string,
+    @Headers() headers: { 'x-password'?: string },
     @Query('take', new ParseIntPipe({ optional: true })) take?: number,
     @Query('skip', new ParseIntPipe({ optional: true })) skip?: number,
     @Query('search') search?: string,
@@ -167,7 +170,7 @@ export class GoalController {
       throw new NotFoundException('Project not found')
     }
 
-    this.projectService.allowedToView(project, userId)
+    this.projectService.allowedToView(project, userId, headers['x-password'])
 
     const { take: safeTake, skip: safeSkip } = clampPagination(take, skip)
 

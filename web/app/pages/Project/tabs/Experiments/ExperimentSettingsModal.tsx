@@ -159,7 +159,10 @@ const ExperimentSettingsModal = ({
     setIsPlanningTouched(false)
     setIsLoading(true)
     try {
-      const experiment = await experimentProxy.fetchExperiment(experimentId)
+      const experiment = await experimentProxy.fetchExperiment(
+        experimentId,
+        projectId,
+      )
       if (!experiment) {
         throw new Error('Failed to load experiment')
       }
