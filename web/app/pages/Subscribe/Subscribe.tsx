@@ -330,7 +330,7 @@ const Subscribe = () => {
 
         <TrialTimeline />
 
-        <div className='mx-auto w-full max-w-5xl space-y-16 px-4 pt-16 sm:px-6 sm:pt-20 lg:px-8'>
+        <div className='mx-auto w-full max-w-4xl space-y-16 px-4 pt-16 sm:px-6 sm:pt-20 lg:px-8'>
           <SubscribeFeatures />
 
           <SubscribeIncluded
@@ -343,17 +343,19 @@ const Subscribe = () => {
           <SubscribeProof websiteCount={stats?.projects} />
 
           <section className='mx-auto max-w-4xl'>
-            <Text as='h2' size='2xl' weight='bold' tracking='tight'>
-              {t('checkout.faq.title')}
-            </Text>
-            <Text
-              as='p'
-              size='base'
-              colour='secondary'
-              className='mt-2 leading-relaxed text-pretty'
-            >
-              {t('checkout.faq.subtitle')}
-            </Text>
+            <div className='mx-auto max-w-2xl text-center'>
+              <Text as='h2' size='2xl' weight='bold' tracking='tight'>
+                {t('checkout.faq.title')}
+              </Text>
+              <Text
+                as='p'
+                size='base'
+                colour='secondary'
+                className='mx-auto mt-2 leading-relaxed text-pretty'
+              >
+                {t('checkout.faq.subtitle')}
+              </Text>
+            </div>
             <FAQ items={faqItems} className='mt-5' defaultOpenFirst />
           </section>
 

@@ -58,7 +58,7 @@ export const SubscribeProof = ({
 
   return (
     <section>
-      <div className='max-w-2xl'>
+      <div className='mx-auto max-w-2xl text-center'>
         <Text as='h2' size='2xl' weight='bold' tracking='tight'>
           {t('checkout.testimonials.title')}
         </Text>
@@ -66,7 +66,7 @@ export const SubscribeProof = ({
           as='p'
           size='base'
           colour='secondary'
-          className='mt-2 leading-relaxed text-pretty'
+          className='mx-auto mt-2 leading-relaxed text-pretty'
         >
           {t('checkout.testimonials.subtitle')}
         </Text>
@@ -105,7 +105,7 @@ export const SubscribeProof = ({
             <blockquote className='relative mt-4 flex-1'>
               <Text
                 as='p'
-                size='lg'
+                size='base'
                 colour='primary'
                 className='leading-relaxed text-pretty'
               >

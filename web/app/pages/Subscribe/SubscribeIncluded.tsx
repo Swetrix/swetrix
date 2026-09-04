@@ -93,7 +93,7 @@ export const SubscribeIncluded = ({
 
   return (
     <section>
-      <div className='max-w-2xl'>
+      <div className='mx-auto max-w-2xl text-center'>
         <Text as='h2' size='2xl' weight='bold' tracking='tight'>
           {t('checkout.included.title')}
         </Text>
@@ -101,7 +101,7 @@ export const SubscribeIncluded = ({
           as='p'
           size='base'
           colour='secondary'
-          className='mt-2 max-w-2xl leading-relaxed text-pretty'
+          className='mx-auto mt-2 max-w-2xl leading-relaxed text-pretty'
         >
           {t('checkout.included.subtitle')}
         </Text>

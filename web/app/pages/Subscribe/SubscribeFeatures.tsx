@@ -6,7 +6,6 @@ import { Text } from '~/ui/Text'
 
 interface FeatureCard {
   key: 'traffic' | 'performance' | 'errors' | 'sessions'
-  number: string
   videoLight: string
   videoDark: string
   posterLight: string
@@ -16,7 +15,6 @@ interface FeatureCard {
 const FEATURES: FeatureCard[] = [
   {
     key: 'traffic',
-    number: '01',
     videoLight: '/assets/onboarding/traffic-light.mp4',
     videoDark: '/assets/onboarding/traffic-dark-2.mp4',
     posterLight: '/assets/screenshot_light.png',
@@ -24,7 +22,6 @@ const FEATURES: FeatureCard[] = [
   },
   {
     key: 'performance',
-    number: '02',
     videoLight: '/assets/onboarding/performance-light.mp4',
     videoDark: '/assets/onboarding/performance-dark.mp4',
     posterLight: '/assets/screenshot_perf_light.png',
@@ -32,7 +29,6 @@ const FEATURES: FeatureCard[] = [
   },
   {
     key: 'errors',
-    number: '03',
     videoLight: '/assets/onboarding/errors-light.mp4',
     videoDark: '/assets/onboarding/errors-dark.mp4',
     posterLight: '/assets/screenshot_errors_light.png',
@@ -40,7 +36,6 @@ const FEATURES: FeatureCard[] = [
   },
   {
     key: 'sessions',
-    number: '04',
     videoLight: '/assets/onboarding/sessions-light.mp4',
     videoDark: '/assets/onboarding/sessions-dark.mp4',
     posterLight: '/assets/screenshot_light.png',
@@ -94,7 +89,7 @@ export const SubscribeFeatures = () => {
 
   return (
     <section>
-      <div className='max-w-2xl'>
+      <div className='mx-auto max-w-2xl text-center'>
         <Text as='h2' size='2xl' weight='bold' tracking='tight'>
           {t('checkout.features.title')}
         </Text>
@@ -102,7 +97,7 @@ export const SubscribeFeatures = () => {
           as='p'
           size='base'
           colour='secondary'
-          className='mt-2 max-w-2xl leading-relaxed text-pretty'
+          className='mx-auto mt-2 max-w-2xl leading-relaxed text-pretty'
         >
           {t('checkout.features.subtitle')}
         </Text>
@@ -128,24 +123,7 @@ export const SubscribeFeatures = () => {
                 label={label}
               />
               <div className='p-5 sm:p-6'>
-                <Text
-                  as='p'
-                  size='xs'
-                  weight='semibold'
-                  colour='secondary'
-                  className='tracking-wider'
-                >
-                  {t('checkout.features.cardLabel', {
-                    number: feature.number,
-                  })}
-                </Text>
-                <Text
-                  as='h3'
-                  size='lg'
-                  weight='semibold'
-                  tracking='tight'
-                  className='mt-1'
-                >
+                <Text as='h3' size='lg' weight='semibold' tracking='tight'>
                   {t(`checkout.features.cards.${feature.key}.title`)}
                 </Text>
                 <Text
