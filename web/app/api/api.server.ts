@@ -1277,6 +1277,7 @@ export async function getProjectGoalsServer(
   take = 20,
   skip = 0,
   search?: string,
+  password?: string,
 ): Promise<ServerFetchResult<GoalsResponse>> {
   const params = new URLSearchParams({
     take: String(take),
@@ -1290,6 +1291,7 @@ export async function getProjectGoalsServer(
   return serverFetch<GoalsResponse>(
     request,
     `goal/project/${projectId}?${params.toString()}`,
+    { headers: password ? { 'x-password': password } : undefined },
   )
 }
 

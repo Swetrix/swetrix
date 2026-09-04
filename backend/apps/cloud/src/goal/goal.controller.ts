@@ -175,6 +175,7 @@ export class GoalController {
   async getProjectGoals(
     @CurrentUserId() userId: string,
     @Param('projectId') projectId: string,
+    @Headers() headers: { 'x-password'?: string },
     @Query('take', new ParseIntPipe({ optional: true })) take?: number,
     @Query('skip', new ParseIntPipe({ optional: true })) skip?: number,
     @Query('search') search?: string,
@@ -190,7 +191,7 @@ export class GoalController {
       throw new NotFoundException('Project not found')
     }
 
-    this.projectService.allowedToView(project, userId)
+    this.projectService.allowedToView(project, userId, headers['x-password'])
 
     const { take: safeTake, skip: safeSkip } = clampPagination(take, skip)
 

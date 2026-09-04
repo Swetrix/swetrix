@@ -1060,7 +1060,7 @@ const ExperimentsView = ({
   useEffect(() => {
     loadExperiments(DEFAULT_EXPERIMENTS_TAKE, 0, true, filterQuery || undefined)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [projectPassword])
 
   useEffect(() => {
     if (experimentsRefreshTrigger > 0) {

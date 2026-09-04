@@ -535,9 +535,14 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
         (res) => res.data,
       )
     } else if (tab === PROJECT_TABS.goals) {
-      goalsData = getProjectGoalsServer(request, projectId).then(
-        (res) => res.data,
-      )
+      goalsData = getProjectGoalsServer(
+        request,
+        projectId,
+        undefined,
+        undefined,
+        undefined,
+        password || undefined,
+      ).then((res) => res.data)
     }
 
     const importRange = computeDateRangeForPeriod(period, from, to)
@@ -2056,6 +2061,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
     // Goals (getters)
     case 'get-project-goals': {
+      const password = getPassword()
       const take = Number(formData.get('take') || '20')
       const skip = Number(formData.get('skip') || '0')
       const search = formData.get('search')?.toString() || ''
@@ -2071,6 +2077,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
         `goal/project/${projectId}?${params.toString()}`,
         {
           method: 'GET',
+          headers: password ? { 'x-password': password } : undefined,
         },
       )
 
@@ -2089,9 +2096,11 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
     case 'get-goal': {
       const goalId = formData.get('goalId')?.toString()
+      const password = getPassword()
 
       const result = await serverFetch(request, `goal/${goalId}`, {
         method: 'GET',
+        headers: password ? { 'x-password': password } : undefined,
       })
 
       if (result.error) {

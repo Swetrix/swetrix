@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { useInViewOnce } from '~/hooks/useInViewOnce'
 import { useTheme } from '~/providers/ThemeProvider'
 import { Text } from '~/ui/Text'
 
@@ -53,9 +54,24 @@ const FeatureVideo = ({
   label: string
 }) => {
   const [failed, setFailed] = useState(false)
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(true)
+  const { ref, hasBeenInView } = useInViewOnce()
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const updateReducedMotion = () =>
+      setPrefersReducedMotion(mediaQuery.matches)
+    updateReducedMotion()
+    mediaQuery.addEventListener('change', updateReducedMotion)
+
+    return () => mediaQuery.removeEventListener('change', updateReducedMotion)
+  }, [])
 
   return (
-    <div className='relative aspect-video overflow-hidden bg-gray-100 dark:bg-slate-950'>
+    <div
+      ref={ref}
+      className='relative aspect-video overflow-hidden bg-gray-100 dark:bg-slate-950'
+    >
       <img
         src={poster}
         alt={failed ? label : ''}
@@ -64,7 +80,7 @@ const FeatureVideo = ({
         loading='lazy'
         className='absolute inset-0 h-full w-full object-cover object-top'
       />
-      {!failed ? (
+      {!failed && hasBeenInView && !prefersReducedMotion ? (
         <video
           autoPlay
           loop
