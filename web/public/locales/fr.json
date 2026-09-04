@@ -3152,6 +3152,7 @@
       },
       "features": {
         "websites": "Sites web",
+        "teamMembers": "Membres de l'équipe",
         "realtimeDashboard": "Tableau de bord en temps réel",
         "cookieless": "Suivi sans cookies",
         "noDataSampling": "Aucun échantillonnage de données",
@@ -3172,6 +3173,8 @@
         "unlimited": "Illimité",
         "websitesStandard": "10",
         "websitesPlus": "100",
+        "teamMembersStandard": "10",
+        "teamMembersPlus": "25",
         "eventsUpTo": "Jusqu'à 50M",
         "apiRateStandard": "300 / heure",
         "apiRatePlus": "6 000 / heure"
@@ -3359,12 +3362,138 @@
     "title": "Commencez votre essai gratuit",
     "subtitle": "Essayez Swetrix gratuitement pendant {{days}} jours. Annulez à tout moment.",
     "successRedirect": "Votre paiement est terminé. Nous mettons à jour votre abonnement et vous redirigerons vers votre tableau de bord sous peu.",
+    "rating": {
+      "ariaLabel": "4,8 étoiles sur 5",
+      "score": "4,8/5",
+      "websites": "de {{count}} sites web utilisant Swetrix",
+      "websitesFallback": "de milliers de sites web utilisant Swetrix"
+    },
     "trial": {
       "today": "Aujourd'hui",
       "step1Label": "Votre essai gratuit commence avec un accès complet",
       "step2Label": "Nous vous enverrons un rappel par e-mail",
       "step3Label": "Votre premier paiement sera prélevé sauf si vous annulez",
       "footer": "Annulez à tout moment avant la fin de l'essai. Nous ne vous facturerons pas avant."
+    },
+    "features": {
+      "title": "Voici ce que vous verrez dans Swetrix",
+      "subtitle": "Comprenez d'où viennent les visiteurs, ce qui les ralentit, ce qui plante et comment ils naviguent sur votre site web — le tout depuis un seul tableau de bord.",
+      "cards": {
+        "traffic": {
+          "title": "Comprenez votre trafic",
+          "description": "Voyez d'où viennent les visiteurs, quelles pages ils utilisent, quelles campagnes fonctionnent et s'ils convertissent — sans avoir à fouiller dans des dizaines de rapports.",
+          "alt": "Tableau de bord de trafic Swetrix avec les tendances des visiteurs, des sessions et des pages vues"
+        },
+        "performance": {
+          "title": "Découvrez ce qui ralentit votre site",
+          "description": "Mesurez les temps frontend, backend et réseau des utilisateurs réels, puis trouvez les pages, navigateurs et régions exacts qui nécessitent votre attention.",
+          "alt": "Tableau de bord de performance Swetrix avec les temps frontend, backend et réseau"
+        },
+        "errors": {
+          "title": "Détectez les erreurs avant qu'elles ne s'accumulent",
+          "description": "Consultez les exceptions de navigateur, les stack traces, les visiteurs affectés et le contexte de session à côté des analyses que vous vérifiez déjà.",
+          "alt": "Tableau de bord d'erreurs Swetrix avec les tendances d'erreurs et les exceptions récentes"
+        },
+        "sessions": {
+          "title": "Observez les parcours réels des visiteurs",
+          "description": "Suivez des sessions individuelles pour comprendre les abandons, les impasses et les comportements inattendus. Les forfaits Plus permettent de rejouer les sessions enregistrées lorsque l'enregistrement est activé.",
+          "alt": "Chronologie de relecture de session Swetrix"
+        }
+      }
+    },
+    "included": {
+      "title": "Ce qui est inclus",
+      "subtitle": "Le quota d'événements ci-dessous correspond au volume sélectionné ci-dessus. Standard inclut la boîte à outils d'analyse complète ; Plus augmente les limites de l'espace de travail et ajoute les relectures et les expériences.",
+      "cards": {
+        "events": {
+          "title": "événements par mois",
+          "description": "Les pages vues, les événements personnalisés, les résolutions de CAPTCHA et les événements d'erreur comptent tous dans ce quota partagé."
+        },
+        "websites": {
+          "title": "sites web sur Standard / Plus",
+          "description": "Gérez 10 sites web sur Standard ou 100 sur Plus, avec des extensions disponibles si votre portefeuille s'agrandit."
+        },
+        "members": {
+          "title": "membres d'équipe sur Standard / Plus",
+          "description": "Invitez des collaborateurs, attribuez des accès et gardez tout le monde dans le même espace de travail sans tarification par siège."
+        },
+        "replays": {
+          "title": "rediffusions de sessions par mois sur Plus",
+          "description": "Le volume de rediffusions s'adapte à votre volume d'événements sélectionné. L'enregistrement ne commence que lorsque vous l'activez."
+        }
+      },
+      "moreTitle": "Également inclus",
+      "more": {
+        "privacy": "Analytique sans cookies et filtrage avancé des bots",
+        "imports": "Importations depuis Google Analytics et d'autres plateformes",
+        "reports": "Rapports par e-mail, alertes et canaux de notification",
+        "api": "API REST, API d'Événements et SDKs",
+        "sharing": "Tableaux de bord publics et protégés par mot de passe",
+        "ownership": "Données hébergées dans l'UE avec propriété totale",
+        "funnels": "Entonnoirs, objectifs et parcours utilisateurs complets",
+        "seo": "Recherche et insights de référencement IA",
+        "revenue": "Attribution des revenus via Stripe, Paddle ou l'API",
+        "experiments": "Drapeaux de fonctionnalités et tests A/B sur Plus"
+      }
+    },
+    "testimonials": {
+      "title": "Ne nous croyez pas sur parole",
+      "subtitle": "Les équipes utilisent Swetrix pour obtenir des réponses utiles sans livrer leurs visiteurs à une plateforme publicitaire.",
+      "items": {
+        "alex": {
+          "company": "Casterlabs",
+          "quote": "Swetrix a changé la donne pour nos analyses. Ils ont toujours été au top sur les demandes de fonctionnalités et les rapports de bugs, et ont été sympathiques tout au long du processus. Je ne peux pas les recommander assez.",
+          "name": "Alex Bowles",
+          "role": "Co-fondateur de Casterlabs"
+        },
+        "alper": {
+          "company": "Phalcode",
+          "quote": "Google Analytics m'a tellement confus que je n'obtenais aucun insight actionnable. Swetrix a tout changé — tableau de bord épuré, compréhension instantanée du comportement des utilisateurs et des fonctionnalités qui comptent vraiment. Enfin, des analyses qui m'aident à prendre de meilleures décisions au lieu de m'irriter.",
+          "name": "Alper Alkan",
+          "role": "Co-fondateur de Phalcode"
+        }
+      },
+      "communityProof": "{{count}} sites Web comprennent leurs visiteurs avec Swetrix",
+      "communityProofFallback": "Des milliers de sites Web comprennent leurs visiteurs avec Swetrix"
+    },
+    "faq": {
+      "title": "Questions avant de commencer",
+      "subtitle": "Les détails pratiques qui comptent lorsque vous analysez votre vrai trafic avec Swetrix.",
+      "items": [
+        {
+          "q": "Que se passe-t-il pendant ma période d'essai de {{days}} jours ?",
+          "a": "Votre essai commence dès que vous terminez la commande. Vous pouvez connecter votre site Web et utiliser le tableau de bord Swetrix immédiatement. Nous vous enverrons un e-mail deux jours avant le premier paiement ; annulez avant la fin de la période d'essai et vous ne serez pas facturé."
+        },
+        {
+          "q": "Qu'est-ce qui compte dans ma limite d'événements mensuelle ?",
+          "a": "Les pages vues, les événements personnalisés, les résolutions de CAPTCHA et les événements d'erreur comptent dans le quota mensuel partagé. Les rediffusions de sessions ont un quota séparé sur les forfaits Plus."
+        },
+        {
+          "q": "Dois-je choisir Standard ou Plus ?",
+          "a": "Choisissez Standard pour la suite d'analyses de base, comprenant le trafic, les entonnoirs, le suivi des performances, le suivi des erreurs, les rapports et l'accès à l'API. Choisissez Plus si vous avez également besoin de rediffusions de session, d'indicateurs de fonctionnalités, de tests A/B, de limites d'espace de travail plus élevées ou d'un support prioritaire."
+        },
+        {
+          "q": "Que se passe-t-il si je dépasse ma limite d'événements ?",
+          "a": "Swetrix continue de collecter vos données. Nous vous avertirons lorsque vous approcherez de la limite, et vous pourrez passer à un niveau d'événements supérieur pour conserver un accès complet à vos statistiques. Les pics de trafic occasionnels et limités ne verrouillent pas immédiatement votre tableau de bord."
+        },
+        {
+          "q": "Puis-je modifier mon forfait ou annuler ?",
+          "a": "Oui. Vous pouvez modifier ou annuler votre forfait depuis les paramètres de votre compte. Les changements de forfaits payants sont calculés au prorata, et une annulation avant la fin de la période d'essai empêche la première facturation."
+        },
+        {
+          "q": "Puis-je importer mes données d'analyse existantes ?",
+          "a": "Oui. Swetrix peut importer l'historique de données depuis Google Analytics, Plausible, Fathom, Umami, Simple Analytics et d'autres plateformes prises en charge."
+        },
+        {
+          "q": "Aurais-je besoin d'une bannière de cookies ?",
+          "a": "Swetrix est sans cookies par défaut et n'utilise pas d'identifiants persistants intersites. De nombreux sites Web peuvent donc l'utiliser sans bannière de consentement, mais vos obligations exactes dépendent toujours de votre configuration et des règles locales."
+        }
+      ]
+    },
+    "finalCta": {
+      "title": "Prêt à comprendre ce que font vos visiteurs ?",
+      "subtitle": "Choisissez un forfait et utilisez Swetrix avec votre vrai trafic pendant {{days}} jours. Vous ne serez pas facturé aujourd'hui et vous pourrez annuler avant la fin de la période d'essai.",
+      "button": "Choisir mon forfait"
     },
     "faqTrial": {
       "q": "Que se passe-t-il à la fin de mon essai ?",

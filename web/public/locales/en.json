@@ -3378,7 +3378,6 @@
     "features": {
       "title": "Here's what you'll see in Swetrix",
       "subtitle": "Understand where visitors come from, what slows them down, what breaks and how they move through your website — all from one dashboard.",
-      "cardLabel": "VIEW {{number}}",
       "cards": {
         "traffic": {
           "title": "Understand your traffic",
@@ -3430,9 +3429,9 @@
         "reports": "Email reports, alerts and notification channels",
         "api": "REST API, Events API and SDKs",
         "sharing": "Public and password-protected dashboards",
-        "ownership": "Open-source code and a self-hosted Community Edition",
+        "ownership": "EU-hosted data with full ownership",
         "funnels": "Funnels, goals and complete user journeys",
-        "seo": "Search and AI referral insights through Google Search Console",
+        "seo": "Search and AI referral insights",
         "revenue": "Revenue attribution through Stripe, Paddle or the API",
         "experiments": "Feature flags and A/B testing on Plus"
       }
