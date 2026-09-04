@@ -1,5 +1,5 @@
 import type { TFunction } from 'i18next'
-import { ArrowUpIcon, CheckCircleIcon } from '@phosphor-icons/react'
+import { ArrowUpIcon } from '@phosphor-icons/react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { useFetcher, useLoaderData, useNavigate } from 'react-router'
@@ -285,37 +285,24 @@ const Subscribe = () => {
   return (
     <>
       <main className='min-h-min-footer bg-gray-50 pb-16 dark:bg-slate-950'>
-        <div className='mx-auto max-w-5xl px-4 pt-8 sm:px-6 lg:px-8'>
-          <section className='rounded-2xl bg-white p-5 ring-1 ring-gray-200 sm:p-6 dark:bg-slate-900 dark:ring-white/10'>
-            <div className='flex items-start gap-4'>
-              <span className='grid size-10 shrink-0 place-items-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-400/10 dark:text-emerald-300'>
-                <CheckCircleIcon weight='fill' className='size-5' />
-              </span>
-              <div>
-                <Text as='p' size='xs' weight='semibold' colour='secondary'>
-                  {t('checkout.ready.eyebrow')}
-                </Text>
-                <Text
-                  as='h1'
-                  size='3xl'
-                  weight='bold'
-                  colour='primary'
-                  tracking='tight'
-                  className='mt-1 text-balance sm:text-4xl'
-                >
-                  {t('checkout.ready.title')}
-                </Text>
-                <Text
-                  as='p'
-                  size='base'
-                  colour='secondary'
-                  className='mt-2 max-w-2xl leading-relaxed text-pretty'
-                >
-                  {t('checkout.ready.subtitle', { days: TRIAL_DAYS })}
-                </Text>
-              </div>
-            </div>
-          </section>
+        <div className='mx-auto max-w-3xl px-4 pt-10 text-center sm:px-6 lg:px-8'>
+          <Text
+            as='h1'
+            size='4xl'
+            weight='bold'
+            colour='primary'
+            className='text-balance'
+          >
+            {t('checkout.title')}
+          </Text>
+          <Text
+            as='p'
+            size='lg'
+            colour='secondary'
+            className='mx-auto mt-4 max-w-xl text-pretty'
+          >
+            {t('checkout.subtitle', { days: TRIAL_DAYS })}
+          </Text>
         </div>
 
         {hasCompletedCheckout ? (
@@ -353,7 +340,7 @@ const Subscribe = () => {
             isCustomEventTier={pricingContext?.isCustomEventTier ?? false}
           />
 
-          <SubscribeProof />
+          <SubscribeProof websiteCount={stats?.projects} />
 
           <section className='mx-auto max-w-4xl'>
             <Text as='h2' size='2xl' weight='bold' tracking='tight'>

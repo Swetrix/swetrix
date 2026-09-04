@@ -1,4 +1,4 @@
-import { QuotesIcon } from '@phosphor-icons/react'
+import { QuotesIcon, StarIcon } from '@phosphor-icons/react'
 import { useTranslation } from 'react-i18next'
 
 import { useTheme } from '~/providers/ThemeProvider'
@@ -12,6 +12,7 @@ const TESTIMONIALS = [
     logoDark: '/assets/users/casterlabs-dark.svg',
     logoWidth: 157,
     logoHeight: 48,
+    logoClassName: 'h-9 w-[8.5rem]',
   },
   {
     key: 'alper',
@@ -20,11 +21,39 @@ const TESTIMONIALS = [
     logoDark: '/assets/users/phalcode-dark.svg',
     logoWidth: 200,
     logoHeight: 32,
+    logoClassName: 'h-6 w-[8.5rem]',
   },
 ] as const
 
-export const SubscribeProof = () => {
-  const { t } = useTranslation('common')
+const REVIEWERS = [
+  { name: 'Luke', image: '/assets/small-testimonials/luke.jpg' },
+  { name: 'Alex', image: '/assets/small-testimonials/alex.jpg' },
+  { name: 'Artur', image: '/assets/small-testimonials/artur.jpg' },
+  { name: 'Alper', image: '/assets/small-testimonials/alper.jpg' },
+  { name: 'Andrii', image: '/assets/small-testimonials/andrii.jpg' },
+]
+
+const Stars = ({ large = false }: { large?: boolean }) => (
+  <div className='flex items-center gap-0.5 text-amber-500' aria-hidden='true'>
+    {Array.from({ length: 5 }).map((_, index) => (
+      <StarIcon
+        key={index}
+        weight='fill'
+        className={large ? 'size-5' : 'size-4'}
+      />
+    ))}
+  </div>
+)
+
+export const SubscribeProof = ({
+  websiteCount,
+}: {
+  websiteCount?: number | null
+}) => {
+  const {
+    t,
+    i18n: { language },
+  } = useTranslation('common')
   const { theme } = useTheme()
 
   return (
@@ -54,17 +83,26 @@ export const SubscribeProof = () => {
               weight='fill'
               className='pointer-events-none absolute -top-5 -right-3 size-28 rotate-6 text-indigo-500/[0.07] dark:text-indigo-300/[0.06]'
             />
-            <img
-              src={
-                theme === 'dark' ? testimonial.logoDark : testimonial.logoLight
-              }
-              alt={t(`checkout.testimonials.items.${testimonial.key}.company`)}
-              width={testimonial.logoWidth}
-              height={testimonial.logoHeight}
-              loading='lazy'
-              className='relative h-8 w-auto self-start object-contain object-left'
-            />
-            <blockquote className='relative mt-8 flex-1'>
+            <div className='relative flex h-9 items-center'>
+              <img
+                src={
+                  theme === 'dark'
+                    ? testimonial.logoDark
+                    : testimonial.logoLight
+                }
+                alt={t(
+                  `checkout.testimonials.items.${testimonial.key}.company`,
+                )}
+                width={testimonial.logoWidth}
+                height={testimonial.logoHeight}
+                loading='lazy'
+                className={`object-contain object-left ${testimonial.logoClassName}`}
+              />
+            </div>
+            <div className='relative mt-7'>
+              <Stars />
+            </div>
+            <blockquote className='relative mt-4 flex-1'>
               <Text
                 as='p'
                 size='lg'
@@ -96,6 +134,36 @@ export const SubscribeProof = () => {
             </figcaption>
           </figure>
         ))}
+      </div>
+
+      <div className='mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row sm:gap-6'>
+        <div className='flex -space-x-4 overflow-hidden' aria-hidden='true'>
+          {REVIEWERS.map((reviewer) => (
+            <div
+              key={reviewer.name}
+              className='relative inline-flex size-12 overflow-hidden rounded-full border-4 border-gray-50 dark:border-slate-950'
+            >
+              <img
+                src={reviewer.image}
+                alt=''
+                width={48}
+                height={48}
+                loading='lazy'
+                className='object-cover'
+              />
+            </div>
+          ))}
+        </div>
+        <div className='flex flex-col items-center gap-1 sm:items-start'>
+          <Stars large />
+          <Text as='p' size='base' colour='secondary'>
+            {websiteCount != null
+              ? t('checkout.testimonials.communityProof', {
+                  count: websiteCount.toLocaleString(language),
+                })
+              : t('checkout.testimonials.communityProofFallback')}
+          </Text>
+        </div>
       </div>
     </section>
   )

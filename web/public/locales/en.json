@@ -3362,17 +3362,11 @@
     "title": "Start your free trial",
     "subtitle": "Try Swetrix free for {{days}} days. Cancel anytime.",
     "successRedirect": "Your checkout is complete. We're updating your subscription and will take you to your dashboard shortly.",
-    "ready": {
-      "eyebrow": "Setup complete",
-      "title": "Your analytics workspace is ready",
-      "subtitle": "Your first project is set up. Choose a plan and use Swetrix with your real traffic free for {{days}} days."
-    },
     "rating": {
-      "ariaLabel": "Swetrix is rated 4.3 out of 5 on G2",
-      "score": "4.3/5 on G2",
-      "reviews": "14 reviews",
-      "websites": "{{count}} websites added to Swetrix",
-      "websitesFallback": "Thousands of websites added to Swetrix"
+      "ariaLabel": "4.8 out of 5 stars",
+      "score": "4.8/5",
+      "websites": "from {{count}} websites using Swetrix",
+      "websitesFallback": "from thousands of websites using Swetrix"
     },
     "trial": {
       "today": "Today",
@@ -3382,27 +3376,28 @@
       "footer": "Cancel anytime before the trial ends. We won't charge you before then."
     },
     "features": {
-      "title": "One script. Four ways to understand your website",
-      "subtitle": "Swetrix connects traffic, product behaviour and technical health in one focused workspace, without following people across the web.",
+      "title": "Here's what you'll see in Swetrix",
+      "subtitle": "Understand where visitors come from, what slows them down, what breaks and how they move through your website — all from one dashboard.",
+      "cardLabel": "VIEW {{number}}",
       "cards": {
         "traffic": {
-          "title": "Traffic analytics",
-          "description": "See visitors, acquisition channels, campaigns, popular pages, goals and live activity without digging through layers of reports.",
+          "title": "Understand your traffic",
+          "description": "See where visitors come from, which pages they use, what campaigns work and whether they convert — without digging through layers of reports.",
           "alt": "Swetrix traffic dashboard with visitor, session and pageview trends"
         },
         "performance": {
-          "title": "Performance monitoring",
-          "description": "Measure real-user frontend, backend and network timing, then find the pages, browsers and regions that need attention.",
+          "title": "Find what makes your site slow",
+          "description": "Measure real-user frontend, backend and network timing, then find the exact pages, browsers and regions that need attention.",
           "alt": "Swetrix performance dashboard with frontend, backend and network timing"
         },
         "errors": {
-          "title": "Error tracking",
-          "description": "Capture browser exceptions with stack traces, affected users and session context, next to the analytics you already check.",
+          "title": "Catch errors before they pile up",
+          "description": "See browser exceptions, stack traces, affected visitors and session context next to the analytics you already check.",
           "alt": "Swetrix error dashboard with error trends and recent exceptions"
         },
         "sessions": {
-          "title": "Sessions and replays",
-          "description": "Follow individual journeys to understand drop-offs and behaviour. Plus plans can replay recorded sessions when recording is enabled.",
+          "title": "Watch real visitor journeys",
+          "description": "Follow individual sessions to understand drop-offs, dead ends and unexpected behaviour. Plus plans can play back recorded sessions when recording is enabled.",
           "alt": "Swetrix session replay timeline"
         }
       }
@@ -3435,7 +3430,11 @@
         "reports": "Email reports, alerts and notification channels",
         "api": "REST API, Events API and SDKs",
         "sharing": "Public and password-protected dashboards",
-        "ownership": "Open-source code and a self-hosted Community Edition"
+        "ownership": "Open-source code and a self-hosted Community Edition",
+        "funnels": "Funnels, goals and complete user journeys",
+        "seo": "Search and AI referral insights through Google Search Console",
+        "revenue": "Revenue attribution through Stripe, Paddle or the API",
+        "experiments": "Feature flags and A/B testing on Plus"
       }
     },
     "testimonials": {
@@ -3454,7 +3453,9 @@
           "name": "Alper Alkan",
           "role": "Co-founder of Phalcode"
         }
-      }
+      },
+      "communityProof": "{{count}} websites understand their visitors with Swetrix",
+      "communityProofFallback": "Thousands of websites understand their visitors with Swetrix"
     },
     "faq": {
       "title": "Questions before you start",

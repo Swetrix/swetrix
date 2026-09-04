@@ -3,8 +3,12 @@ import {
   CheckCircleIcon,
   DownloadSimpleIcon,
   EnvelopeSimpleIcon,
+  FlaskIcon,
+  FunnelIcon,
   GlobeIcon,
+  MagnifyingGlassIcon,
   MonitorPlayIcon,
+  ReceiptIcon,
   ShieldCheckIcon,
   UsersThreeIcon,
   type Icon,
@@ -35,6 +39,10 @@ const MORE_INCLUDED: Array<{ key: string; icon: Icon }> = [
   { key: 'api', icon: BracketsAngleIcon },
   { key: 'sharing', icon: GlobeIcon },
   { key: 'ownership', icon: CheckCircleIcon },
+  { key: 'funnels', icon: FunnelIcon },
+  { key: 'seo', icon: MagnifyingGlassIcon },
+  { key: 'revenue', icon: ReceiptIcon },
+  { key: 'experiments', icon: FlaskIcon },
 ]
 
 export const SubscribeIncluded = ({
