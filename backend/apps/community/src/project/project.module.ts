@@ -1,3 +1,4 @@
+import { AnalyticsModule } from '../analytics/analytics.module'
 import { Module, forwardRef } from '@nestjs/common'
 
 import { ProjectService } from './project.service'
@@ -9,7 +10,12 @@ import { UserModule } from '../user/user.module'
 import { MailerModule } from '../mailer/mailer.module'
 
 @Module({
-  imports: [AppLoggerModule, forwardRef(() => UserModule), MailerModule],
+  imports: [
+    forwardRef(() => AnalyticsModule),
+    AppLoggerModule,
+    forwardRef(() => UserModule),
+    MailerModule,
+  ],
   providers: [ProjectService, GSCService],
   exports: [ProjectService, GSCService],
   controllers: [ProjectController, GSCController],

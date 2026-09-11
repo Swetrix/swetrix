@@ -43,7 +43,7 @@ import dayjs from 'dayjs'
 import { hash } from 'bcrypt'
 
 import { Auth } from '../auth/decorators'
-import { isValidDate } from '../analytics/analytics.service'
+import { AnalyticsService, isValidDate } from '../analytics/analytics.service'
 import {
   LEGAL_PID_CHARACTERS,
   PID_LENGTH,
@@ -117,6 +117,7 @@ import { LetterTemplate } from '../mailer/letter'
 export class ProjectController {
   constructor(
     private readonly projectService: ProjectService,
+    private readonly analyticsService: AnalyticsService,
     private readonly logger: AppLoggerService,
     private readonly userService: UserService,
     private readonly mailerService: MailerService,
@@ -1015,6 +1016,10 @@ export class ProjectController {
 
     this.projectService.allowedToManage(project, userId)
 
+    await this.analyticsService.deleteData(id, '[]', null, null, [
+      'session_replay',
+    ])
+
     await deleteProjectClickhouse(id)
 
     try {
@@ -1175,6 +1180,10 @@ export class ProjectController {
       project.captchaDifficultyMode = projectDTO.captchaDifficultyMode
     }
 
+    if (projectDTO.sessionReplayRetentionDays !== undefined) {
+      project.sessionReplayRetentionDays = projectDTO.sessionReplayRetentionDays
+    }
+
     if (projectDTO.brandKeywords !== undefined) {
       project.brandKeywords = projectDTO.brandKeywords
     }
@@ -1231,16 +1240,21 @@ export class ProjectController {
 
     this.projectService.allowedToView(project, userId, headers['x-password'])
 
-    const [isDataExists, isErrorDataExists, isCaptchaDataExists] =
-      await Promise.all([
-        !_isEmpty(
-          await this.projectService.getPIDsWhereAnalyticsDataExists([id]),
-        ),
-        !_isEmpty(await this.projectService.getPIDsWhereErrorsDataExists([id])),
-        !_isEmpty(
-          await this.projectService.getPIDsWhereCaptchaDataExists([id]),
-        ),
-      ])
+    const [
+      isDataExists,
+      isErrorDataExists,
+      isCaptchaDataExists,
+      isReplayDataExists,
+    ] = await Promise.all([
+      !_isEmpty(
+        await this.projectService.getPIDsWhereAnalyticsDataExists([id]),
+      ),
+      !_isEmpty(await this.projectService.getPIDsWhereErrorsDataExists([id])),
+      !_isEmpty(await this.projectService.getPIDsWhereCaptchaDataExists([id])),
+      !_isEmpty(
+        await this.projectService.getPIDsWhereSessionReplayDataExists([id]),
+      ),
+    ])
 
     const funnels = await getFunnelsClickhouse(id)
     const rawShares = await findProjectSharesByProjectClickhouse(id)
@@ -1287,6 +1301,7 @@ export class ProjectController {
       isDataExists,
       isErrorDataExists,
       isCaptchaDataExists,
+      isReplayDataExists,
       role,
       isLocked: false,
       isAccessConfirmed,

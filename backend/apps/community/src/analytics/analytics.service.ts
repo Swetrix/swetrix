@@ -1,3 +1,4 @@
+import { gzipSync, gunzipSync } from 'zlib'
 import crypto from 'crypto'
 import _isEmpty from 'lodash/isEmpty'
 import _split from 'lodash/split'
@@ -27,6 +28,7 @@ import dayjsTimezone from 'dayjs/plugin/timezone'
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
 import {
   Injectable,
+  PayloadTooLargeException,
   BadRequestException,
   InternalServerErrorException,
   HttpException,
@@ -51,6 +53,8 @@ import {
   TRAFFIC_METAKEY_COLUMNS,
 } from '../common/constants'
 import { SaltService } from './salt.service'
+import { SessionReplayS3Service } from './session-replay-s3.service'
+import { SessionReplayPrivacyMode } from './dto/session-replay.dto'
 import {
   BotDetectionService,
   BotEndpoint,
@@ -108,6 +112,170 @@ import { ProjectViewCustomEventMetaValueType } from '../project/entity/project-v
 import { ProjectViewCustomEventDto } from '../project/dto/create-project-view.dto'
 import { UAParser } from '@ua-parser-js/pro-business'
 import { extensions } from './utils/ua-parser'
+
+const SESSION_REPLAY_RETENTION_VALUES = [30, 90, 365, 1825] as const
+const MAX_SESSION_REPLAY_EVENTS_PER_CHUNK = 1000
+const MAX_SESSION_REPLAY_EVENT_BYTES = 5 * 1024 * 1024
+const MAX_SESSION_REPLAY_CHUNK_BYTES = 15 * 1024 * 1024
+const MAX_SESSION_REPLAY_CHUNKS_PER_REPLAY = 1200
+const MAX_SESSION_REPLAY_EVENTS_PER_REPLAY = 100000
+const MAX_SESSION_REPLAY_BYTES_PER_REPLAY = 150 * 1024 * 1024
+const MAX_SESSION_REPLAY_DURATION_MS = 30 * 60 * 1000
+const SESSION_REPLAY_CLEANUP_BATCH_SIZE = 500
+const SESSION_REPLAY_CHUNK_FETCH_CONCURRENCY = 6
+const SESSION_REPLAY_CHUNK_INDEX_RANGE = MAX_SESSION_REPLAY_CHUNKS_PER_REPLAY
+const RESERVE_REPLAY_START_LUA = `
+local activeReplayKey = KEYS[1]
+local proposedReplayId = ARGV[1]
+local chunkIndexRange = tonumber(ARGV[2])
+local ttl = tonumber(ARGV[3])
+local maxDurationMs = tonumber(ARGV[4])
+local time = redis.call("TIME")
+local currentTimeMs = tonumber(time[1]) * 1000 + math.floor(tonumber(time[2]) / 1000)
+
+local replayId = redis.call("HGET", activeReplayKey, "replayId")
+local replayStartTs = tonumber(redis.call("HGET", activeReplayKey, "replayStartTs") or "")
+local nextChunkIndex = tonumber(redis.call("HGET", activeReplayKey, "nextChunkIndex") or "0")
+
+if
+  replayId == false or replayId == nil or replayId == "" or
+  replayStartTs == nil or replayStartTs + maxDurationMs <= currentTimeMs
+then
+  replayId = proposedReplayId
+  replayStartTs = currentTimeMs
+  nextChunkIndex = 0
+end
+
+local allocatedChunkIndex = nextChunkIndex
+redis.call(
+  "HSET",
+  activeReplayKey,
+  "replayId",
+  replayId,
+  "replayStartTs",
+  tostring(replayStartTs),
+  "nextChunkIndex",
+  allocatedChunkIndex + chunkIndexRange
+)
+redis.call("EXPIRE", activeReplayKey, ttl)
+
+return { replayId, tostring(allocatedChunkIndex) }
+`
+const RESERVE_REPLAY_CHUNK_LUA = `
+local chunkSetKey = KEYS[1]
+local countersKey = KEYS[2]
+local firstTsKey = KEYS[3]
+local lastTsKey = KEYS[4]
+local maxChunks = tonumber(ARGV[1])
+local maxEvents = tonumber(ARGV[2])
+local maxBytes = tonumber(ARGV[3])
+local maxDurationMs = tonumber(ARGV[4])
+local chunkIndex = ARGV[5]
+local eventCount = tonumber(ARGV[6])
+local uncompressedBytes = tonumber(ARGV[7])
+local firstTimestamp = tonumber(ARGV[8])
+local lastTimestamp = tonumber(ARGV[9])
+local ttl = tonumber(ARGV[10])
+
+if redis.call("SADD", chunkSetKey, chunkIndex) == 0 then
+  return -4
+end
+
+local chunks = redis.call("HINCRBY", countersKey, "chunks", 1)
+local events = redis.call("HINCRBY", countersKey, "events", eventCount)
+local bytes = redis.call("HINCRBY", countersKey, "bytes", uncompressedBytes)
+
+if firstTimestamp ~= nil then
+  redis.call("ZADD", firstTsKey, firstTimestamp, chunkIndex)
+end
+
+if lastTimestamp ~= nil then
+  redis.call("ZADD", lastTsKey, lastTimestamp, chunkIndex)
+end
+
+local first = redis.call("ZRANGE", firstTsKey, 0, 0, "WITHSCORES")
+local last = redis.call("ZREVRANGE", lastTsKey, 0, 0, "WITHSCORES")
+local duration = 0
+
+if first[2] ~= nil and last[2] ~= nil then
+  duration = tonumber(last[2]) - tonumber(first[2])
+end
+
+local result = 1
+if chunks > maxChunks then
+  result = -1
+elseif events > maxEvents then
+  result = -2
+elseif bytes > maxBytes then
+  result = -3
+elseif duration > maxDurationMs then
+  result = -5
+end
+
+if result ~= 1 then
+  redis.call("SREM", chunkSetKey, chunkIndex)
+  redis.call("HINCRBY", countersKey, "chunks", -1)
+  redis.call("HINCRBY", countersKey, "events", -eventCount)
+  redis.call("HINCRBY", countersKey, "bytes", -uncompressedBytes)
+  redis.call("ZREM", firstTsKey, chunkIndex)
+  redis.call("ZREM", lastTsKey, chunkIndex)
+  return result
+end
+
+redis.call("EXPIRE", chunkSetKey, ttl)
+redis.call("EXPIRE", countersKey, ttl)
+redis.call("EXPIRE", firstTsKey, ttl)
+redis.call("EXPIRE", lastTsKey, ttl)
+return 1
+`
+const RELEASE_REPLAY_CHUNK_LUA = `
+local chunkSetKey = KEYS[1]
+local countersKey = KEYS[2]
+local firstTsKey = KEYS[3]
+local lastTsKey = KEYS[4]
+local chunkIndex = ARGV[1]
+local eventCount = tonumber(ARGV[2])
+local uncompressedBytes = tonumber(ARGV[3])
+
+if redis.call("SREM", chunkSetKey, chunkIndex) ~= 1 then
+  return 0
+end
+
+local chunks = redis.call("HINCRBY", countersKey, "chunks", -1)
+redis.call("HINCRBY", countersKey, "events", -eventCount)
+redis.call("HINCRBY", countersKey, "bytes", -uncompressedBytes)
+redis.call("ZREM", firstTsKey, chunkIndex)
+redis.call("ZREM", lastTsKey, chunkIndex)
+
+if chunks <= 0 then
+  redis.call("DEL", chunkSetKey, countersKey, firstTsKey, lastTsKey)
+end
+
+return 1
+`
+
+const mapLimit = async <T, R>(
+  items: T[],
+  limit: number,
+  fn: (item: T, index: number) => Promise<R>,
+): Promise<R[]> => {
+  const results: R[] = new Array(items.length)
+  const concurrency = Math.max(1, Math.min(limit, items.length))
+  let nextIndex = 0
+
+  const workers = Array.from({ length: concurrency }).map(async () => {
+    while (true) {
+      const current = nextIndex++
+      if (current >= items.length) {
+        break
+      }
+      results[current] = await fn(items[current], current)
+    }
+  })
+
+  await Promise.all(workers)
+  return results
+}
 
 dayjs.extend(utc)
 dayjs.extend(dayjsTimezone)
@@ -200,6 +368,9 @@ const JOURNEY_EXIT_TARGET = '__exit__'
 
 // Event types that can be targeted by the data-deletion tool.
 const DELETABLE_EVENT_TYPES = [...DATA_DELETION_EVENT_TYPES]
+const EVENT_TABLE_DELETION_TYPES = DELETABLE_EVENT_TYPES.filter(
+  (type) => type !== 'session_replay',
+)
 // Sentinel bounds used when no explicit date range is given, so that
 // session-scoped filters (entry/exit page, referrer) still resolve.
 const DELETION_MIN_DATE = '2000-01-01 00:00:00'
@@ -556,6 +727,7 @@ export class AnalyticsService {
   constructor(
     private readonly projectService: ProjectService,
     private readonly saltService: SaltService,
+    private readonly sessionReplayStorage: SessionReplayS3Service,
     private readonly botDetectionService: BotDetectionService,
   ) {}
 
@@ -1857,26 +2029,21 @@ export class AnalyticsService {
       DataType.ANALYTICS,
     )
 
-    from = from ? dayjs.utc(from).format('YYYY-MM-DD HH:mm:ss') : null
-    to = to ? dayjs.utc(to).format('YYYY-MM-DD HH:mm:ss') : null
+    const dateRange = this.getDataDeletionDateRange(from, to)
+    from = dateRange.from
+    to = dateRange.to
 
-    const hasRange = Boolean(from && to)
     const params: Record<string, unknown> = {
       pid,
-      types: DELETABLE_EVENT_TYPES,
+      types: EVENT_TABLE_DELETION_TYPES,
       groupFrom: from || DELETION_MIN_DATE,
       groupTo: to || DELETION_MAX_DATE,
       ...filtersParams,
+      ...(from ? { from } : {}),
+      ...(to ? { to } : {}),
     }
 
-    let dateCondition = ''
-    if (hasRange) {
-      params.from = from
-      params.to = to
-      dateCondition = 'AND created BETWEEN {from:String} AND {to:String}'
-    }
-
-    const whereClause = `pid = {pid:FixedString(12)} AND type IN ({types:Array(String)}) ${dateCondition} ${filtersQuery}`
+    const whereClause = `pid = {pid:FixedString(12)} AND type IN ({types:Array(String)}) ${dateRange.condition} ${filtersQuery}`
 
     const { data: countRows } = await clickhouse
       .query({
@@ -1912,15 +2079,37 @@ export class AnalyticsService {
       }
     }
 
+    // Session replays aren't rows in the `events` table, so count them
+    // separately using the same date range + (filter-resolved) sessions.
+    const replayCount = await this.countMatchingSessionReplays(
+      pid,
+      filtersQuery,
+      filtersParams,
+      from,
+      to,
+      dateRange.condition,
+    )
+    if (replayCount > 0) {
+      counts.session_replay = replayCount
+      total += replayCount
+    }
+
     if (total === 0) {
       return { counts: {}, total: 0, timeline: { x: [], counts: [] } }
+    }
+
+    const timelineFrom = from || minCreated
+    const timelineTo = to || maxCreated
+
+    if (!timelineFrom || !timelineTo) {
+      return { counts, total, timeline: { x: [], counts: [] } }
     }
 
     const timeline = await this.buildDeletionTimeline(
       whereClause,
       params,
-      hasRange ? from : minCreated,
-      hasRange ? to : maxCreated,
+      timelineFrom,
+      timelineTo,
     )
 
     return { counts, total, timeline }
@@ -2001,48 +2190,66 @@ export class AnalyticsService {
       throw new BadRequestException('No event types selected for deletion')
     }
 
+    const eventTableTypes = _filter(safeTypes, (type) =>
+      _includes(EVENT_TABLE_DELETION_TYPES, type),
+    )
+
     const [filtersQuery, filtersParams] = this.getFiltersQuery(
       filters,
       DataType.ANALYTICS,
     )
 
-    from = from ? dayjs.utc(from).format('YYYY-MM-DD HH:mm:ss') : null
-    to = to ? dayjs.utc(to).format('YYYY-MM-DD HH:mm:ss') : null
+    const dateRange = this.getDataDeletionDateRange(from, to)
+    from = dateRange.from
+    to = dateRange.to
 
-    const hasRange = Boolean(from && to)
     const params: Record<string, unknown> = {
       pid,
-      types: safeTypes,
+      types: eventTableTypes,
       groupFrom: from || DELETION_MIN_DATE,
       groupTo: to || DELETION_MAX_DATE,
       ...filtersParams,
+      ...(from ? { from } : {}),
+      ...(to ? { to } : {}),
     }
 
-    let dateCondition = ''
-    if (hasRange) {
-      params.from = from
-      params.to = to
-      dateCondition = 'AND created BETWEEN {from:String} AND {to:String}'
+    if (_includes(safeTypes, 'session_replay')) {
+      await this.deleteMatchingSessionReplays(
+        pid,
+        filtersQuery,
+        filtersParams,
+        from,
+        to,
+        dateRange.condition,
+      )
     }
 
-    const commands: Promise<unknown>[] = [
-      clickhouse.command({
-        query: `ALTER TABLE events DELETE WHERE pid = {pid:FixedString(12)} AND type IN ({types:Array(String)}) ${dateCondition} ${filtersQuery}`,
-        query_params: params,
-      }),
-    ]
+    const commands: Promise<unknown>[] = []
 
-    // error_statuses carries no traffic columns, so it can only be cleared when
-    // no field filters are applied (a full reset or a plain date-range reset).
-    if (_includes(safeTypes, 'error') && _isEmpty(filtersQuery)) {
+    if (!_isEmpty(eventTableTypes)) {
       commands.push(
         clickhouse.command({
-          query: `ALTER TABLE error_statuses DELETE WHERE pid = {pid:FixedString(12)} ${
-            hasRange ? 'AND created BETWEEN {from:String} AND {to:String}' : ''
-          }`,
-          query_params: hasRange ? { pid, from, to } : { pid },
+          query: `ALTER TABLE events DELETE WHERE pid = {pid:FixedString(12)} AND type IN ({types:Array(String)}) ${dateRange.condition} ${filtersQuery}`,
+          query_params: params,
+          clickhouse_settings: { mutations_sync: '2' },
         }),
       )
+
+      // error_statuses carries no traffic columns, so it can only be cleared
+      // when no field filters are applied (a full or plain date-range reset).
+      if (_includes(safeTypes, 'error') && _isEmpty(filtersQuery)) {
+        commands.push(
+          clickhouse.command({
+            query: `ALTER TABLE error_statuses DELETE WHERE pid = {pid:FixedString(12)} ${dateRange.condition}`,
+            query_params: {
+              pid,
+              ...(from ? { from } : {}),
+              ...(to ? { to } : {}),
+            },
+            clickhouse_settings: { mutations_sync: '2' },
+          }),
+        )
+      }
     }
 
     await Promise.all(commands)
@@ -6606,6 +6813,7 @@ export class AnalyticsService {
       psid,
       chart: chartData,
       timeBucket,
+      replay: await this.getSessionReplaySummary(pid, psid),
     }
   }
 
@@ -6671,6 +6879,20 @@ export class AnalyticsService {
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         GROUP BY psidCasted, pid
       ),
+      replay_summary AS (
+        SELECT
+          toString(ifNull(psid, 0)) AS psidCasted,
+          pid,
+          countDistinct(replayId) AS replayCount,
+          min(firstEventTimestamp) AS firstReplayTimestamp,
+          max(lastEventTimestamp) AS lastReplayTimestamp,
+          max(expiresAt) AS replayExpiresAt
+        FROM session_replay_chunks
+        WHERE pid = {pid:FixedString(12)}
+          AND psid != 0
+          AND expiresAt > now()
+        GROUP BY psidCasted, pid
+      ),
       session_duration_agg AS (
         SELECT
           psidCasted,
@@ -6716,12 +6938,26 @@ export class AnalyticsService {
           dsf.sessionStart AS sessionStart,
           dsf.lastActivity AS lastActivity,
           sda.total_duration AS sdur,
-          coalesce(nullIf(sda.profileId, ''), dsf.profileId) AS profileId
+          coalesce(nullIf(sda.profileId, ''), dsf.profileId) AS profileId,
+          COALESCE(rs.replayCount, 0) AS replayCount,
+          if(
+            COALESCE(rs.replayCount, 0) = 0,
+            NULL,
+            if(
+              isNull(rs.firstReplayTimestamp)
+                OR isNull(rs.lastReplayTimestamp)
+                OR rs.lastReplayTimestamp <= rs.firstReplayTimestamp,
+              ifNull(sda.total_duration, 0),
+              intDiv(rs.lastReplayTimestamp - rs.firstReplayTimestamp, 1000)
+            )
+          ) AS replayDuration,
+          rs.replayExpiresAt AS replayExpiresAt
         FROM distinct_sessions_filtered dsf
         LEFT JOIN pageview_counts pc ON dsf.psidCasted = pc.psidCasted AND dsf.pid = pc.pid
         LEFT JOIN event_counts ec ON dsf.psidCasted = ec.psidCasted AND dsf.pid = ec.pid
         LEFT JOIN error_counts errc ON dsf.psidCasted = errc.psidCasted AND dsf.pid = errc.pid
         LEFT JOIN session_duration_agg sda ON dsf.psidCasted = sda.psidCasted AND dsf.pid = sda.pid
+        LEFT JOIN replay_summary rs ON dsf.psidCasted = rs.psidCasted AND dsf.pid = rs.pid
       )
       SELECT
         se.psidCasted AS psid,
@@ -6741,7 +6977,10 @@ export class AnalyticsService {
           ifNull(se.profileId, '') = '',
           0,
           if(isNull(fsp.firstPsid) OR fsp.firstPsid = '' OR fsp.firstPsid = se.psidCasted, 1, 0)
-        ) AS isFirstSession
+        ) AS isFirstSession,
+        if(se.replayCount > 0, 1, 0) AS hasReplay,
+        se.replayDuration,
+        se.replayExpiresAt
       FROM sessions_enriched se
       LEFT JOIN first_session_per_profile fsp ON se.profileId = fsp.profileId
       WHERE se.psidCasted IS NOT NULL
@@ -6770,6 +7009,7 @@ export class AnalyticsService {
     customEVFilterApplied: boolean,
     sessionEvent: SessionsListEventType = 'traffic',
     primaryEventFilterQuery = '',
+    includeProfileMatchedEventsWithPsid = false,
   ): string {
     if (customEVFilterApplied || sessionEvent === 'custom_event') {
       return `
@@ -6801,12 +7041,12 @@ export class AnalyticsService {
           toTimeZone(matching_custom_events.created, {timezone:String}) AS created_for_grouping
         FROM sessions AS s FINAL
         INNER JOIN (
-          SELECT pid, profileId, cc, os, br, created
+          SELECT pid, psid, profileId, cc, os, br, created
           FROM events
           WHERE
             pid = {pid:FixedString(12)}
             AND type = 'custom_event'
-            AND (psid IS NULL OR psid = 0)
+            ${includeProfileMatchedEventsWithPsid ? '' : 'AND (psid IS NULL OR psid = 0)'}
             AND profileId IS NOT NULL
             AND profileId != ''
             AND created BETWEEN {groupFrom:String} AND {groupTo:String}
@@ -6815,6 +7055,7 @@ export class AnalyticsService {
         ) AS matching_custom_events
           ON s.pid = matching_custom_events.pid
           AND s.profileId = matching_custom_events.profileId
+          AND (matching_custom_events.psid IS NULL OR matching_custom_events.psid = 0 OR matching_custom_events.psid = s.psid)
         WHERE matching_custom_events.created BETWEEN s.firstSeen AND addSeconds(s.lastSeen, 1)
       `
     }
@@ -8281,5 +8522,1070 @@ export class AnalyticsService {
       ...session,
       pages: pageflows.get(String(session.psid)) || [],
     }))
+  }
+
+  private buildSessionReplayDeletionWhere(
+    filtersQuery: string,
+    dateCondition: string,
+  ): string {
+    const psidFilter = _isEmpty(filtersQuery)
+      ? ''
+      : `AND psid IN (SELECT DISTINCT psid FROM events WHERE pid = {pid:FixedString(12)} ${dateCondition} ${filtersQuery})`
+
+    return `pid = {pid:FixedString(12)} ${dateCondition} ${psidFilter}`
+  }
+
+  private buildSessionReplayDeletionParams(
+    pid: string,
+    filtersParams: Record<string, unknown>,
+    from: string | null,
+    to: string | null,
+  ): Record<string, unknown> {
+    return {
+      pid,
+      groupFrom: from || DELETION_MIN_DATE,
+      groupTo: to || DELETION_MAX_DATE,
+      ...filtersParams,
+      ...(from ? { from } : {}),
+      ...(to ? { to } : {}),
+    }
+  }
+
+  private async countMatchingSessionReplays(
+    pid: string,
+    filtersQuery: string,
+    filtersParams: Record<string, unknown>,
+    from: string | null,
+    to: string | null,
+    dateCondition: string,
+  ): Promise<number> {
+    if (!this.sessionReplayStorage.isConfigured()) {
+      return 0
+    }
+
+    const where = this.buildSessionReplayDeletionWhere(
+      filtersQuery,
+      dateCondition,
+    )
+
+    const { data } = await clickhouse
+      .query({
+        query: `SELECT count(DISTINCT replayId) AS c FROM session_replay_chunks WHERE ${where}`,
+        query_params: this.buildSessionReplayDeletionParams(
+          pid,
+          filtersParams,
+          from,
+          to,
+        ),
+      })
+      .then((resultSet) => resultSet.json<{ c: string }>())
+
+    return Number(data[0]?.c) || 0
+  }
+
+  private async deleteMatchingSessionReplays(
+    pid: string,
+    filtersQuery: string,
+    filtersParams: Record<string, unknown>,
+    from: string | null,
+    to: string | null,
+    dateCondition: string,
+  ): Promise<void> {
+    const where = this.buildSessionReplayDeletionWhere(
+      filtersQuery,
+      dateCondition,
+    )
+    const params = this.buildSessionReplayDeletionParams(
+      pid,
+      filtersParams,
+      from,
+      to,
+    )
+
+    const { data: chunks } = await clickhouse
+      .query({
+        query: `SELECT DISTINCT objectKey FROM session_replay_chunks WHERE ${where}`,
+        query_params: params,
+      })
+      .then((resultSet) => resultSet.json<{ objectKey: string }>())
+
+    const objectKeys = chunks.map((chunk) => chunk.objectKey).filter(Boolean)
+
+    if (objectKeys.length && !this.sessionReplayStorage.isConfigured()) {
+      throw new InternalServerErrorException(
+        'Session replay storage is not configured',
+      )
+    }
+
+    await mapLimit(objectKeys, SESSION_REPLAY_CHUNK_FETCH_CONCURRENCY, (key) =>
+      this.sessionReplayStorage.deleteObject(key),
+    )
+
+    await clickhouse.command({
+      query: `ALTER TABLE session_replay_chunks DELETE WHERE ${where}`,
+      query_params: params,
+      clickhouse_settings: { mutations_sync: '2' },
+    })
+  }
+
+  isValidSessionReplayRetentionDays(
+    value: number,
+  ): value is 30 | 90 | 365 | 1825 {
+    return SESSION_REPLAY_RETENTION_VALUES.includes(value as any)
+  }
+
+  private getSessionReplayRetention(project: Project): {
+    retentionDays: number
+    expiresAt: string
+  } {
+    const configuredRetentionDays = this.isValidSessionReplayRetentionDays(
+      project.sessionReplayRetentionDays,
+    )
+      ? project.sessionReplayRetentionDays
+      : 30
+    const retentionDays = configuredRetentionDays
+
+    return {
+      retentionDays,
+      expiresAt: dayjs
+        .utc()
+        .add(retentionDays, 'day')
+        .format('YYYY-MM-DD HH:mm:ss'),
+    }
+  }
+
+  private async resolveReplaySession(
+    pid: string,
+    userAgent: string,
+    ip: string,
+  ): Promise<{ psid: string; sid: string; isNewSession: boolean }> {
+    const [isNewSession, psid, sid] = await this.generateAndStoreSessionId(
+      pid,
+      userAgent,
+      ip,
+    )
+    return { psid, sid, isNewSession }
+  }
+
+  async startSessionReplay(
+    project: Project,
+    pid: string,
+    replayId: string,
+    privacy: SessionReplayPrivacyMode,
+    userAgent: string,
+    ip: string,
+    profileId?: string,
+  ) {
+    if (!this.sessionReplayStorage.isConfigured()) {
+      throw new InternalServerErrorException(
+        'Session replay storage is not configured',
+      )
+    }
+
+    const { psid, sid, isNewSession } = await this.resolveReplaySession(
+      pid,
+      userAgent,
+      ip,
+    )
+    const resolvedProfileId = await this.generateProfileId(
+      pid,
+      userAgent,
+      ip,
+      profileId,
+    )
+
+    await this.recordSessionActivity(
+      sid,
+      psid,
+      pid,
+      resolvedProfileId,
+      isNewSession,
+    )
+
+    const retention = this.getSessionReplayRetention(project)
+    const replayStart = await this.reserveActiveReplayStart(pid, psid, replayId)
+
+    return {
+      replayId: replayStart.replayId,
+      nextChunkIndex: replayStart.nextChunkIndex,
+      psid,
+      privacy,
+      ...retention,
+    }
+  }
+
+  private getSessionReplayObjectKey(
+    pid: string,
+    psid: string,
+    replayId: string,
+    chunkIndex: number,
+  ): string {
+    const date = dayjs.utc()
+    return [
+      'session-replays',
+      pid,
+      date.format('YYYY'),
+      date.format('MM'),
+      psid,
+      replayId,
+      `${chunkIndex}.json.gz`,
+    ].join('/')
+  }
+
+  private getActiveReplayKey(pid: string, psid: string) {
+    return `session-replay:active:${pid}:${psid}`
+  }
+
+  private getReplayLimitKeys(pid: string, psid: string, replayId: string) {
+    const prefix = `session-replay:limits:${pid}:${psid}:${replayId}`
+    return {
+      chunkSetKey: `${prefix}:chunks`,
+      countersKey: `${prefix}:counters`,
+      firstTsKey: `${prefix}:first`,
+      lastTsKey: `${prefix}:last`,
+    }
+  }
+
+  private getReplayLimitTtlSeconds(retention: { expiresAt: string }) {
+    return Math.max(
+      60,
+      dayjs.utc(retention.expiresAt).diff(dayjs.utc(), 'second'),
+    )
+  }
+
+  private getActiveReplayTtlSeconds() {
+    return Math.max(60, Math.ceil(MAX_SESSION_REPLAY_DURATION_MS / 1000))
+  }
+
+  private async reserveActiveReplayStart(
+    pid: string,
+    psid: string,
+    replayId: string,
+  ) {
+    const result = await redis.eval(
+      RESERVE_REPLAY_START_LUA,
+      1,
+      this.getActiveReplayKey(pid, psid),
+      replayId,
+      SESSION_REPLAY_CHUNK_INDEX_RANGE,
+      this.getActiveReplayTtlSeconds(),
+      MAX_SESSION_REPLAY_DURATION_MS,
+    )
+    const [resolvedReplayId, nextChunkIndex] = Array.isArray(result)
+      ? result
+      : [replayId, 0]
+
+    return {
+      replayId:
+        typeof resolvedReplayId === 'string' && resolvedReplayId
+          ? resolvedReplayId
+          : replayId,
+      nextChunkIndex: Number(nextChunkIndex) || 0,
+    }
+  }
+
+  private getReplayChunkTimestamps(events: Record<string, unknown>[]) {
+    const timestamps = events
+      .map((event) =>
+        typeof event.timestamp === 'number' ? event.timestamp : null,
+      )
+      .filter((timestamp): timestamp is number => timestamp !== null)
+
+    return {
+      firstEventTimestamp: timestamps.length ? Math.min(...timestamps) : null,
+      lastEventTimestamp: timestamps.length ? Math.max(...timestamps) : null,
+    }
+  }
+
+  private async reserveReplayChunkStorage(
+    pid: string,
+    psid: string,
+    replayId: string,
+    chunkIndex: number,
+    eventCount: number,
+    uncompressedBytes: number,
+    retention: { expiresAt: string },
+    timestamps: {
+      firstEventTimestamp: number | null
+      lastEventTimestamp: number | null
+    },
+  ) {
+    const keys = this.getReplayLimitKeys(pid, psid, replayId)
+    const result = await redis.eval(
+      RESERVE_REPLAY_CHUNK_LUA,
+      4,
+      keys.chunkSetKey,
+      keys.countersKey,
+      keys.firstTsKey,
+      keys.lastTsKey,
+      MAX_SESSION_REPLAY_CHUNKS_PER_REPLAY,
+      MAX_SESSION_REPLAY_EVENTS_PER_REPLAY,
+      MAX_SESSION_REPLAY_BYTES_PER_REPLAY,
+      MAX_SESSION_REPLAY_DURATION_MS,
+      chunkIndex,
+      eventCount,
+      uncompressedBytes,
+      timestamps.firstEventTimestamp ?? '',
+      timestamps.lastEventTimestamp ?? '',
+      this.getReplayLimitTtlSeconds(retention),
+    )
+
+    switch (Number(result)) {
+      case 1:
+        return {
+          ...keys,
+          chunkIndex,
+          eventCount,
+          uncompressedBytes,
+          duplicate: false,
+        }
+      case -1:
+        throw new PayloadTooLargeException('Session replay has too many chunks')
+      case -2:
+        throw new PayloadTooLargeException('Session replay has too many events')
+      case -3:
+        throw new PayloadTooLargeException('Session replay is too large')
+      case -4:
+        return {
+          ...keys,
+          chunkIndex,
+          eventCount,
+          uncompressedBytes,
+          duplicate: true,
+        }
+      case -5:
+        throw new PayloadTooLargeException('Session replay is too long')
+      default:
+        throw new InternalServerErrorException(
+          'Unable to reserve session replay chunk',
+        )
+    }
+  }
+
+  private async releaseReplayChunkStorageReservation(reservation: {
+    chunkSetKey: string
+    countersKey: string
+    firstTsKey: string
+    lastTsKey: string
+    chunkIndex: number
+    eventCount: number
+    uncompressedBytes: number
+  }) {
+    await redis.eval(
+      RELEASE_REPLAY_CHUNK_LUA,
+      4,
+      reservation.chunkSetKey,
+      reservation.countersKey,
+      reservation.firstTsKey,
+      reservation.lastTsKey,
+      reservation.chunkIndex,
+      reservation.eventCount,
+      reservation.uncompressedBytes,
+    )
+  }
+
+  private validateSessionReplayReadSize(replay: {
+    chunkCount: number
+    eventCount: number
+    uncompressedBytes: number
+    replayDuration: number
+  }) {
+    if (
+      replay.chunkCount > MAX_SESSION_REPLAY_CHUNKS_PER_REPLAY ||
+      replay.eventCount > MAX_SESSION_REPLAY_EVENTS_PER_REPLAY ||
+      replay.uncompressedBytes > MAX_SESSION_REPLAY_BYTES_PER_REPLAY ||
+      replay.replayDuration * 1000 > MAX_SESSION_REPLAY_DURATION_MS
+    ) {
+      throw new PayloadTooLargeException('Session replay is too large to load')
+    }
+  }
+
+  private validateSessionReplayEventSizes(events: Record<string, unknown>[]) {
+    const hasOversizedEvent = events.some((event) => {
+      try {
+        return (
+          Buffer.byteLength(JSON.stringify(event)) >
+          MAX_SESSION_REPLAY_EVENT_BYTES
+        )
+      } catch {
+        return true
+      }
+    })
+
+    if (hasOversizedEvent) {
+      throw new PayloadTooLargeException('Session replay event is too large')
+    }
+  }
+
+  async storeSessionReplayChunk(
+    project: Project,
+    pid: string,
+    replayId: string,
+    privacy: SessionReplayPrivacyMode,
+    chunkIndex: number,
+    events: Record<string, unknown>[],
+    userAgent: string,
+    ip: string,
+  ) {
+    if (!this.sessionReplayStorage.isConfigured()) {
+      throw new InternalServerErrorException(
+        'Session replay storage is not configured',
+      )
+    }
+
+    if (events.length > MAX_SESSION_REPLAY_EVENTS_PER_CHUNK) {
+      throw new BadRequestException('Session replay chunk has too many events')
+    }
+
+    this.validateSessionReplayEventSizes(events)
+
+    const { psid } = await this.resolveReplaySession(pid, userAgent, ip)
+    const retention = this.getSessionReplayRetention(project)
+    const payload = JSON.stringify({ events })
+    const uncompressedBytes = Buffer.byteLength(payload)
+    const timestamps = this.getReplayChunkTimestamps(events)
+
+    if (uncompressedBytes > MAX_SESSION_REPLAY_CHUNK_BYTES) {
+      throw new PayloadTooLargeException('Session replay chunk is too large')
+    }
+
+    const chunkReservation = await this.reserveReplayChunkStorage(
+      pid,
+      psid,
+      replayId,
+      chunkIndex,
+      events.length,
+      uncompressedBytes,
+      retention,
+      timestamps,
+    )
+
+    if (chunkReservation.duplicate) {
+      return {
+        replayId,
+        psid,
+        chunkIndex,
+        eventCount: events.length,
+        ...retention,
+        countedUsage: false,
+      }
+    }
+
+    const objectKey = this.getSessionReplayObjectKey(
+      pid,
+      psid,
+      replayId,
+      chunkIndex,
+    )
+    const compressed = gzipSync(Buffer.from(payload))
+    try {
+      await this.sessionReplayStorage.putObject(objectKey, compressed)
+
+      await clickhouse.insert({
+        table: 'session_replay_chunks',
+        format: 'JSONEachRow',
+        values: [
+          {
+            pid,
+            psid,
+            replayId,
+            chunkIndex,
+            objectKey,
+            privacyMode: privacy,
+            eventCount: events.length,
+            uncompressedBytes,
+            compressedBytes: compressed.byteLength,
+            firstEventTimestamp: timestamps.firstEventTimestamp,
+            lastEventTimestamp: timestamps.lastEventTimestamp,
+            created: dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
+            expiresAt: retention.expiresAt,
+          },
+        ],
+        clickhouse_settings: { async_insert: 1, wait_for_async_insert: 1 },
+      })
+    } catch (reason) {
+      await Promise.allSettled([
+        this.releaseReplayChunkStorageReservation(chunkReservation),
+        this.sessionReplayStorage.deleteObject(objectKey),
+      ])
+      throw reason
+    }
+
+    return {
+      replayId,
+      psid,
+      chunkIndex,
+      eventCount: events.length,
+      ...retention,
+      countedUsage: false,
+    }
+  }
+
+  async getSessionReplaySummary(pid: string, psid: string, replayId?: string) {
+    const { data } = await clickhouse
+      .query({
+        query: `
+          SELECT
+            replayId,
+            argMax(privacyMode, latestCreated) AS privacyMode,
+            count() AS chunkCount,
+            sum(eventCount) AS eventCount,
+            sum(uncompressedBytes) AS uncompressedBytes,
+            min(firstEventTimestamp) AS firstEventTimestamp,
+            max(lastEventTimestamp) AS lastEventTimestamp,
+            max(chunkExpiresAt) AS replayExpiresAt,
+            max(latestCreated) AS lastCreated
+          FROM (
+            SELECT
+              replayId,
+              chunkIndex,
+              argMax(privacyMode, created) AS privacyMode,
+              argMax(eventCount, created) AS eventCount,
+              argMax(uncompressedBytes, created) AS uncompressedBytes,
+              argMax(firstEventTimestamp, created) AS firstEventTimestamp,
+              argMax(lastEventTimestamp, created) AS lastEventTimestamp,
+              argMax(expiresAt, created) AS chunkExpiresAt,
+              max(created) AS latestCreated
+            FROM session_replay_chunks
+            WHERE pid = {pid:FixedString(12)}
+              AND psid = toUInt64OrNull({psid:String})
+              ${replayId ? 'AND replayId = {replayId:String}' : ''}
+              AND expiresAt > now()
+            GROUP BY replayId, chunkIndex
+          )
+          GROUP BY replayId
+          ORDER BY lastCreated DESC
+          LIMIT 1
+        `,
+        query_params: { pid, psid, replayId: replayId || '' },
+      })
+      .then((resultSet) =>
+        resultSet.json<{
+          replayId: string
+          privacyMode: SessionReplayPrivacyMode
+          chunkCount: number
+          eventCount: number
+          uncompressedBytes: number
+          firstEventTimestamp: number | string | null
+          lastEventTimestamp: number | string | null
+          replayExpiresAt: string
+        }>(),
+      )
+
+    const replay = data[0]
+    if (!replay) {
+      return null
+    }
+
+    const first = Number(replay.firstEventTimestamp)
+    const last = Number(replay.lastEventTimestamp)
+    const duration =
+      Number.isFinite(first) && Number.isFinite(last) && last > first
+        ? Math.round((last - first) / 1000)
+        : await this.getSessionDurationFromClickHouse(psid, pid)
+
+    return {
+      hasReplay: true,
+      replayId: replay.replayId,
+      privacyMode: replay.privacyMode,
+      chunkCount: Number(replay.chunkCount) || 0,
+      eventCount: Number(replay.eventCount) || 0,
+      uncompressedBytes: Number(replay.uncompressedBytes) || 0,
+      replayDuration: duration || 0,
+      replayExpiresAt: replay.replayExpiresAt,
+    }
+  }
+
+  async getSessionReplay(
+    pid: string,
+    psid: string,
+    replayId?: string,
+  ): Promise<{
+    replay: Awaited<ReturnType<AnalyticsService['getSessionReplaySummary']>>
+    events: Record<string, unknown>[]
+  }> {
+    const replay = await this.getSessionReplaySummary(pid, psid, replayId)
+    const selectedReplayId = replay?.replayId
+
+    if (!selectedReplayId) {
+      return { replay: null, events: [] }
+    }
+
+    this.validateSessionReplayReadSize(replay)
+
+    const { data: chunks } = await clickhouse
+      .query({
+        query: `
+          SELECT
+            chunkIndex,
+            argMax(objectKey, created) AS objectKey
+          FROM session_replay_chunks
+          WHERE pid = {pid:FixedString(12)}
+            AND psid = toUInt64OrNull({psid:String})
+            AND replayId = {replayId:String}
+            AND expiresAt > now()
+          GROUP BY chunkIndex
+          ORDER BY chunkIndex ASC
+        `,
+        query_params: { pid, psid, replayId: selectedReplayId },
+      })
+      .then((resultSet) =>
+        resultSet.json<{ chunkIndex: number; objectKey: string }>(),
+      )
+
+    const chunkEvents = await mapLimit(
+      chunks,
+      SESSION_REPLAY_CHUNK_FETCH_CONCURRENCY,
+      async (chunk) => {
+        const compressed = await this.sessionReplayStorage.getObject(
+          chunk.objectKey,
+        )
+        if (!compressed) return []
+
+        const parsed = JSON.parse(gunzipSync(compressed).toString('utf8')) as {
+          events?: Record<string, unknown>[]
+        }
+
+        return Array.isArray(parsed.events) ? parsed.events : []
+      },
+    )
+
+    // Chunk index order is upload order, which can diverge from event time
+    // order (e.g. two tabs recording into the same replay). The replayer
+    // expects a monotonic timeline, so stable-sort by timestamp — the same
+    // normalisation the MP4 export applies.
+    const events = chunkEvents
+      .flat()
+      .sort((a, b) => (Number(a?.timestamp) || 0) - (Number(b?.timestamp) || 0))
+
+    return {
+      replay,
+      events,
+    }
+  }
+
+  async deleteSessionReplay(pid: string, psid: string, replayId?: string) {
+    if (!this.sessionReplayStorage.isConfigured()) {
+      throw new InternalServerErrorException(
+        'Session replay storage is not configured',
+      )
+    }
+
+    const replay = await this.getSessionReplaySummary(pid, psid, replayId)
+    const selectedReplayId = replay?.replayId
+
+    if (!selectedReplayId) {
+      return { deleted: false, deletedChunks: 0 }
+    }
+
+    const { data: chunks } = await clickhouse
+      .query({
+        query: `
+          SELECT DISTINCT objectKey
+          FROM session_replay_chunks
+          WHERE pid = {pid:FixedString(12)}
+            AND psid = toUInt64OrNull({psid:String})
+            AND replayId = {replayId:String}
+        `,
+        query_params: { pid, psid, replayId: selectedReplayId },
+      })
+      .then((resultSet) => resultSet.json<{ objectKey: string }>())
+
+    const objectKeys = chunks.map((chunk) => chunk.objectKey).filter(Boolean)
+
+    await mapLimit(objectKeys, SESSION_REPLAY_CHUNK_FETCH_CONCURRENCY, (key) =>
+      this.sessionReplayStorage.deleteObject(key),
+    )
+
+    await clickhouse.command({
+      query: `
+        ALTER TABLE session_replay_chunks
+        DELETE WHERE pid = {pid:FixedString(12)}
+          AND psid = toUInt64OrNull({psid:String})
+          AND replayId = {replayId:String}
+      `,
+      query_params: { pid, psid, replayId: selectedReplayId },
+      clickhouse_settings: { mutations_sync: '2' },
+    })
+
+    return { deleted: true, deletedChunks: objectKeys.length }
+  }
+
+  async cleanupExpiredSessionReplays(
+    limit = SESSION_REPLAY_CLEANUP_BATCH_SIZE,
+  ): Promise<number> {
+    if (!this.sessionReplayStorage.isConfigured()) {
+      return 0
+    }
+
+    const { data } = await clickhouse
+      .query({
+        query: `
+          SELECT objectKey
+          FROM session_replay_chunks
+          WHERE expiresAt <= now()
+          LIMIT {limit:UInt32}
+        `,
+        query_params: { limit },
+      })
+      .then((resultSet) => resultSet.json<{ objectKey: string }>())
+
+    if (_isEmpty(data)) {
+      return 0
+    }
+
+    const objectKeys = data.map((row) => row.objectKey)
+
+    const deleteResults = await mapLimit(
+      objectKeys,
+      SESSION_REPLAY_CHUNK_FETCH_CONCURRENCY,
+      async (objectKey) => {
+        try {
+          await this.sessionReplayStorage.deleteObject(objectKey)
+          return true
+        } catch {
+          return false
+        }
+      },
+    )
+    const deletedObjectKeys = objectKeys.filter(
+      (_, index) => deleteResults[index],
+    )
+
+    if (_isEmpty(deletedObjectKeys)) {
+      return 0
+    }
+
+    await clickhouse.command({
+      query: `
+        ALTER TABLE session_replay_chunks
+        DELETE WHERE objectKey IN ({objectKeys:Array(String)})
+      `,
+      query_params: { objectKeys: deletedObjectKeys },
+    })
+
+    return deletedObjectKeys.length
+  }
+
+  async getSessionReplaysList(
+    filtersQuery: string,
+    paramsData: any,
+    safeTimezone: string,
+    take = 30,
+    skip = 0,
+    customEVFilterApplied = false,
+  ): Promise<object[]> {
+    const primaryEventsSubquery = this.buildSessionsListPrimaryEventsSubquery(
+      filtersQuery,
+      customEVFilterApplied,
+      'traffic',
+      '',
+      true,
+    )
+
+    const filteredSessionsCTE =
+      _isEmpty(filtersQuery) && !customEVFilterApplied
+        ? `
+      filtered_sessions AS (
+        SELECT
+          psidCasted,
+          pid,
+          argMaxIf(profileId, created_for_grouping, profileId IS NOT NULL AND profileId != '') AS profileId,
+          any(cc) AS cc,
+          any(os) AS os,
+          any(br) AS br,
+          min(created_for_grouping) AS sessionStart,
+          max(created_for_grouping) AS lastActivity
+        FROM (${primaryEventsSubquery}) AS primary_events
+        GROUP BY psidCasted, pid
+      )`
+        : `
+      matched_sessions AS (
+        SELECT DISTINCT psidCasted, pid
+        FROM (${primaryEventsSubquery}) AS primary_events
+        WHERE psidCasted != '0'
+      ),
+      filtered_sessions AS (
+        SELECT
+          ms.psidCasted AS psidCasted,
+          ms.pid AS pid,
+          argMaxIf(e.profileId, toTimeZone(e.created, {timezone:String}), e.profileId IS NOT NULL AND e.profileId != '') AS profileId,
+          anyIf(e.cc, e.psid IS NOT NULL AND e.psid != 0) AS cc,
+          anyIf(e.os, e.psid IS NOT NULL AND e.psid != 0) AS os,
+          anyIf(e.br, e.psid IS NOT NULL AND e.psid != 0) AS br,
+          minOrNull(if(e.psid IS NOT NULL AND e.psid != 0, toTimeZone(e.created, {timezone:String}), NULL)) AS sessionStart,
+          maxOrNull(if(e.psid IS NOT NULL AND e.psid != 0, toTimeZone(e.created, {timezone:String}), NULL)) AS lastActivity
+        FROM matched_sessions ms
+        LEFT JOIN events e ON toString(ifNull(e.psid, 0)) = ms.psidCasted
+          AND e.pid = ms.pid
+          AND e.type IN ('pageview', 'custom_event', 'error')
+          AND e.psid IS NOT NULL
+          AND e.psid != 0
+          AND e.created BETWEEN {groupFrom:String} AND {groupTo:String}
+        WHERE ms.pid = {pid:FixedString(12)}
+        GROUP BY ms.psidCasted, ms.pid
+      )`
+
+    const query = `
+      WITH ${this.buildProfileAliasMapCTE()},
+      ${filteredSessionsCTE},
+      replay_summary AS (
+        SELECT
+          psidCasted,
+          pid,
+          replayId,
+          argMax(privacyMode, latestCreated) AS privacyMode,
+          count() AS chunkCount,
+          sum(eventCount) AS eventCount,
+          min(firstEventTimestamp) AS firstEventTimestamp,
+          max(lastEventTimestamp) AS lastEventTimestamp,
+          min(latestCreated) AS replayCreatedAt,
+          max(latestCreated) AS lastReplayCreatedAt,
+          max(chunkExpiresAt) AS replayExpiresAt
+        FROM (
+          SELECT
+            toString(ifNull(psid, 0)) AS psidCasted,
+            pid,
+            replayId,
+            chunkIndex,
+            argMax(privacyMode, created) AS privacyMode,
+            argMax(eventCount, created) AS eventCount,
+            argMax(firstEventTimestamp, created) AS firstEventTimestamp,
+            argMax(lastEventTimestamp, created) AS lastEventTimestamp,
+            argMax(expiresAt, created) AS chunkExpiresAt,
+            max(created) AS latestCreated
+          FROM session_replay_chunks
+          WHERE pid = {pid:FixedString(12)}
+            AND psid != 0
+            AND expiresAt > now()
+            AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          GROUP BY psidCasted, pid, replayId, chunkIndex
+        )
+        GROUP BY psidCasted, pid, replayId
+      ),
+      pageview_counts AS (
+        SELECT
+          toString(ifNull(psid, 0)) AS psidCasted,
+          pid,
+          count() as count
+        FROM events
+        WHERE pid = {pid:FixedString(12)} AND type = 'pageview' AND psid IS NOT NULL
+          AND psid != 0
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        GROUP BY psidCasted, pid
+      ),
+      event_counts AS (
+        SELECT
+          toString(ifNull(psid, 0)) AS psidCasted,
+          pid,
+          count() as count
+        FROM events
+        WHERE pid = {pid:FixedString(12)} AND type = 'custom_event' AND psid IS NOT NULL
+          AND psid != 0
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        GROUP BY psidCasted, pid
+      ),
+      error_counts AS (
+        SELECT
+          toString(ifNull(psid, 0)) AS psidCasted,
+          pid,
+          count() as count
+        FROM events
+        WHERE pid = {pid:FixedString(12)} AND type = 'error' AND psid IS NOT NULL
+          AND psid != 0
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        GROUP BY psidCasted, pid
+      ),
+      session_duration_agg AS (
+        SELECT
+          psidCasted,
+          pid,
+          sum(session_duration) as total_duration,
+          argMax(sessionProfileId, lastActivity) as profileId
+        FROM (
+          SELECT
+            toString(psid) AS psidCasted,
+            pid,
+            sid,
+            dateDiff('second', min(firstSeen), max(lastSeen)) as session_duration,
+            max(lastSeen) as lastActivity,
+            argMax(coalesce(nullIf(pam.userProfileId, ''), s.profileId), lastSeen) as sessionProfileId
+          FROM sessions AS s
+          LEFT JOIN profile_alias_map pam ON s.profileId = pam.anonProfileId
+          WHERE pid = {pid:FixedString(12)}
+          GROUP BY psidCasted, pid, sid
+        )
+        GROUP BY psidCasted, pid
+      ),
+      replays_enriched AS (
+        SELECT
+          rs.psidCasted AS psidCasted,
+          rs.pid AS pid,
+          rs.replayId AS replayId,
+          rs.privacyMode AS privacyMode,
+          rs.chunkCount AS chunkCount,
+          rs.eventCount AS eventCount,
+          rs.firstEventTimestamp AS firstEventTimestamp,
+          rs.lastEventTimestamp AS lastEventTimestamp,
+          rs.replayCreatedAt AS replayCreatedAt,
+          rs.lastReplayCreatedAt AS lastReplayCreatedAt,
+          rs.replayExpiresAt AS replayExpiresAt,
+          fs.cc AS cc,
+          fs.os AS os,
+          fs.br AS br,
+          COALESCE(pc.count, 0) AS pageviews,
+          COALESCE(ec.count, 0) AS customEvents,
+          COALESCE(errc.count, 0) AS errors,
+          fs.sessionStart AS sessionStart,
+          fs.lastActivity AS lastActivity,
+          sda.total_duration AS sdur,
+          coalesce(nullIf(sda.profileId, ''), fs.profileId) AS profileId
+        FROM replay_summary rs
+        INNER JOIN filtered_sessions fs ON rs.psidCasted = fs.psidCasted AND rs.pid = fs.pid
+        LEFT JOIN pageview_counts pc ON rs.psidCasted = pc.psidCasted AND rs.pid = pc.pid
+        LEFT JOIN event_counts ec ON rs.psidCasted = ec.psidCasted AND rs.pid = ec.pid
+        LEFT JOIN error_counts errc ON rs.psidCasted = errc.psidCasted AND rs.pid = errc.pid
+        LEFT JOIN session_duration_agg sda ON rs.psidCasted = sda.psidCasted AND rs.pid = sda.pid
+      ),
+      first_session_per_profile AS (
+        SELECT
+          coalesce(nullIf(pam.userProfileId, ''), s.profileId) AS profileId,
+          argMin(toString(psid), firstSeen) AS firstPsid
+        FROM sessions AS s FINAL
+        LEFT JOIN profile_alias_map pam ON s.profileId = pam.anonProfileId
+        WHERE pid = {pid:FixedString(12)}
+          AND s.profileId IS NOT NULL
+          AND s.profileId != ''
+        GROUP BY profileId
+      )
+      SELECT
+        re.psidCasted AS psid,
+        re.replayId,
+        re.privacyMode,
+        re.chunkCount,
+        re.eventCount,
+        re.firstEventTimestamp,
+        re.lastEventTimestamp,
+        re.replayCreatedAt,
+        re.lastReplayCreatedAt,
+        re.replayExpiresAt,
+        re.cc,
+        re.os,
+        re.br,
+        re.pageviews,
+        re.customEvents,
+        re.errors,
+        re.sessionStart,
+        re.lastActivity,
+        if(dateDiff('second', re.lastActivity, now()) < ${LIVE_SESSION_THRESHOLD_SECONDS}, 1, 0) AS isLive,
+        re.sdur,
+        re.profileId AS profileId,
+        if(startsWith(ifNull(re.profileId, ''), '${AnalyticsService.PROFILE_PREFIX_USER}'), 1, 0) AS isIdentified,
+        if(
+          ifNull(re.profileId, '') = '',
+          0,
+          if(isNull(fsp.firstPsid) OR fsp.firstPsid = '' OR fsp.firstPsid = re.psidCasted, 1, 0)
+        ) AS isFirstSession
+      FROM replays_enriched re
+      LEFT JOIN first_session_per_profile fsp ON re.profileId = fsp.profileId
+      ORDER BY re.lastReplayCreatedAt DESC, re.replayId DESC
+      LIMIT {take:UInt32}
+      OFFSET {skip:UInt32}
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: {
+          ...paramsData.params,
+          timezone: safeTimezone,
+          take,
+          skip,
+        },
+      })
+      .then((resultSet) => resultSet.json<any>())
+
+    return data.map((row: any) => {
+      const firstTimestamp =
+        row.firstEventTimestamp === null ||
+        typeof row.firstEventTimestamp === 'undefined'
+          ? Number.NaN
+          : Number(row.firstEventTimestamp)
+      const lastTimestamp =
+        row.lastEventTimestamp === null ||
+        typeof row.lastEventTimestamp === 'undefined'
+          ? Number.NaN
+          : Number(row.lastEventTimestamp)
+      const sessionDuration = Number(row.sdur) || 0
+      const replayDuration =
+        Number.isFinite(firstTimestamp) &&
+        Number.isFinite(lastTimestamp) &&
+        lastTimestamp > firstTimestamp
+          ? Math.round((lastTimestamp - firstTimestamp) / 1000)
+          : sessionDuration
+
+      return {
+        ...row,
+        hasReplay: 1,
+        chunkCount: Number(row.chunkCount) || 0,
+        eventCount: Number(row.eventCount) || 0,
+        replayDuration,
+        replayStart:
+          Number.isFinite(firstTimestamp) && firstTimestamp > 0
+            ? dayjs.utc(firstTimestamp).format('YYYY-MM-DD HH:mm:ss')
+            : row.replayCreatedAt,
+      }
+    })
+  }
+
+  private getDataDeletionDateRange(from: string | null, to: string | null) {
+    const normalizedFrom = from
+      ? dayjs.utc(from).format('YYYY-MM-DD HH:mm:ss')
+      : null
+    const normalizedTo = to ? dayjs.utc(to).format('YYYY-MM-DD HH:mm:ss') : null
+    const conditions: string[] = []
+
+    if (normalizedFrom) {
+      conditions.push('created >= {from:String}')
+    }
+    if (normalizedTo) {
+      conditions.push('created <= {to:String}')
+    }
+
+    return {
+      from: normalizedFrom,
+      to: normalizedTo,
+      condition: conditions.length ? `AND ${conditions.join(' AND ')}` : '',
+    }
+  }
+
+  async getSessionDurationFromClickHouse(
+    psid: string,
+    pid: string,
+  ): Promise<number | null> {
+    try {
+      const query = `
+        SELECT max(duration) as duration
+        FROM (
+          SELECT dateDiff('second', min(firstSeen), max(lastSeen)) as duration
+          FROM sessions
+          WHERE psid = {psid:UInt64}
+            AND pid = {pid:FixedString(12)}
+          GROUP BY sid
+        )
+      `
+
+      const { data } = await clickhouse
+        .query({
+          query,
+          query_params: { psid, pid },
+        })
+        .then((resultSet) => resultSet.json<{ duration: number }>())
+
+      return data[0]?.duration ?? null
+    } catch (error) {
+      console.error('Failed to get session duration:', error)
+      return null
+    }
   }
 }

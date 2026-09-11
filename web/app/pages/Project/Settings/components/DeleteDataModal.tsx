@@ -15,7 +15,6 @@ import { toast } from 'sonner'
 
 import type { DataDeletionPreview } from '~/api/api.server'
 import { useDataDeletionPreviewProxy } from '~/hooks/useAnalyticsProxy'
-import { isSelfhosted } from '~/lib/constants'
 import type { ProjectSettingsActionData } from '~/routes/projects.settings.$id'
 import DatePicker from '~/ui/Datepicker'
 import HoldToConfirmButton from '~/ui/HoldToConfirmButton'
@@ -45,8 +44,6 @@ interface EventType {
   Icon: React.ElementType
 }
 
-// Order mirrors how prominent each type is for a typical cleanup. Session
-// replays are cloud-only — self-hosted has no replay storage.
 const EVENT_TYPES: EventType[] = [
   {
     key: 'pageview',
@@ -73,15 +70,11 @@ const EVENT_TYPES: EventType[] = [
     labelKey: 'project.settings.deleteData.types.captcha',
     Icon: ShieldCheckIcon,
   },
-  ...(isSelfhosted
-    ? []
-    : [
-        {
-          key: 'session_replay',
-          labelKey: 'project.settings.deleteData.types.session_replay',
-          Icon: MonitorPlayIcon,
-        },
-      ]),
+  {
+    key: 'session_replay',
+    labelKey: 'project.settings.deleteData.types.session_replay',
+    Icon: MonitorPlayIcon,
+  },
 ]
 
 const DEFAULT_TYPES = ['pageview', 'custom_event']

@@ -81,7 +81,7 @@ Swetrix and Plausible are both privacy-first and open source; the main differenc
 | Error tracking                   | ✅                     | ❌                      | ❌                   |
 | User profiles / identified users | ✅                     | ❌                      | ❌                   |
 | Feature flags & A/B experiments  | ✅                     | ❌                      | ❌                   |
-| Session replays                  | ✅ Cloud               | ❌                      | ❌                   |
+| Session replays                  | ✅                     | ❌                      | ❌                   |
 | Revenue / MRR analytics          | ✅ Cloud               | ⚠️ ecommerce setup      | ❌                   |
 | Ask AI / chat with your data     | ✅ Cloud               | ❌                      | ❌                   |
 
@@ -99,9 +99,10 @@ Your subscription directly funds maintenance and development of the open-source 
 
 ### Self-hosting
 
-Prefer to run it yourself? Swetrix Community Edition (CE) ships the same core analytics: privacy-friendly traffic stats, custom events, sessions, funnels, performance and error tracking. Deploy the API and UI with Docker, connect MySQL / ClickHouse / Redis, and you're live.
+Prefer to run it yourself? Swetrix Community Edition (CE) ships the same core analytics: privacy-friendly traffic stats, custom events, sessions, session replays, funnels, performance and error tracking. Deploy the API and UI with Docker, connect ClickHouse / Redis, and configure a private S3-compatible bucket for replay recordings.
 
 - **[Self-hosting guide →](https://swetrix.com/docs/selfhosting/how-to)**
+- **[Session replay storage setup →](https://swetrix.com/docs/selfhosting/session-replays)**
 
 #### Cloud vs Community Edition
 
@@ -109,7 +110,7 @@ Prefer to run it yourself? Swetrix Community Edition (CE) ships the same core an
 | ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Infrastructure management**                                                | ✅ Set up tracking in minutes. We manage server maintenance, upgrades and security for you.                                                                                       | ⚠️ You manage servers, installs, upgrades, scaling and backups.                                                                                                |
 | **Core analytics (traffic, events, sessions, funnels, performance, errors)** | ✅ Included                                                                                                                                                                       | ✅ Included                                                                                                                                                     |
-| **Session replays**                                                          | ✅ Included                                                                                                                                                                       | ⚠️ Cloud only                                                                                                                                                   |
+| **Session replays**                                                          | ✅ Included                                                                                                                                                                       | ✅ Included; requires S3-compatible storage                                                                                                                                                   |
 | **Advanced features (Revenue, Experiments, AI)**                             | ✅ Included                                                                                                                                                                       | ⚠️ Cloud only                                                                                                                                                   |
 | **Teams & sharing**                                                          | ✅ Organisations, role-based access, direct invites, public and password-protected links.                                                                                        | ⚠️ Direct project invites, password-protected links and public projects only.                                                                                  |
 | **Alerts & notifications**                                                   | ✅ Email, Slack, Telegram, Discord, webhook, web push                                                                                                                             | ⚠️ Not included                                                                                                                                                 |

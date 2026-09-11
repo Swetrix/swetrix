@@ -17,6 +17,7 @@ export const DATA_DELETION_EVENT_TYPES = [
   'error',
   'performance',
   'captcha',
+  'session_replay',
 ] as const
 
 export type DataDeletionEventType = (typeof DATA_DELETION_EVENT_TYPES)[number]
@@ -64,7 +65,7 @@ export class DataDeletionDto {
     type: [String],
     enum: DATA_DELETION_EVENT_TYPES,
     description:
-      "Event types to delete. Any of: 'pageview', 'custom_event', 'error', 'performance', 'captcha'.",
+      "Event types to delete. Any of: 'pageview', 'custom_event', 'error', 'performance', 'captcha', 'session_replay'.",
   })
   @IsOptional()
   @IsArray()

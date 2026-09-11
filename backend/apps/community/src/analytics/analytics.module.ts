@@ -1,3 +1,10 @@
+import { BullModule } from '@nestjs/bullmq'
+import { SessionReplayS3Service } from './session-replay-s3.service'
+import {
+  SessionReplayExportService,
+  SESSION_REPLAY_EXPORT_QUEUE,
+} from './session-replay-export.service'
+import { SessionReplayExportProcessor } from './session-replay-export.processor'
 import { Module, forwardRef } from '@nestjs/common'
 
 import { AnalyticsService } from './analytics.service'
@@ -22,9 +29,17 @@ import { ProjectV2Controller } from './v2/controllers/project-v2.controller'
 import { SeoV2Controller } from './v2/controllers/seo-v2.controller'
 
 @Module({
-  imports: [AppLoggerModule, ProjectModule, forwardRef(() => ExperimentModule)],
+  imports: [
+    AppLoggerModule,
+    forwardRef(() => ProjectModule),
+    forwardRef(() => ExperimentModule),
+    BullModule.registerQueue({ name: SESSION_REPLAY_EXPORT_QUEUE }),
+  ],
   providers: [
     AnalyticsService,
+    SessionReplayS3Service,
+    SessionReplayExportService,
+    SessionReplayExportProcessor,
     AnalyticsV2Service,
     SeoV2Service,
     BotDetectionService,

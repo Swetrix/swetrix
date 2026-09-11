@@ -1,0 +1,121 @@
+---
+title: Session replays
+slug: /selfhosting/session-replays
+description: "Configure private S3-compatible storage for session recording, playback, and MP4 exports in Swetrix Community Edition."
+---
+
+Community Edition supports session recording, playback, and MP4 exports using the same recorder and player as Swetrix Cloud. Recordings are stored in your own private S3-compatible bucket; ClickHouse stores replay metadata and Redis coordinates recording and export jobs. There is no subscription or monthly replay quota in Community Edition.
+
+## Configure storage
+
+Create a private bucket and credentials with permission to read, write, and delete objects in that bucket. Swetrix creates objects, but does not create the bucket. The API must be able to reach the storage endpoint. Browsers access recordings through Swetrix, so the bucket does not need public access or browser CORS rules.
+
+Add these variables to the `.env` file in your self-hosting directory:
+
+```dotenv
+SESSION_REPLAY_S3_ENDPOINT=https://s3.eu-west-1.amazonaws.com
+SESSION_REPLAY_S3_BUCKET=swetrix-replays
+SESSION_REPLAY_S3_REGION=eu-west-1
+SESSION_REPLAY_S3_ACCESS_KEY_ID=your-access-key
+SESSION_REPLAY_S3_SECRET_ACCESS_KEY=your-secret-key
+SESSION_REPLAY_S3_FORCE_PATH_STYLE=false
+```
+
+| Variable                              | Description                                                                                                                                                                  |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SESSION_REPLAY_S3_ENDPOINT`          | S3 API endpoint, including `https://` or `http://`. Use the service endpoint, without a bucket name, object path, or query string.                                           |
+| `SESSION_REPLAY_S3_BUCKET`            | Name of an existing private bucket.                                                                                                                                          |
+| `SESSION_REPLAY_S3_REGION`            | Region used to sign S3 requests. Defaults to the location inferred from a Hetzner endpoint, or `us-east-1` for other providers. Set your bucket's region explicitly for AWS. |
+| `SESSION_REPLAY_S3_ACCESS_KEY_ID`     | Access key for the bucket. Keep it on the API server.                                                                                                                        |
+| `SESSION_REPLAY_S3_SECRET_ACCESS_KEY` | Secret key for the bucket. Keep it on the API server.                                                                                                                        |
+| `SESSION_REPLAY_S3_FORCE_PATH_STYLE`  | Set to `true` to use `endpoint/bucket/key`, for example with MinIO. Defaults to `false`, which uses `bucket.endpoint/key`.                                                   |
+
+For AWS, grant `s3:GetObject`, `s3:PutObject`, and `s3:DeleteObject` on the bucket's objects. This setup uses access-key credentials, rather than an IAM role or temporary session token.
+
+Common endpoint settings:
+
+| Provider                         | Endpoint example                                   | Region                                    | Path style |
+| -------------------------------- | -------------------------------------------------- | ----------------------------------------- | ---------- |
+| AWS S3                           | `https://s3.eu-west-1.amazonaws.com`               | `eu-west-1` (match your bucket)           | `false`    |
+| Hetzner Object Storage           | `https://fsn1.your-objectstorage.com`              | `fsn1` (or leave blank to infer it)       | `false`    |
+| Cloudflare R2                    | `https://YOUR_ACCOUNT_ID.r2.cloudflarestorage.com` | `auto`                                    | `true`     |
+| MinIO on the same Docker network | `http://minio:9000`                                | `us-east-1` (unless configured otherwise) | `true`     |
+
+For R2, use the [S3 API endpoint and credentials](https://developers.cloudflare.com/r2/api/s3/api/), rather than a public bucket URL. For MinIO, use the S3 API port, not the web console port. A Docker container's `localhost` points to that container, so use the storage service name or a reachable hostname.
+
+## Pass the variables to Docker
+
+The self-hosting Compose configuration forwards the replay variables to the API container, and `configure.sh` includes optional replay settings in newly generated `.env` files. For an existing installation, add the values to your `.env` manually.
+
+If your older `compose.yaml` does not include replay variables, add the following entries to its existing `swetrix-api.environment` list, preserving its other entries. A Compose `.env` file alone does not pass every variable into the container:
+
+```yaml
+- SESSION_REPLAY_S3_ENDPOINT=${SESSION_REPLAY_S3_ENDPOINT}
+- SESSION_REPLAY_S3_BUCKET=${SESSION_REPLAY_S3_BUCKET}
+- SESSION_REPLAY_S3_REGION=${SESSION_REPLAY_S3_REGION:-}
+- SESSION_REPLAY_S3_ACCESS_KEY_ID=${SESSION_REPLAY_S3_ACCESS_KEY_ID}
+- SESSION_REPLAY_S3_SECRET_ACCESS_KEY=${SESSION_REPLAY_S3_SECRET_ACCESS_KEY}
+- SESSION_REPLAY_S3_FORCE_PATH_STYLE=${SESSION_REPLAY_S3_FORCE_PATH_STYLE:-false}
+```
+
+Use API and frontend images from a Community Edition release containing session replay support. Recreate the containers after updating their image tags and configuration:
+
+```bash
+docker compose up -d --force-recreate swetrix-api swetrix
+```
+
+The API's startup initialiser creates `session_replay_chunks` and adds the `sessionReplayRetentionDays` project column if missing. This also upgrades an existing CE database; there is no MySQL migration to run. If you use a custom startup command, run `npm run clickhouse:initialise` before starting the API.
+
+To apply only the replay schema upgrade to an existing CE database, run this standalone migration from the backend directory with your ClickHouse environment variables configured:
+
+```bash
+node migrations/clickhouse/selfhosted_2026_09_11_session_replays.js
+```
+
+The migration uses `IF NOT EXISTS` for both the table and retention column, so it can be rerun after a partial upgrade or the normal startup initialiser.
+
+Without storage credentials, ordinary analytics continues to work, but attempts to start a recording return `Session replay storage is not configured`.
+
+## Allow replay uploads through your proxy
+
+The API accepts replay chunk requests up to 15 MiB on `/log/session-replay/chunk` and `/v1/log/session-replay/chunk`. Your reverse proxy must also allow that size. The self-hosting Nginx configuration includes this limit. If you have an older configuration, add this inside the existing `location /backend/` block:
+
+```nginx
+client_max_body_size 15m;
+```
+
+Reload Nginx after validating its configuration. Custom proxies must forward the replay start and chunk routes, as well as the existing analytics routes. HTTP `413` responses usually mean a proxy upload limit is too small.
+
+## Start recording
+
+Initialise your tracker with your CE API URL, then explicitly start the recorder:
+
+```javascript
+swetrix.init("YOUR_PROJECT_ID", {
+  apiURL: "https://analytics.example.com/backend",
+});
+
+await swetrix.startSessionReplay({ privacy: "total" });
+```
+
+Use a current `swetrix` tracker version that supports `startSessionReplay()`. The `apiURL` above matches the standard self-hosting proxy; change it if you use another API route. Recording is opt-in and does not start automatically when you initialise analytics.
+
+Open the **Replays** tab in your project's dashboard to watch recordings. See [Session Replays](/analytics-dashboard/session-replays) for the player and [the script reference](/swetrix-js-reference#startsessionreplay) for privacy modes and masking options.
+
+## Retention and maintenance
+
+Choose **30 days, 90 days, 1 year, or 5 years** in **Project Settings > Session replays**. The default is 30 days. Changes affect newly uploaded chunks; existing chunks retain their original expiry dates.
+
+Expired chunks stop appearing in playback immediately. The primary API node cleans up expired storage objects and their ClickHouse rows in batches every 10 minutes. Keep at least one API instance running with `IS_PRIMARY_NODE=true`. Failed object deletions remain eligible for a later cleanup attempt. A backlog can take multiple runs to clear.
+
+You can delete individual replays from the player or replay list, or select session replays in the project's data-deletion tool. Deleting a project also removes its recordings. Keep storage credentials configured while deleting replay data.
+
+Back up both ClickHouse and the bucket to preserve recordings and their metadata. If you enable bucket versioning, configure lifecycle rules for noncurrent versions; ordinary object deletion does not purge those versions. Do not expire current recording objects earlier than their configured retention period.
+
+## MP4 exports
+
+The CE API Docker image includes Chromium and FFmpeg for MP4 exports. Exports run through Redis-backed background jobs and require writable temporary disk space. Allow additional RAM, CPU, and temporary disk capacity when exporting long sessions. Custom API images need the same browser and video tooling.
+
+`SESSION_REPLAY_EXPORT_CONCURRENCY` defaults to `1`; increase it only when the API server has capacity for more simultaneous renders. `SESSION_REPLAY_EXPORT_TTL_SECONDS` defaults to `86400` (24 hours), after which generated MP4 files expire. Pass either variable into the API container if you override it.
+
+Recording retains Cloud's per-replay safeguards: at most 30 minutes, 100,000 events, 1,200 chunks, and 150 MiB of uncompressed event data. A single event is limited to 5 MiB. Storage and transfer costs depend on your provider and recording volume.

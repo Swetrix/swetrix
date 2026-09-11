@@ -1,3 +1,5 @@
+import { NestExpressApplication } from '@nestjs/platform-express'
+import express from 'express'
 import { NestFactory } from '@nestjs/core'
 import { ValidationPipe, VersioningType } from '@nestjs/common'
 import cookieParser from 'cookie-parser'
@@ -7,7 +9,15 @@ import { isDevelopment } from './common/constants'
 import { AppModule } from './app.module'
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule)
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    bodyParser: false,
+  })
+  app.use(
+    ['/log/session-replay/chunk', '/v1/log/session-replay/chunk'],
+    express.json({ limit: '15mb' }),
+  )
+  app.useBodyParser('json', { limit: '1mb' })
+  app.useBodyParser('urlencoded', { extended: true, limit: '1mb' })
   app.use(cookieParser())
   app.useGlobalPipes(new ValidationPipe())
 

@@ -671,4 +671,41 @@ export class ProjectService {
     this.validateIPWhitelist(projectDTO)
     this.validateCountryBlacklist(projectDTO)
   }
+
+  async getPIDsWhereSessionReplayDataExists(
+    projectIds: string[],
+  ): Promise<string[]> {
+    if (_isEmpty(projectIds)) {
+      return []
+    }
+
+    const params = _reduce(
+      projectIds,
+      (acc, curr, index) => ({
+        ...acc,
+        [`pid_${index}`]: curr,
+      }),
+      {},
+    )
+
+    const pids = _join(
+      _map(params, (val, key) => `{${key}:FixedString(12)}`),
+      ',',
+    )
+
+    const query = `
+      SELECT DISTINCT pid
+      FROM session_replay_chunks
+      WHERE pid IN (${pids})
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: params,
+      })
+      .then((resultSet) => resultSet.json<{ pid: string }>())
+
+    return _map(data, ({ pid }) => pid)
+  }
 }

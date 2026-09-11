@@ -135,6 +135,7 @@ const ALLOWED_KEYS = [
   'captchaDifficulty',
   'captchaDifficultyMode',
   'brandKeywords',
+  'sessionReplayRetentionDays',
 ]
 
 const CLICKHOUSE_PROJECT_UPDATABLE_KEYS = [
@@ -425,6 +426,8 @@ const updateProjectClickhouse = async (
     let type = 'String'
     if (INT8_COLUMNS.includes(col)) {
       type = 'Int8'
+    } else if (col === 'sessionReplayRetentionDays') {
+      type = 'UInt16'
     } else if (UINT8_COLUMNS.includes(col)) {
       type = 'UInt8'
     } else if (NULLABLE_INT64_COLUMNS.includes(col)) {

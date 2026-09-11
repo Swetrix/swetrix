@@ -323,7 +323,7 @@ const ProjectSettings = () => {
             description: t('project.settings.tabs.sessionReplaysDesc'),
             icon: VideoCameraIcon,
             iconColor: 'text-violet-500',
-            visible: !isSelfhosted,
+            visible: true,
           },
           {
             id: 'emails',
@@ -379,7 +379,7 @@ const ProjectSettings = () => {
   )
 
   const sessionReplayMaxRetentionDays = useMemo(() => {
-    return user?.sessionReplayRetentionDays || 30
+    return isSelfhosted ? 1825 : user?.sessionReplayRetentionDays || 30
   }, [user?.sessionReplayRetentionDays])
 
   const activeTab = useMemo<SettingsTab>(() => {
