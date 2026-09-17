@@ -1,4 +1,3 @@
-import net from 'net'
 import {
   ForbiddenException,
   Injectable,
@@ -28,13 +27,13 @@ import { ProjectDTO } from './dto/project.dto'
 import {
   isValidPID,
   redis,
-  IP_REGEX,
   ORIGINS_REGEX,
   getRedisProjectKey,
   redisProjectCacheTimeout,
   V2_VIEW_FILTER_DIMENSIONS,
 } from '../common/constants'
 import { clickhouse } from '../common/integrations/clickhouse'
+import { isValidIpRange } from '../common/ip-range'
 import {
   createProjectShareClickhouse,
   findProjectSharesByProjectClickhouse,
@@ -602,7 +601,7 @@ export class ProjectService {
         'The list of allowed blacklisted IP addresses must be less than 300 characters.',
       )
     _map(projectDTO.ipBlacklist, (ip) => {
-      if (!net.isIP(_trim(ip)) && !IP_REGEX.test(_trim(ip))) {
+      if (!isValidIpRange(_trim(ip))) {
         throw new ConflictException(`IP address ${ip} is not correct`)
       }
     })
@@ -623,7 +622,7 @@ export class ProjectService {
         'The list of whitelisted IP addresses must be less than 300 characters.',
       )
     _map(projectDTO.ipWhitelist, (ip) => {
-      if (!net.isIP(_trim(ip)) && !IP_REGEX.test(_trim(ip))) {
+      if (!isValidIpRange(_trim(ip))) {
         throw new ConflictException(`IP address ${ip} is not correct`)
       }
     })

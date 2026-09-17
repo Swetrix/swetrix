@@ -32,8 +32,6 @@ const { TWO_FACTOR_AUTHENTICATION_APP_NAME } = process.env
 
 const ORIGINS_REGEX =
   /^(?=.{1,255}$)([0-9A-Za-z*:](?:(?:[0-9A-Za-z*:]|-){0,61}[0-9A-Za-z*:])?(?:\.[0-9A-Za-z*:](?:(?:[0-9A-Za-z*-]|-){0,61}[0-9A-Za-z*:])?)*)?$/
-const IP_REGEX =
-  /^(([12]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])(\.|\/)){4}([1-2]?[0-9]|3[0-2])$/
 const PID_REGEX = /^(?!.*--)[a-zA-Z0-9-]{12}$/
 const isValidPID = (pid: string) => PID_REGEX.test(pid)
 
@@ -250,7 +248,6 @@ export {
   SEND_WARNING_AT_PERC,
   PROJECT_INVITE_EXPIRE,
   TWO_FACTOR_AUTHENTICATION_APP_NAME,
-  IP_REGEX,
   ORIGINS_REGEX,
   EMAIL_ACTION_ENCRYPTION_KEY,
   isDevelopment,

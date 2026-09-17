@@ -102,6 +102,18 @@ const parseIp = (
   return null
 }
 
+export const isValidIpRange = (range: string): boolean => {
+  const parts = range.split('/')
+  if (parts.length > 2) return false
+
+  const [address, prefix] = parts
+  const parsed = parseIp(address, { preserveIPv4Mapped: true })
+  if (!parsed) return false
+  if (prefix === undefined) return true
+
+  return /^\d+$/.test(prefix) && Number(prefix) <= parsed.bytes.length * 8
+}
+
 const matchesPrefix = (
   target: ParsedIp,
   range: ParsedIp,
