@@ -22,6 +22,7 @@
   "dependencies": {
     "@calcom/embed-react": "^1.5.3",
     "@headlessui/react": "^2.2.10",
+    "@maplibre/maplibre-gl-leaflet": "^0.1.4",
     "@nivo/sankey": "^0.99.0",
     "@number-flow/react": "^0.6.2",
     "@phosphor-icons/react": "^2.1.10",
@@ -51,6 +52,7 @@
     "jszip": "^3.10.1",
     "leaflet": "^1.9.4",
     "lodash": "^4.18.1",
+    "maplibre-gl": "^5.24.0",
     "marked": "^18.0.7",
     "motion": "^12.43.0",
     "react": "^19.2.8",
