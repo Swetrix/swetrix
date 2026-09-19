@@ -106,6 +106,7 @@ const isProjectTextAutosaveField = (
 const getFormFromProject = (project: Project): Form => ({
   name: project.name || '',
   id: project.id,
+  organisationId: project.organisationId,
   public: project.public || false,
   isPasswordProtected: project.isPasswordProtected || false,
   origins: _isString(project.origins)
