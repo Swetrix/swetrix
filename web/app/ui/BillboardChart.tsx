@@ -7,8 +7,11 @@ import billboard, {
 } from 'billboard.js'
 import cx from 'clsx'
 import React, { useEffect, useMemo, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { trackError } from '~/utils/analytics'
+
+import { attachRelativeTimeBadge } from './chartRelativeTime'
 
 interface BillboardChartProps {
   options: ChartOptions
@@ -17,6 +20,7 @@ interface BillboardChartProps {
   onReady?: (chart: Chart | null) => void
   deps?: any[]
   xGridLines?: GridLineOptions[]
+  relativeTimeTimezone?: string
 }
 
 const BillboardChart = ({
@@ -26,7 +30,9 @@ const BillboardChart = ({
   onReady,
   deps,
   xGridLines,
+  relativeTimeTimezone,
 }: BillboardChartProps) => {
+  const { i18n } = useTranslation()
   const containerRef = useRef<HTMLDivElement | null>(null)
   const chartRef = useRef<Chart | null>(null)
   const isDestroyingRef = useRef(false)
@@ -136,6 +142,18 @@ const BillboardChart = ({
       }
     }
 
+    const removeRelativeTimeBadge =
+      relativeTimeTimezone &&
+      wrappedOptions.axis?.x?.type === 'timeseries' &&
+      !wrappedOptions.axis.rotated
+        ? attachRelativeTimeBadge(
+            containerRef.current,
+            wrappedOptions,
+            relativeTimeTimezone,
+            i18n.language,
+          )
+        : undefined
+
     // Translation tools (Google Translate, Immersive Translate etc.) can
     // rewrite the SVG internals mid-session, which makes billboard.js throw
     // during re-render. Keep the page alive instead of crashing to the
@@ -167,6 +185,7 @@ const BillboardChart = ({
     if (onReady) onReady(chart)
 
     return () => {
+      removeRelativeTimeBadge?.()
       const chartToDestroy = chartRef.current
       if (!chartToDestroy) return
 
@@ -190,7 +209,7 @@ const BillboardChart = ({
       if (onReady) onReady(null)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, mergedDeps)
+  }, [...mergedDeps, relativeTimeTimezone, i18n.language])
 
   useEffect(() => {
     const chart = chartRef.current

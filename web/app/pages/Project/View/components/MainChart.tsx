@@ -3,6 +3,8 @@ import React, { useEffect, useMemo } from 'react'
 
 import BillboardChart from '~/ui/BillboardChart'
 
+import { useViewProjectContext } from '../ViewProject'
+
 import { useChartManager } from './ChartManager'
 
 interface MainChartProps {
@@ -23,6 +25,7 @@ export const MainChart = ({
   xGridLines,
 }: MainChartProps) => {
   const { registerChart, unregisterChart } = useChartManager()
+  const { timezone } = useViewProjectContext()
 
   const mergedDeps = useMemo(
     () => deps || [options, dataNames],
@@ -47,6 +50,7 @@ export const MainChart = ({
       onReady={handleChartReady}
       deps={mergedDeps}
       xGridLines={xGridLines}
+      relativeTimeTimezone={timezone}
     />
   )
 }
