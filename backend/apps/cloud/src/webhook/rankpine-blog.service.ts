@@ -37,6 +37,15 @@ const verificationSchema = z.object({
 const publishedArticleSchema = z.object({
   event: z.literal('article.published'),
   publishedAt: z.string().min(1),
+  featuredImage: z
+    .object({
+      url: z.string().url().refine((value) => {
+        const url = new URL(value)
+        return ['https:', 'http:'].includes(url.protocol) && !url.username && !url.password
+      }),
+    })
+    .nullable()
+    .optional(),
   site: z.object({
     name: z.string().min(1),
     url: z.string().min(1),
@@ -225,6 +234,7 @@ function articleMarkdown(
   article: z.infer<typeof publishedArticleSchema>['article'],
   publishedDate: Date,
   config: PublisherConfig,
+  image?: string,
 ): string {
   const body = stripLeadingTitle(article.markdown)
 
@@ -244,6 +254,7 @@ function articleMarkdown(
     `title: ${quoteYaml(article.title)}`,
     `intro: ${quoteYaml(intro)}`,
     `date: ${formatPostDate(publishedDate, config.timeZone)}`,
+    ...(image ? [`image: ${quoteYaml(image)}`] : []),
     'hidden: false',
     `author: ${quoteYaml(config.author)}`,
     ...twitterHandle,
@@ -550,7 +561,7 @@ export class RankPineBlogService {
       config.timeZone,
     )}-${slug}.md`
     const path = await this.findExistingPath(slug, desiredPath, config)
-    const content = articleMarkdown(payload.article, publishedDate, config)
+    const content = articleMarkdown(payload.article, publishedDate, config, payload.featuredImage?.url)
 
     let result: { changed: boolean; htmlUrl: string }
 
