@@ -2691,7 +2691,7 @@
     },
     "page": "Page",
     "journeys": {
-      "noData": "Les parcours ne sont pas encore disponibles par manque de données, ou vous avez désactivé cette fonctionnalité dans les paramètres du script de suivi.",
+      "noData": "Aucun parcours trouvé pour la période et les filtres sélectionnés. Les parcours apparaissent lorsque les visiteurs consultent au moins deux pages différentes au cours d'une session.",
       "learnMore": "<url>En savoir plus sur les parcours</url> dans notre documentation.",
       "learnMoreAriaLabel": "Ouvrir la documentation des parcours",
       "stepX": "Étape {{x}}",
@@ -3651,6 +3651,13 @@
         "desc": "Gérez chaque site client depuis un espace de travail unique axé sur la confidentialité"
       }
     }
+  },
+  "blogPage": {
+    "title": "Le Blog Swetrix",
+    "description": "Guides pratiques sur l'analyse web, la confidentialité et la croissance de votre site web. Découvrez ce qui attire les internautes sur votre site, ce qu'ils y font ensuite et comment transformer ces informations en de meilleures décisions.",
+    "home": "Accueil",
+    "breadcrumbLabel": "Fil d'Ariane",
+    "empty": "Aucun article trouvé"
   },
   "exitIntentPopup": {
     "freeTrial": "Essai gratuit",

@@ -2691,7 +2691,7 @@
     },
     "page": "Seite",
     "journeys": {
-      "noData": "Journeys sind aufgrund fehlender Daten noch nicht verfügbar, oder Sie haben diese Funktion in den Parametern des Tracking-Skripts deaktiviert.",
+      "noData": "Keine Journeys für den ausgewählten Zeitraum und die Filter gefunden. Journeys werden angezeigt, wenn Besucher mindestens zwei verschiedene Seiten in einer Sitzung aufrufen.",
       "learnMore": "<url>Erfahren Sie mehr über Journeys</url> in unserer Dokumentation.",
       "learnMoreAriaLabel": "Journeys-Dokumentation öffnen",
       "stepX": "Schritt {{x}}",
@@ -3651,6 +3651,13 @@
         "desc": "Verwalte jede Kunden-Website von einem datenschutzfreundlichen Workspace aus"
       }
     }
+  },
+  "blogPage": {
+    "title": "Der Swetrix Blog",
+    "description": "Praktische Leitfäden zu Webanalyse, Datenschutz und dem Wachstum Ihrer Website. Erfahren Sie, was Menschen auf Ihre Website bringt, was sie als Nächstes tun und wie Sie diese Erkenntnisse in bessere Entscheidungen umsetzen können.",
+    "home": "Startseite",
+    "breadcrumbLabel": "Breadcrumb",
+    "empty": "Keine Beiträge gefunden"
   },
   "exitIntentPopup": {
     "freeTrial": "Kostenlose Testversion",

@@ -2691,7 +2691,7 @@
     },
     "page": "Página",
     "journeys": {
-      "noData": "As jornadas ainda não estão disponíveis devido à falta de dados, ou você desativou esse recurso nos parâmetros do script de rastreamento.",
+      "noData": "Nenhuma jornada encontrada para o período e filtros selecionados. Jornadas aparecem quando os visitantes visualizam pelo menos duas páginas diferentes em uma sessão.",
       "learnMore": "<url>Saiba mais sobre as jornadas</url> em nossa documentação.",
       "learnMoreAriaLabel": "Abrir a documentação de jornadas",
       "stepX": "Passo {{x}}",
@@ -3651,6 +3651,13 @@
         "desc": "Gerencie todos os sites de clientes em um único espaço de trabalho focado na privacidade"
       }
     }
+  },
+  "blogPage": {
+    "title": "O Blog Swetrix",
+    "description": "Guias práticos sobre web analytics, privacidade e como crescer seu site. Descubra o que traz as pessoas ao seu site, o que elas fazem a seguir e como transformar esses insights em decisões melhores.",
+    "home": "Início",
+    "breadcrumbLabel": "Trilha de navegação",
+    "empty": "Nenhum post encontrado"
   },
   "exitIntentPopup": {
     "freeTrial": "Teste grátis",

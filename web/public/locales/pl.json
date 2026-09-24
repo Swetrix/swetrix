@@ -2691,7 +2691,7 @@
     },
     "page": "Strona",
     "journeys": {
-      "noData": "Ścieżki nie są jeszcze dostępne z powodu braku danych lub ta funkcja została wyłączona w parametrach skryptu śledzącego.",
+      "noData": "Nie znaleziono ścieżek dla wybranego okresu i filtrów. Ścieżki pojawiają się, gdy odwiedzający wyświetlą co najmniej dwie różne strony w trakcie sesji.",
       "learnMore": "<url>Dowiedz się więcej o ścieżkach</url> w naszej dokumentacji.",
       "learnMoreAriaLabel": "Otwórz dokumentację ścieżek",
       "stepX": "Krok {{x}}",
@@ -3651,6 +3651,13 @@
         "desc": "Zarządzaj wszystkimi stronami klientów z jednej przestrzeni roboczej chroniącej prywatność"
       }
     }
+  },
+  "blogPage": {
+    "title": "Blog Swetrix",
+    "description": "Praktyczne przewodniki po analityce internetowej, prywatności i rozwoju Twojej strony. Dowiedz się, co przyciąga ludzi na Twoją stronę, co robią później i jak przekształcić te informacje w lepsze decyzje.",
+    "home": "Strona główna",
+    "breadcrumbLabel": "Ścieżka nawigacji",
+    "empty": "Nie znaleziono wpisów"
   },
   "exitIntentPopup": {
     "freeTrial": "Darmowy okres próbny",

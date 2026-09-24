@@ -2691,7 +2691,7 @@
     },
     "page": "Page",
     "journeys": {
-      "noData": "Journeys are not available yet due to lack of data, or you've disabled this feature in the tracking script parameters.",
+      "noData": "No journeys found for the selected period and filters. Journeys appear when visitors view at least two different pages in a session.",
       "learnMore": "<url>Learn more about journeys</url> in our docs.",
       "learnMoreAriaLabel": "Open the journeys documentation",
       "stepX": "Step {{x}}",
