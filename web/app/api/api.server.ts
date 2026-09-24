@@ -633,6 +633,8 @@ interface BlogPostContent {
     title?: string
     seoTitle?: string
     seoDescription?: string
+    modified?: string
+    image?: string
     hidden?: boolean
     intro?: string
     date?: string

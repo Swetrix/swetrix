@@ -16,6 +16,7 @@ import Post from '~/pages/Blog/Post'
 import { getSlugFromFilename, getDateFromFilename } from '~/utils/blog'
 import { getPost } from '~/utils/getPosts.server'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
+import { blogArticleMeta, blogImageUrl } from '~/utils/blogMetadata'
 
 export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -23,12 +24,13 @@ export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
 
   const title = data?.seoTitle || data?.title || 'Blog'
   const intro = data?.seoDescription || data?.intro || t('description.blog')
-  const ogImageUrl = getOgImageUrl(title, intro)
+  const ogImageUrl = blogImageUrl(data?.image) || getOgImageUrl(title, intro)
 
   return [
     ...getTitle(title, title.length <= 50),
     ...getDescription(intro),
     ...getPreviewImage(ogImageUrl),
+    ...blogArticleMeta(data),
   ]
 }
 

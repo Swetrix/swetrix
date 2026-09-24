@@ -28,6 +28,7 @@ import {
   useRouteError,
   useSearchParams,
   useLocation,
+  useMatches,
 } from 'react-router'
 
 import { getAuthenticatedUser } from '~/api/api.server'
@@ -520,6 +521,17 @@ export default function App() {
   }, [i18n, locale])
 
   const isEmbedded = searchParams.get('embedded') === 'true'
+  const matches = useMatches()
+  const isArticle = matches.some(
+    ({ id, loaderData: data }) =>
+      ['routes/blog.$slug', 'routes/blog.$category.$slug', 'routes/$'].includes(
+        id,
+      ) &&
+      !!data &&
+      typeof data === 'object' &&
+      'html' in data &&
+      'title' in data,
+  )
 
   const canonicalUrl = (() => {
     const localisedPathname = localisePath(
@@ -528,6 +540,7 @@ export default function App() {
     )
     const next = new URL(`${MAIN_URL}${localisedPathname}${search}`)
     next.searchParams.delete('lng')
+    if (isArticle || stripLangFromPath(pathname) === '/blog') next.search = ''
     return next.toString()
   })()
 
@@ -551,7 +564,7 @@ export default function App() {
         <meta name='twitter:card' content='summary_large_image' />
         <meta property='og:site_name' content='Swetrix' />
         <meta property='og:url' content={canonicalUrl} />
-        <meta property='og:type' content='website' />
+        <meta property='og:type' content={isArticle ? 'article' : 'website'} />
         <meta name='language' content={i18n.language.toUpperCase()} />
         <meta
           httpEquiv='content-language'

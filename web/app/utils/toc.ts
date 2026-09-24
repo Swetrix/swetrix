@@ -5,6 +5,12 @@ interface TocItem {
   children: TocItem[]
 }
 
+export interface ArticleHeading {
+  id: string
+  text: string
+  level: number
+}
+
 import { escapeHtml } from './generic'
 
 function stripHtmlTags(input: string): string {
@@ -108,17 +114,54 @@ export function extractTableOfContents(html: string): TocItem[] {
 }
 
 export function ensureHeaderIds(html: string): string {
+  const used = new Set<string>()
   return html.replace(
     /<h([1-6])(?:\s+id="([^"]*)")?([^>]*)>(.*?)<\/h[1-6]>/gi,
     (match, level, existingId, attrs, content) => {
-      if (existingId) {
-        return match // Already has an ID
-      }
-
       const text = stripHtmlTags(content)
-      const id = generateSlug(text)
+      const base = existingId || generateSlug(text) || 'section'
+      let id = base
+      let suffix = 2
+      while (used.has(id)) id = `${base}-${suffix++}`
+      used.add(id)
 
       return `<h${level} id="${id}"${attrs}>${content}</h${level}>`
     },
   )
+}
+
+export function extractArticleHeadings(html: string): ArticleHeading[] {
+  const headings: ArticleHeading[] = []
+  const collect = (items: TocItem[]) => {
+    for (const item of items) {
+      if (item.level === 2 || item.level === 3) {
+        const text = item.text.replace(
+          /&(#x[\da-f]+|#\d+|amp|lt|gt|quot|apos|nbsp);/gi,
+          (entity, name: string) => {
+            const named: Record<string, string> = {
+              amp: '&',
+              lt: '<',
+              gt: '>',
+              quot: '"',
+              apos: "'",
+              nbsp: ' ',
+            }
+            if (!name.startsWith('#'))
+              return named[name.toLowerCase()] || entity
+            const value =
+              name[1].toLowerCase() === 'x'
+                ? parseInt(name.slice(2), 16)
+                : Number(name.slice(1))
+            return value > 0 && value <= 0x10ffff
+              ? String.fromCodePoint(value)
+              : entity
+          },
+        )
+        headings.push({ id: item.id, text, level: item.level })
+      }
+      collect(item.children)
+    }
+  }
+  collect(extractTableOfContents(html))
+  return headings
 }

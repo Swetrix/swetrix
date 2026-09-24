@@ -3652,6 +3652,13 @@
       }
     }
   },
+  "blogPage": {
+    "title": "The Swetrix Blog",
+    "description": "Practical guides to web analytics, privacy, and growing your website. Learn what brings people to your site, what they do next, and how to turn those insights into better decisions.",
+    "home": "Home",
+    "breadcrumbLabel": "Breadcrumb",
+    "empty": "No posts found"
+  },
   "exitIntentPopup": {
     "freeTrial": "Free Trial",
     "title": "Web Analytics without cookies",

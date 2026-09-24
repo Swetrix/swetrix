@@ -7,8 +7,9 @@ import { getBlogPost, getBlogPostWithCategory } from '~/api/api.server'
 import { renderTimeToSwitchCta, renderDitchGoogleCta } from './renderCtaHtml'
 import {
   extractTableOfContents,
+  extractArticleHeadings,
+  type ArticleHeading,
   ensureHeaderIds,
-  generateSlug,
   renderTocAsHtml,
 } from './toc'
 
@@ -23,16 +24,11 @@ renderer.link = ({ href, text }: Tokens.Link) => {
     return text
   }
 
-  if (url.hostname !== 'swetrix.com') {
-    url.searchParams.set('utm_source', 'swetrix.com')
-  }
-
-  return `<a href="${url.toString()}" referrerpolicy="strict-origin-when-cross-origin" target="_blank" rel="noopener noreferrer">${text}</a>`
+  return `<a href="${url.toString()}" referrerpolicy="strict-origin-when-cross-origin" target="_blank" rel="noopener">${text}</a>`
 }
 
 renderer.heading = ({ text, depth }: Tokens.Heading) => {
-  const id = generateSlug(text)
-  return `<h${depth} id="${id}">${text}</h${depth}>`
+  return `<h${depth}>${text}</h${depth}>`
 }
 
 function parseInlineMarkdown(text: string): string {
@@ -185,6 +181,9 @@ interface GetPost {
   standalone?: boolean
   intro?: string
   date?: string
+  modified?: string
+  image?: string
+  headings: ArticleHeading[]
   author?: string
   twitter_handle?: string
 }
@@ -318,6 +317,9 @@ export async function getPost(
     hidden: post.attributes?.hidden,
     intro: post.attributes?.intro,
     date: post.attributes?.date,
+    modified: post.attributes?.modified,
+    image: post.attributes?.image,
+    headings: extractArticleHeadings(html),
     author: post.attributes?.author,
     twitter_handle: post.attributes?.twitter_handle,
     standalone: post.attributes?.standalone,

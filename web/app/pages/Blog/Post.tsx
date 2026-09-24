@@ -8,17 +8,23 @@ import ExitIntentPopup from '~/components/ExitIntentPopup'
 import NotFound from '~/pages/NotFound'
 import ArticleNav from '~/pages/Blog/ArticleNav'
 import { Text } from '~/ui/Text'
+import { getOgImageUrl } from '~/lib/constants'
+import {
+  blogBreadcrumbs,
+  blogDateToIso,
+  blogPostSchema,
+  serializeBlogSchema,
+  type BlogMetadata,
+} from '~/utils/blogMetadata'
+import type { ArticleHeading } from '~/utils/toc'
 
-interface Post {
+interface Post extends BlogMetadata {
   slug: string
-  title?: string
   html: string
   hidden?: boolean
-  standalone?: boolean
-  intro?: string
-  date?: string
-  author?: string
-  twitter_handle?: string
+  headings: ArticleHeading[]
+  seoTitle?: string
+  seoDescription?: string
 }
 
 export default function PostSlug() {
@@ -54,7 +60,9 @@ export default function PostSlug() {
                   <dl>
                     <dt className='sr-only'>Date</dt>
                     <dd className='text-slate-700 dark:text-slate-400'>
-                      <time dateTime={post.date}>{post.date}</time>
+                      <time dateTime={blogDateToIso(post.date)}>
+                        {post.date}
+                      </time>
                     </dd>
                   </dl>
                 </div>
@@ -96,49 +104,37 @@ export default function PostSlug() {
                     </li>
                   </ul>
                 </div>
-                <div className='prose mt-6 max-w-4xl prose-slate dark:prose-invert'>
+                <div className='prose mt-6 max-w-4xl prose-slate dark:prose-invert prose-headings:scroll-mt-20'>
                   <div dangerouslySetInnerHTML={{ __html: post.html }} />
                 </div>
               </article>
-              {!post.standalone && <ArticleNav articleRef={articleRef} />}
+              {!post.standalone && (
+                <ArticleNav articleRef={articleRef} headings={post.headings} />
+              )}
               {post.title ? (
                 <script
                   type='application/ld+json'
                   dangerouslySetInnerHTML={{
-                    __html: JSON.stringify({
-                      '@context': 'https://schema.org',
-                      '@type': 'BlogPosting',
-                      headline: post.title,
-                      ...(post.intro && { description: post.intro }),
-                      ...(post.date && {
-                        datePublished: post.date,
-                        dateModified: post.date,
-                      }),
-                      ...(post.author && {
-                        author: {
-                          '@type': 'Person',
-                          name: post.author,
-                          ...(post.twitter_handle && {
-                            url: `https://x.com/${post.twitter_handle}`,
-                          }),
-                        },
-                      }),
-                      publisher: {
-                        '@type': 'Organization',
-                        name: 'Swetrix',
-                        url: 'https://swetrix.com',
-                        logo: {
-                          '@type': 'ImageObject',
-                          url: 'https://swetrix.com/assets/logo_blue.png',
-                        },
-                      },
-                      mainEntityOfPage: {
-                        '@type': 'WebPage',
-                        '@id': `https://swetrix.com${location.pathname}`,
-                      },
-                    })
-                      .replace(/</g, '\\u003c')
-                      .replace(/\u2028|\u2029/g, ''),
+                    __html: serializeBlogSchema([
+                      blogPostSchema(
+                        post,
+                        location.pathname,
+                        getOgImageUrl(
+                          post.seoTitle || post.title || 'Blog',
+                          post.seoDescription ||
+                            post.intro ||
+                            t('description.blog'),
+                        ),
+                      ),
+                      ...(!post.standalone
+                        ? [
+                            blogBreadcrumbs(
+                              post.title,
+                              `https://swetrix.com${location.pathname}`,
+                            ),
+                          ]
+                        : []),
+                    ]),
                   }}
                 />
               ) : null}
