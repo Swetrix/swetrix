@@ -39,10 +39,21 @@ const publishedArticleSchema = z.object({
   publishedAt: z.string().min(1),
   featuredImage: z
     .object({
-      url: z.string().url().refine((value) => {
-        const url = new URL(value)
-        return ['https:', 'http:'].includes(url.protocol) && !url.username && !url.password
-      }),
+      url: z
+        .string()
+        .url()
+        .refine((value) => {
+          try {
+            const url = new URL(value)
+            return (
+              ['https:', 'http:'].includes(url.protocol) &&
+              !url.username &&
+              !url.password
+            )
+          } catch {
+            return false
+          }
+        }),
     })
     .nullable()
     .optional(),
@@ -561,7 +572,12 @@ export class RankPineBlogService {
       config.timeZone,
     )}-${slug}.md`
     const path = await this.findExistingPath(slug, desiredPath, config)
-    const content = articleMarkdown(payload.article, publishedDate, config, payload.featuredImage?.url)
+    const content = articleMarkdown(
+      payload.article,
+      publishedDate,
+      config,
+      payload.featuredImage?.url,
+    )
 
     let result: { changed: boolean; htmlUrl: string }
 

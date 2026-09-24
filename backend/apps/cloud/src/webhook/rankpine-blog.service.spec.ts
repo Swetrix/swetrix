@@ -1,5 +1,5 @@
 import crypto from 'crypto'
-import { UnauthorizedException } from '@nestjs/common'
+import { BadRequestException, UnauthorizedException } from '@nestjs/common'
 
 import { AppLoggerService } from '../logger/logger.service'
 import { BlogService } from '../blog/blog.service'
@@ -100,7 +100,37 @@ describe('RankPineBlogService', () => {
     ).rejects.toBeInstanceOf(UnauthorizedException)
   })
 
-  it('creates one idempotent bot-authored post and strips the duplicate H1', async () => {
+  it.each([
+    'not a URL',
+    'javascript:alert(1)',
+    'ftp://example.com/image.png',
+    'https://user:secret@example.com/image.png',
+  ])('rejects an invalid featured image URL: %s', async (url) => {
+    const fetchMock = jest.spyOn(global, 'fetch')
+    const body = JSON.stringify({
+      event: 'article.published',
+      publishedAt: '2026-09-24T12:00:00.000Z',
+      site: { name: 'Swetrix', url: 'https://swetrix.com', language: 'en' },
+      article: {
+        title: 'Test',
+        slug: 'test',
+        language: 'en',
+        markdown: 'Article body.',
+      },
+      featuredImage: { url },
+    })
+    await expect(
+      service.handle(Buffer.from(body), signature(body), 'article.published'),
+    ).rejects.toBeInstanceOf(BadRequestException)
+    expect(fetchMock).not.toHaveBeenCalled()
+    fetchMock.mockRestore()
+  })
+
+  it.each([
+    undefined,
+    null,
+    { url: 'https://cdn.example.com/hero.png', alt: 'Article cover' },
+  ])('publishes idempotently with featured image %j', async (featuredImage) => {
     jest.useFakeTimers()
     const refreshSpy = jest
       .spyOn(
@@ -178,6 +208,13 @@ describe('RankPineBlogService', () => {
 
     const payload = {
       event: 'article.published',
+      featuredImage,
+      images: [
+        {
+          url: 'https://cdn.example.com/inline.png',
+          alt: 'Inline illustration',
+        },
+      ],
       publishedAt: '2026-08-17T08:01:00.000Z',
       site: {
         name: 'Swetrix',
@@ -226,6 +263,7 @@ describe('RankPineBlogService', () => {
         'title: "Automated Post"',
         'intro: "An automated article."',
         'date: August 17, 2026',
+        ...(featuredImage ? ['image: "https://cdn.example.com/hero.png"'] : []),
         'hidden: false',
         'author: "Andrii Romasiun"',
         'twitter_handle: "andrii_rom"',
