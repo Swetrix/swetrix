@@ -909,6 +909,7 @@ export class ProjectService {
           WHERE created BETWEEN {monthStart:String} AND {monthEnd:String}
             AND pid IN ({pids:Array(FixedString(12))})
             AND type IN ('pageview', 'custom_event', 'captcha', 'error')
+            AND importID IS NULL
         `
 
         const { data: counts } = await clickhouse
@@ -1006,6 +1007,7 @@ export class ProjectService {
           WHERE pid IN ({pids:Array(FixedString(12))})
             AND created BETWEEN {periodStart:String} AND {periodEnd:String}
             AND type IN ('pageview', 'custom_event', 'captcha', 'error')
+            AND importID IS NULL
         `
 
         const { data: counts } = await clickhouse

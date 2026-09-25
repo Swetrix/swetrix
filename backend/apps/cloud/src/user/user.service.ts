@@ -62,6 +62,7 @@ import {
   SubscriptionDunningStatus,
 } from './entities/subscription-dunning.entity'
 import { UserSubscription } from './entities/user-subscription.entity'
+import { getPaddleSubscriptionDiscount } from './paddle-subscription-discount'
 import { UserGoogleDTO } from './dto/user-google.dto'
 import { UserGithubDTO } from './dto/user-github.dto'
 import { EMAIL_ACTION_ENCRYPTION_KEY, redis } from '../common/constants'
@@ -2692,6 +2693,12 @@ export class UserService {
     let preview: any = {}
 
     try {
+      const discount = await getPaddleSubscriptionDiscount(
+        String(user.subID),
+        planID,
+        user.tierCurrency,
+        { vendorId: PADDLE_VENDOR_ID, apiKey: PADDLE_API_KEY },
+      )
       const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -2703,7 +2710,8 @@ export class UserService {
           prorate: true,
           bill_immediately: true,
           currency: user.tierCurrency,
-          keep_modifiers: false,
+          keep_modifiers: true,
+          ...discount,
         }),
       })
       preview = { data: await res.json() }
@@ -2824,6 +2832,12 @@ export class UserService {
     let result: any = {}
 
     try {
+      const discount = await getPaddleSubscriptionDiscount(
+        String(user.subID),
+        planID,
+        user.tierCurrency,
+        { vendorId: PADDLE_VENDOR_ID, apiKey: PADDLE_API_KEY },
+      )
       const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -2835,7 +2849,8 @@ export class UserService {
           prorate: true,
           bill_immediately: true,
           currency: user.tierCurrency,
-          keep_modifiers: false,
+          keep_modifiers: true,
+          ...discount,
           passthrough: JSON.stringify({
             uid: id,
             planType,

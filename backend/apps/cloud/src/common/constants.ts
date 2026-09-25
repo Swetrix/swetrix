@@ -37,8 +37,8 @@ const isValidPID = (pid: string) => PID_REGEX.test(pid)
 
 // redis keys
 const getRedisProjectKey = (pid: string) => `pid_${pid}`
-const getRedisUserCountKey = (uid: string) => `user_c_${uid}`
-const getRedisUserUsageInfoKey = (uid: string) => `user_ui_${uid}`
+const getRedisUserCountKey = (uid: string) => `user_c_billable_${uid}`
+const getRedisUserUsageInfoKey = (uid: string) => `user_ui_billable_${uid}`
 const getRedisCaptchaKey = (token: string) => `captcha_${hash(token)}`
 
 const REDIS_USERS_COUNT_KEY = 'stats:users_count'
