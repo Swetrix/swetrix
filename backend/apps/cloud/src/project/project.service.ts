@@ -80,9 +80,14 @@ import { CreateProjectViewDto } from './dto/create-project-view.dto'
 import { Organisation } from '../organisation/entity/organisation.entity'
 import { OrganisationRole } from '../organisation/entity/organisation-member.entity'
 import {
+  ACCOUNT_PLANS,
+  DashboardBlockReason,
+  PlanCode,
   PlanFeatureCode,
+  User,
   userHasPlanFeature,
 } from '../user/entities/user.entity'
+import { evaluatePlanUsage, PlanUsage } from '../user/plan-usage'
 
 dayjs.extend(utc)
 
@@ -858,6 +863,100 @@ export class ProjectService {
     this.validateIPBlacklist(projectDTO)
     this.validateIPWhitelist(projectDTO)
     this.validateCountryBlacklist(projectDTO)
+  }
+
+  async getPlanUsage(user: User, now = dayjs.utc()): Promise<PlanUsage> {
+    const pids = (user.projects || []).map((project) => project.id)
+    let thisMonthUsage = 0
+    let lastMonthUsage = 0
+
+    for (let i = 0; i < pids.length; i += 5000) {
+      const result = await clickhouse.query({
+        query: `
+          SELECT
+            countIf(created >= {monthStart:DateTime}) AS current,
+            countIf(created < {monthStart:DateTime}) AS previous
+          FROM events
+          WHERE pid IN ({pids:Array(FixedString(12))})
+            AND (type IN ('pageview', 'custom_event', 'error') OR (${CAPTCHA_PASS_CONDITION}))
+            AND importID IS NULL
+            AND created >= {previousMonthStart:DateTime}
+            AND created < {nextMonthStart:DateTime}
+        `,
+        query_params: {
+          pids: pids.slice(i, i + 5000),
+          monthStart: now.startOf('month').format('YYYY-MM-DD HH:mm:ss'),
+          previousMonthStart: now
+            .subtract(1, 'month')
+            .startOf('month')
+            .format('YYYY-MM-DD HH:mm:ss'),
+          nextMonthStart: now
+            .add(1, 'month')
+            .startOf('month')
+            .format('YYYY-MM-DD HH:mm:ss'),
+        },
+      })
+      const { data } = await result.json<{
+        current: string | number
+        previous: string | number
+      }>()
+      thisMonthUsage += Number(data[0]?.current || 0)
+      lastMonthUsage += Number(data[0]?.previous || 0)
+    }
+
+    return evaluatePlanUsage(
+      ACCOUNT_PLANS[user.planCode].monthlyUsageLimit,
+      thisMonthUsage,
+      lastMonthUsage,
+    )
+  }
+
+  async clearResolvedPlanUsage(user: User, usage: PlanUsage): Promise<void> {
+    if (
+      usage.exceedsLimit ||
+      (!user.planExceedContactedAt && !user.dashboardBlockReason)
+    ) {
+      return
+    }
+
+    if (
+      await this.userService.updatePlanUsageState(user, {
+        planExceedContactedAt: null,
+        dashboardBlockReason: null,
+      })
+    ) {
+      await this.clearProjectsRedisCache(user.id)
+    }
+  }
+
+  async refreshUsageAfterDeletion(pid: string): Promise<void> {
+    const project = await this.findOne({
+      where: { id: pid },
+      relations: ['admin'],
+    })
+    if (!project?.admin) return
+
+    const uid = project.admin.id
+    await redis.del(
+      getRedisUserCountKey(uid),
+      getRedisUserUsageInfoKey(uid),
+      `${getRedisUserUsageInfoKey(uid)}_last30d`,
+    )
+
+    const user = await this.userService.findOne({
+      where: { id: uid },
+      relations: ['projects'],
+    })
+    if (
+      !user ||
+      [PlanCode.none, PlanCode.trial].includes(user.planCode) ||
+      (!user.planExceedContactedAt &&
+        user.dashboardBlockReason !==
+          DashboardBlockReason.exceeding_plan_limits)
+    )
+      return
+
+    await this.clearResolvedPlanUsage(user, await this.getPlanUsage(user))
   }
 
   // Returns amount of existing events starting from month

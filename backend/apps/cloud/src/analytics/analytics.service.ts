@@ -2390,6 +2390,10 @@ export class AnalyticsService {
 
     await Promise.all(commands)
 
+    if (!_isEmpty(eventTableTypes)) {
+      await this.projectService.refreshUsageAfterDeletion(pid)
+    }
+
     // Session replays live in their own table + object storage, so they are
     // removed on a dedicated path after the events-table mutations settle.
     if (_includes(safeTypes, 'session_replay')) {

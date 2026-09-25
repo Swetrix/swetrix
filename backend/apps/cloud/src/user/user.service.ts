@@ -7,6 +7,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm'
 import {
   EntityManager,
+  Equal,
   FindManyOptions,
   FindOneOptions,
   In,
@@ -29,6 +30,7 @@ import _toNumber from 'lodash/toNumber'
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
 import {
   User,
+  DashboardBlockReason,
   ACCOUNT_PLANS,
   TRIAL_DURATION,
   BillingFrequency,
@@ -329,6 +331,36 @@ export class UserService {
 
   async update(id: string, update: Record<string, unknown>): Promise<any> {
     return this.usersRepository.update({ id }, update)
+  }
+
+  async updatePlanUsageState(
+    user: User,
+    update: Partial<
+      Pick<User, 'planExceedContactedAt' | 'dashboardBlockReason'>
+    >,
+  ): Promise<boolean> {
+    if (
+      user.dashboardBlockReason &&
+      user.dashboardBlockReason !== DashboardBlockReason.exceeding_plan_limits
+    ) {
+      return false
+    }
+
+    const result = await this.usersRepository.update(
+      {
+        id: user.id,
+        planCode: user.planCode,
+        planExceedContactedAt: user.planExceedContactedAt
+          ? Equal(user.planExceedContactedAt)
+          : IsNull(),
+        dashboardBlockReason: user.dashboardBlockReason || IsNull(),
+        isActive: true,
+        isAccountBillingSuspended: false,
+        cancellationEffectiveDate: IsNull(),
+      },
+      update,
+    )
+    return result.affected === 1
   }
 
   async updateByEmail(
@@ -3321,40 +3353,32 @@ export class UserService {
   }
 
   async getUsersForLockDashboards() {
-    const sevenDaysAgo = dayjs
-      .utc()
-      .subtract(7, 'days')
-      .format('YYYY-MM-DD HH:mm:ss')
-
-    // First get the user IDs that have at least one project
-    const userIds = await this.usersRepository
-      .createQueryBuilder('user')
-      .leftJoin('user.projects', 'p')
-      .select('user.id')
-      .where({
-        isActive: true,
-        planCode: Not(In([PlanCode.none, PlanCode.trial])),
-        planExceedContactedAt: LessThan(sevenDaysAgo),
-        dashboardBlockReason: IsNull(),
-        isAccountBillingSuspended: false,
-        cancellationEffectiveDate: IsNull(),
-      })
-      .groupBy('user.id')
-      .having('COUNT(p.id) > 0')
-      .getMany()
-
-    if (_isEmpty(userIds)) {
-      return []
-    }
-
-    // Then fetch those users with their projects
     return this.usersRepository
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.projects', 'projects')
-      .select(['user.id', 'user.email', 'user.planCode', 'projects.id'])
-      .where('user.id IN (:...userIds)', {
-        userIds: userIds.map((u) => u.id),
+      .select([
+        'user.id',
+        'user.email',
+        'user.planCode',
+        'user.planExceedContactedAt',
+        'user.dashboardBlockReason',
+        'projects.id',
+      ])
+      .where({
+        isActive: true,
+        planCode: Not(In([PlanCode.none, PlanCode.trial])),
+        isAccountBillingSuspended: false,
+        cancellationEffectiveDate: IsNull(),
       })
+      .andWhere(
+        '(user.dashboardBlockReason IS NULL OR user.dashboardBlockReason = :usageBlock)',
+        {
+          usageBlock: DashboardBlockReason.exceeding_plan_limits,
+        },
+      )
+      .andWhere(
+        '(user.planExceedContactedAt IS NOT NULL OR user.dashboardBlockReason = :usageBlock)',
+      )
       .getMany()
   }
 

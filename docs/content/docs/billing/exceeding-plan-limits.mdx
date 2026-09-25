@@ -9,21 +9,33 @@ description: "Understand what happens when your Swetrix usage exceeds your plan 
   traffic spike. There are no hidden charges and we won't charge your card unexpectedly.
 </Callout>
 
-If you exceed your subscription plan, we won't automatically upgrade you to the next one because it's unethical.
+## Traffic spikes and repeated overages
 
-We may block your dashboard if:
+Usage is measured by calendar month in UTC, including for annual subscriptions. We allow occasional traffic spikes of up to 30% above your monthly event allowance at no extra charge.
 
-- You exceed your subscription plan for two consecutive months, or
-- You exceed your event quota by more than 30%.
+We will ask you to choose a higher event tier if:
 
-If this happens, we will not lock your dashboard immediately. Instead, we will give you 7 days notice that your traffic has exceeded your subscription tier and provide you with information on how to resolve the issue.
+- Your usage in the current month is more than 30% above your allowance, or
+- Your usage is more than 10% above your allowance in both the current and previous month.
 
-We may also lock your dashboard if you miss a bill. We will lock the dashboard after 5 failed attempts.
+For example, on the 200,000-event plan, an occasional month of up to 260,000 events is allowed. The repeated-overage rule applies only when usage exceeds 220,000 events in each of two consecutive months.
+
+## Notice before dashboard restrictions
+
+If either threshold is exceeded, we email you and give you 14 days to choose a suitable tier. We do not automatically upgrade your plan or charge overage fees.
+
+Before restricting dashboard access, we check your usage again against both rules. If your usage no longer meets either condition, we clear the warning. We also review existing usage restrictions daily and restore access when neither condition applies.
 
 <Callout>
-  If your dashboard is locked because of billing or plan limits, new analytics events are not
-  accepted until the issue is resolved. Existing analytics data is kept. Once you upgrade to an
-  appropriate tier or resolve the payment issue, dashboard access and collection are restored.
+  Exceeding your event allowance does not stop analytics collection. Even if dashboard access is
+  restricted for exceeding plan limits, we continue collecting analytics and keep your existing
+  data. Upgrading to a suitable event tier restores dashboard access.
 </Callout>
+
+## Bots and unwanted traffic
+
+Requests blocked by [bot protection](/bot-protection) do not count towards your allowance. Imported historical data is also excluded.
+
+If unwanted events get through, you can delete them in your project settings. Once deletion completes, those events are removed from usage calculations and cached usage totals are cleared. We recheck your allowance and clear any usage warning or usage-related dashboard restriction if neither overage condition still applies. This does not clear restrictions caused by payment issues or cancellation.
 
 If you need a higher event volume, choose a larger event tier from the [Plan and billing](https://swetrix.com/user-settings?tab=billing) page. For very high traffic or custom limits, choose Enterprise or [contact us](https://swetrix.com/contact).

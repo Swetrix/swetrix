@@ -1,6 +1,6 @@
-We emailed you a week ago because your traffic exceeded your Swetrix
+We emailed you at least {{upgradePeriodDays}} days ago because your traffic exceeded your Swetrix
 subscription{{#if hitPercentageLimit}} by more than {{percentageLimit}}% this
-month{{else}} for two months in a row{{/if}}. <br /><br />
+month{{else}} by more than {{repeatedPercentageLimit}}% for two months in a row{{/if}}. <br /><br />
 Your dashboard is now temporarily locked. Your subscription is still active,
 we're still collecting stats, and we haven't deleted any data. Upgrade to a plan
 that matches your traffic to restore dashboard access. You can find the usage
@@ -13,4 +13,6 @@ to this email and we'll help you choose a plan for your traffic.
 {{suggestedPlanLimit}} events per month plan. Your upgrade will be prorated
 based on what you've already paid for your current plan.
 <br /><br />
-{{/ifNotEquals}} Reply to this email if you have questions or need help.
+{{/ifNotEquals}} If unwanted traffic caused the overage, you can delete it in your
+project settings. We will recheck your usage and restore access if it no longer
+exceeds the allowance rules. Reply to this email if you have questions or need help.

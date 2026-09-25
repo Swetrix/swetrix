@@ -17,9 +17,6 @@ import _isEmpty from 'lodash/isEmpty'
 import _isNull from 'lodash/isNull'
 import _size from 'lodash/size'
 import _map from 'lodash/map'
-import _find from 'lodash/find'
-import _includes from 'lodash/includes'
-import _toNumber from 'lodash/toNumber'
 import _reduce from 'lodash/reduce'
 import _filter from 'lodash/filter'
 
@@ -57,10 +54,13 @@ import {
   SEND_WARNING_AT_PERC,
   PROJECT_INVITE_EXPIRE,
   JWT_REFRESH_TOKEN_LIFETIME,
-  TRAFFIC_SPIKE_ALLOWED_PERCENTAGE,
 } from '../common/constants'
 import { clickhouse } from '../common/integrations/clickhouse'
-import { CHPlanUsage } from './interfaces'
+import {
+  PLAN_USAGE_GRACE_DAYS,
+  REPEATED_OVERAGE_ALLOWED_PERCENTAGE,
+  TRAFFIC_SPIKE_ALLOWED_PERCENTAGE,
+} from '../user/plan-usage'
 import {
   getRandomTip,
   isPrimaryClusterNode,
@@ -237,160 +237,6 @@ const formatBillingDateForEmail = (
     timeStyle: 'short',
     timeZone: 'UTC',
   })} UTC`
-}
-
-const generatePlanUsageQueryForUser = (): string => {
-  // NOTE: keep all values parameterized to avoid injection and formatting issues.
-  // Counts every billable event kind (pageview, custom_event, error, captcha)
-  // in a single scan over the unified events table.
-  return `
-    SELECT
-      {uid:String} AS id,
-      countIf(type IN ('pageview', 'custom_event', 'error') OR (${CAPTCHA_PASS_CONDITION})) AS "count"
-    FROM events
-    WHERE pid IN ({pids:Array(FixedString(12))})
-    AND type IN ('pageview', 'custom_event', 'error', 'captcha')
-    AND importID IS NULL
-    AND created BETWEEN {from:String} AND {to:String}
-  `
-}
-
-const executeChunkedQueries = async (
-  users: User[],
-  getFromDate: (user?: User) => string,
-  getToDate: (user?: User) => string,
-): Promise<CHPlanUsage[]> => {
-  return mapLimit(users, 5, async (user) => {
-    if (_isEmpty(user.projects)) {
-      return {
-        id: user.id,
-        count: 0,
-      }
-    }
-
-    const pids = _map(user.projects, (p) => p.id)
-    let totalCount = 0
-    const from = getFromDate(user)
-    const to = getToDate(user)
-
-    // Process project IDs in chunks
-    for (let i = 0; i < pids.length; i += CHUNK_SIZE) {
-      const pidChunk = pids.slice(i, i + CHUNK_SIZE)
-      const query = generatePlanUsageQueryForUser()
-
-      const { data } = await clickhouse
-        .query({
-          query,
-          query_params: { pids: pidChunk, uid: user.id, from, to },
-        })
-        .then((resultSet) => resultSet.json<CHPlanUsage>())
-
-      totalCount += data[0]?.count || 0
-    }
-
-    return {
-      id: user.id,
-      count: totalCount,
-    }
-  })
-}
-
-const getUsersThatExceedPlanUsage = (
-  users: User[],
-  usage: CHPlanUsage[],
-  allowedExceed = TRAFFIC_SPIKE_ALLOWED_PERCENTAGE,
-): (User & { usage: number })[] => {
-  const usageMap = _reduce(
-    usage,
-    (acc, value: CHPlanUsage) => ({
-      ...acc,
-      [value.id]: value.count,
-    }),
-    {},
-  )
-  const exceedingUsers = []
-
-  for (let i = 0; i < _size(users); ++i) {
-    const user = users[i]
-    const allowedEvents = ACCOUNT_PLANS[user.planCode].monthlyUsageLimit
-
-    if (usageMap[user.id] > allowedEvents + allowedEvents * allowedExceed) {
-      exceedingUsers.push({
-        ...user,
-        usage: usageMap[user.id],
-      })
-    }
-  }
-
-  return exceedingUsers
-}
-
-const getUserIDsThatExceedPlanUsage = (
-  users: User[],
-  usage: CHPlanUsage[],
-  allowedExceed = TRAFFIC_SPIKE_ALLOWED_PERCENTAGE,
-): string[] => {
-  const usageMap = _reduce(
-    usage,
-    (acc, value: CHPlanUsage) => ({
-      ...acc,
-      [value.id]: value.count,
-    }),
-    {},
-  )
-  const exceedingUsers = []
-
-  for (let i = 0; i < _size(users); ++i) {
-    const user = users[i]
-    const allowedEvents = ACCOUNT_PLANS[user.planCode].monthlyUsageLimit
-
-    if (usageMap[user.id] > allowedEvents + allowedEvents * allowedExceed) {
-      exceedingUsers.push(user.id)
-    }
-  }
-
-  return exceedingUsers
-}
-
-const getUsersThatExceedContinuously = (
-  users: User[],
-  usage: CHPlanUsage[][],
-): (User & { usage: any[] })[] => {
-  const transformedUsage = _map(usage, (el: CHPlanUsage[]) => {
-    return _reduce(
-      el,
-      (acc, value: CHPlanUsage) => ({
-        ...acc,
-        [value.id]: value.count,
-      }),
-      {},
-    )
-  })
-
-  const exceedingUsers = []
-
-  for (let i = 0; i < _size(users); ++i) {
-    let exceedingTimes = 0
-    const user = users[i]
-    const allowedEvents = ACCOUNT_PLANS[user.planCode].monthlyUsageLimit
-    const userUsage = []
-
-    for (let x = 0; x < _size(transformedUsage); ++x) {
-      userUsage.push(transformedUsage[x][user.id])
-      if (transformedUsage[x][user.id] > allowedEvents) {
-        exceedingTimes++
-      }
-    }
-
-    if (exceedingTimes === _size(usage)) {
-      exceedingUsers.push({
-        ...user,
-        usage: userUsage,
-      })
-    }
-  }
-
-  return exceedingUsers
 }
 
 const EMAIL_REPORTS_MAP = {
@@ -1040,186 +886,86 @@ export class TaskManagerService {
   @Cron(CronExpression.EVERY_DAY_AT_5PM)
   async lockDashboards() {
     const users = await this.userService.getUsersForLockDashboards()
+    const now = dayjs.utc()
 
-    if (_isEmpty(users)) {
-      return
-    }
-
-    // This stuff is used solely to calculate whether the user has exceeded their limit > 30% or continuously for 2 months
-    const monthlyUsage = await executeChunkedQueries(
-      users,
-      (user) =>
-        dayjs.utc(user.planExceedContactedAt).format('YYYY-MM-01 00:00:00'),
-      (user) =>
-        dayjs
-          .utc(user.planExceedContactedAt)
-          .endOf('month')
-          .format('YYYY-MM-DD 23:59:59'),
-    )
-
-    const exceedingUserIds = getUserIDsThatExceedPlanUsage(users, monthlyUsage)
-
-    await Promise.allSettled(
-      _map(users, async (user: User) => {
-        const { id, email, planCode } = user
-
-        const suggestedPlanLimit = getNextPlan(planCode)
-
-        const data = {
-          user,
-          hitPercentageLimit: _includes(exceedingUserIds, user.id),
-          percentageLimit: TRAFFIC_SPIKE_ALLOWED_PERCENTAGE * 100,
-          billingUrl: 'https://swetrix.com/user-settings?tab=billing',
-          suggestedPlanLimit: suggestedPlanLimit?.monthlyUsageLimit,
+    await mapLimit(users, 5, async (user: User) => {
+      try {
+        const usage = await this.projectService.getPlanUsage(user, now)
+        if (!usage.exceedsLimit) {
+          await this.projectService.clearResolvedPlanUsage(user, usage)
+          return
         }
 
-        await this.mailerService.sendEmail(
-          email,
-          LetterTemplate.DashboardLockedExceedingLimits,
-          data,
+        if (
+          user.dashboardBlockReason ||
+          !user.planExceedContactedAt ||
+          now.isBefore(
+            dayjs
+              .utc(user.planExceedContactedAt)
+              .add(PLAN_USAGE_GRACE_DAYS, 'days'),
+          )
         )
-        await this.userService.update(id, {
+          return
+
+        const locked = await this.userService.updatePlanUsageState(user, {
           dashboardBlockReason: DashboardBlockReason.exceeding_plan_limits,
         })
-      }),
-    ).catch((reason) => {
-      this.logger.error(
-        `[CRON WORKER](lockDashboards) Error occured: ${reason}`,
-      )
+        if (!locked) return
+
+        await this.projectService.clearProjectsRedisCache(user.id)
+        await this.mailerService.sendEmail(
+          user.email,
+          LetterTemplate.DashboardLockedExceedingLimits,
+          {
+            user,
+            hitPercentageLimit: usage.hitPercentageLimit,
+            percentageLimit: TRAFFIC_SPIKE_ALLOWED_PERCENTAGE * 100,
+            repeatedPercentageLimit: REPEATED_OVERAGE_ALLOWED_PERCENTAGE * 100,
+            upgradePeriodDays: PLAN_USAGE_GRACE_DAYS,
+            billingUrl: 'https://swetrix.com/user-settings?tab=billing',
+            suggestedPlanLimit: getNextPlan(user.planCode)?.monthlyUsageLimit,
+          },
+        )
+      } catch (reason) {
+        this.logger.error(
+          `[CRON WORKER](lockDashboards) User ${user.id}: ${reason}`,
+        )
+      }
     })
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_4PM)
   async checkPlanUsage() {
     const users = await this.userService.getUsersForPlanUsageCheck()
+    const now = dayjs.utc()
 
-    if (_isEmpty(users)) {
-      return
-    }
-
-    const planExceedContactedAt = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
-
-    const thisMonthStart = dayjs.utc().format('YYYY-MM-01 00:00:00')
-    const thisMonthEnd = dayjs
-      .utc()
-      .endOf('month')
-      .format('YYYY-MM-DD 23:59:59')
-
-    const thisMonthUsage = await executeChunkedQueries(
-      users,
-      () => thisMonthStart,
-      () => thisMonthEnd,
-    )
-
-    const exceedingUsers = getUsersThatExceedPlanUsage(users, thisMonthUsage)
-
-    // if there are exceeding users, contact them and let them know that their usage is > than 30% their tier allows
-    if (!_isEmpty(exceedingUsers)) {
-      const percExceedingUsagePromises = _map(exceedingUsers, async (user) => {
-        const { id, email, usage, planCode } = user
-
-        const suggestedPlanLimit = getNextPlan(planCode)
-
-        const data = {
-          user,
-          hitPercentageLimit: true,
-          upgradePeriodDays: 7,
-          thisMonthUsage: usage,
-          percentageLimit: TRAFFIC_SPIKE_ALLOWED_PERCENTAGE * 100,
-          billingUrl: 'https://swetrix.com/user-settings?tab=billing',
-          suggestedPlanLimit: suggestedPlanLimit?.monthlyUsageLimit,
-        }
+    await mapLimit(users, 5, async (user: User) => {
+      try {
+        const usage = await this.projectService.getPlanUsage(user, now)
+        if (!usage.exceedsLimit) return
 
         await this.mailerService.sendEmail(
-          email,
+          user.email,
           LetterTemplate.UsageOverLimit,
-          data,
-        )
-        await this.userService.update(id, {
-          planExceedContactedAt,
-        })
-      })
-
-      await Promise.allSettled(percExceedingUsagePromises).catch((reason) => {
-        this.logger.error(
-          `[CRON WORKER](checkPlanUsage - percExceedingUsagePromises) Error occured: ${reason}`,
-        )
-      })
-    }
-
-    const filteredUsers = _filter(
-      users,
-      (user) =>
-        !_find(exceedingUsers, (exceedingUser) => exceedingUser.id === user.id),
-    )
-
-    if (_isEmpty(filteredUsers)) {
-      return
-    }
-
-    const lastMonthStart = dayjs
-      .utc()
-      .subtract(1, 'M')
-      .format('YYYY-MM-01 00:00:00')
-    const lastMonthEnd = dayjs
-      .utc()
-      .subtract(1, 'M')
-      .endOf('month')
-      .format('YYYY-MM-DD 23:59:59')
-
-    const lastMonthUsage = await executeChunkedQueries(
-      users,
-      () => lastMonthStart,
-      () => lastMonthEnd,
-    )
-
-    const continuousExceedingUsers = getUsersThatExceedContinuously(users, [
-      // the order should be kept like this
-      thisMonthUsage,
-      lastMonthUsage,
-    ])
-
-    // if there are exceeding users, contact them and let them know that their usage more then what their tier allows for two consequetive months
-    if (!_isEmpty(continuousExceedingUsers)) {
-      const continuousExceedingUsagePromises = _map(
-        continuousExceedingUsers,
-        async (user) => {
-          const { id, email, usage, planCode } = user
-
-          const [userThisMonthUsage, userLastMonthUsage] = usage || []
-
-          const suggestedPlanLimit = getNextPlan(planCode)
-
-          const data = {
+          {
             user,
-            hitPercentageLimit: false,
-            upgradePeriodDays: 7,
-            thisMonthUsage: userThisMonthUsage,
-            lastMonthUsage: userLastMonthUsage,
+            ...usage,
+            upgradePeriodDays: PLAN_USAGE_GRACE_DAYS,
             percentageLimit: TRAFFIC_SPIKE_ALLOWED_PERCENTAGE * 100,
+            repeatedPercentageLimit: REPEATED_OVERAGE_ALLOWED_PERCENTAGE * 100,
             billingUrl: 'https://swetrix.com/user-settings?tab=billing',
-            suggestedPlanLimit: suggestedPlanLimit?.monthlyUsageLimit,
-          }
-
-          await this.mailerService.sendEmail(
-            email,
-            LetterTemplate.UsageOverLimit,
-            data,
-          )
-          await this.userService.update(id, {
-            planExceedContactedAt,
-          })
-        },
-      )
-
-      await Promise.allSettled(continuousExceedingUsagePromises).catch(
-        (reason) => {
-          this.logger.error(
-            `[CRON WORKER](checkPlanUsage - continuousExceedingUsagePromises) Error occured: ${reason}`,
-          )
-        },
-      )
-    }
+            suggestedPlanLimit: getNextPlan(user.planCode)?.monthlyUsageLimit,
+          },
+        )
+        await this.userService.updatePlanUsageState(user, {
+          planExceedContactedAt: now.toDate(),
+        })
+      } catch (reason) {
+        this.logger.error(
+          `[CRON WORKER](checkPlanUsage) User ${user.id}: ${reason}`,
+        )
+      }
+    })
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_9AM)

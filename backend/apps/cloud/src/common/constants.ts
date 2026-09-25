@@ -3,6 +3,7 @@ import path from 'path'
 import _toNumber from 'lodash/toNumber'
 import 'dotenv/config'
 import { deriveKey, hash } from './utils'
+import { TRAFFIC_SPIKE_ALLOWED_PERCENTAGE } from '../user/plan-usage'
 
 const { EMAIL_ACTION_ENCRYPTION_KEY } = process.env
 
@@ -72,8 +73,6 @@ const CAPTCHA_SECRET_KEY_LENGTH = 50
 // Funnels
 const MIN_PAGES_IN_FUNNEL = 2
 const MAX_PAGES_IN_FUNNEL = 10
-
-const TRAFFIC_SPIKE_ALLOWED_PERCENTAGE = 0.3
 
 const BLOG_POSTS_PATH = isDevelopment
   ? path.join(__dirname, '../../../..', 'blog-posts', 'posts')
