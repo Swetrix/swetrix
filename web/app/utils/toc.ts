@@ -27,7 +27,7 @@ function stripHtmlTags(input: string): string {
   return result.trim()
 }
 
-export function generateSlug(text: string): string {
+function generateSlug(text: string): string {
   return text
     .toLowerCase()
     .replace(/[^\w\s-]/g, '') // Remove special characters except spaces and hyphens

@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router'
 
 import FaviconGlyph from '~/ui/FaviconGlyph'
 import { trackCustom } from '~/utils/analytics'
-import { HERO_SIGNUP_EXPERIMENT } from '~/utils/experiments'
 import { localiseTo } from '~/utils/i18nHref'
 import routes from '~/utils/routes'
 import { extractDomain } from '~/utils/url'
@@ -34,7 +33,6 @@ const HeroSignupForm = () => {
     const domain = extractDomain(website)
 
     trackCustom('HERO_CTA_CLICK', {
-      variant: HERO_SIGNUP_EXPERIMENT.siteInput,
       site: domain ? 'entered' : 'empty',
     })
 

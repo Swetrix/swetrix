@@ -76,7 +76,7 @@ export function blogImageUrl(value: unknown): string | undefined {
   }
 }
 
-export function blogModifiedDate(post: BlogMetadata): string | undefined {
+function blogModifiedDate(post: BlogMetadata): string | undefined {
   const published = blogDateToIso(post.date)
   const modified = blogDateToIso(post.modified)
   return modified &&
