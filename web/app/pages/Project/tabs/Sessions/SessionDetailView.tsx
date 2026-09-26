@@ -9,7 +9,6 @@ import {
   GlobeIcon,
   ClockIcon,
   LinkIcon,
-  MegaphoneIcon,
   PlayIcon,
   UserIcon,
   SignInIcon,
@@ -18,7 +17,7 @@ import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from '~/ui/Link'
 
-import { BrowserIcon, OSIcon } from '../SharedIcons'
+import { AdProviderIcon, BrowserIcon, OSIcon } from '../SharedIcons'
 import { InfoRow, PanelSection } from '../components/DetailPanels'
 import { PROJECT_TABS } from '~/lib/constants'
 import {
@@ -795,7 +794,9 @@ export const SessionDetailView = ({
                     label={t('project.ads.title')}
                     value={
                       <span className='inline-flex max-w-full items-center gap-1'>
-                        <MegaphoneIcon className='h-4 w-4 shrink-0' />
+                        <AdProviderIcon
+                          provider={details.adCampaign.provider}
+                        />
                         <Text
                           as='span'
                           size='sm'

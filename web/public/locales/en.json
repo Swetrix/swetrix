@@ -2987,6 +2987,7 @@
       "adSessions": "Ad sessions",
       "attributedRevenue": "Attributed revenue",
       "campaigns": "Campaigns",
+      "campaign": "Campaign",
       "attributionNote": "Sessions and revenue are attributed to campaigns via the utm_campaign parameter, matched against your campaign ID or name. Revenue attribution requires a session ID on your transactions — send sessionId in the Revenue API request body, or pass the Swetrix session ID to your payment provider's metadata."
     },
     "acquiredVia": "Acquired via"

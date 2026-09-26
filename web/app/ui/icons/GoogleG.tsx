@@ -1,5 +1,12 @@
-const GoogleGSVG = ({ className }: { className?: string }) => (
+const GoogleGSVG = ({
+  className,
+  title,
+}: {
+  className?: string
+  title?: string
+}) => (
   <svg className={className} viewBox='0 0 186.69 190.5'>
+    {title ? <title>{title}</title> : null}
     <g transform='translate(1184.583 765.171)'>
       <path
         clipPath='none'

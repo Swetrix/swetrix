@@ -14,7 +14,6 @@ import {
   FileTextIcon,
   GlobeIcon,
   MonitorIcon,
-  MegaphoneIcon,
   SignInIcon,
   UserListIcon,
   WarningIcon,
@@ -49,7 +48,7 @@ import {
 import countries from '~/utils/isoCountries'
 import { getProfileDisplayName, ProfileAvatar } from '~/utils/profileAvatars'
 
-import { BrowserIcon, OSIcon } from '../SharedIcons'
+import { AdProviderIcon, BrowserIcon, OSIcon } from '../SharedIcons'
 import { InfoRow, PanelSection } from '../components/DetailPanels'
 import { Pageflow } from '../Sessions/Pageflow'
 
@@ -961,7 +960,9 @@ export const ProfileDetails = ({
                   label={t('project.acquiredVia')}
                   value={
                     <>
-                      <MegaphoneIcon className='h-4 w-4' />
+                      <AdProviderIcon
+                        provider={details.acquisition.adCampaign.provider}
+                      />
                       {details.acquisition.adCampaign.campaignName}
                     </>
                   }

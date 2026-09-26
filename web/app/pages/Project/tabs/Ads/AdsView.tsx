@@ -40,6 +40,10 @@ interface AdsViewProps {
   tnMapping: Record<string, string>
 }
 
+const SUMMARY_METRIC_CLASSES = {
+  value: 'text-2xl font-semibold tracking-tight tabular-nums sm:text-2xl',
+}
+
 const ADS_DOCS_URL = `${DOCS_URL}/analytics-dashboard/ads`
 
 type CampaignEntry = Entry & { campaign: AdsCampaign }
@@ -50,8 +54,7 @@ const AdsViewInner = ({ projectId, tnMapping }: AdsViewProps) => {
     i18n: { language },
   } = useTranslation('common')
   const { id } = useCurrentProject()
-  const { period, timezone, timeFormat, timeBucket, periodPairs } =
-    useViewProjectContext()
+  const { period, timezone, timeBucket, periodPairs } = useViewProjectContext()
   const { adsRefreshTrigger } = useRefreshTriggers()
   const { fetchDashboard, data, campaigns, error, isLoading } =
     useAdsDashboardProxy()
@@ -446,8 +449,9 @@ const AdsViewInner = ({ projectId, tnMapping }: AdsViewProps) => {
       {isLoading && data ? <LoadingBar /> : null}
 
       <div className='relative overflow-hidden rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-900/25'>
-        <div className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'>
+        <div className='mb-5 flex flex-wrap justify-start gap-5'>
           <MetricCard
+            classes={SUMMARY_METRIC_CLASSES}
             label={t('project.ads.spend')}
             value={stats?.cost ?? 0}
             change={
@@ -459,6 +463,7 @@ const AdsViewInner = ({ projectId, tnMapping }: AdsViewProps) => {
             }
           />
           <MetricCard
+            classes={SUMMARY_METRIC_CLASSES}
             label={t('project.ads.clicks')}
             value={stats?.clicks ?? 0}
             change={stats ? stats.clicks - stats.previous.clicks : undefined}
@@ -468,16 +473,7 @@ const AdsViewInner = ({ projectId, tnMapping }: AdsViewProps) => {
             }
           />
           <MetricCard
-            label={t('project.ads.cpc')}
-            value={stats?.cpc ?? 0}
-            valueMapper={(value) => formatMoney(value)}
-          />
-          <MetricCard
-            label={t('project.ads.ctr')}
-            value={stats?.ctr ?? 0}
-            valueMapper={(value) => `${value}%`}
-          />
-          <MetricCard
+            classes={SUMMARY_METRIC_CLASSES}
             label={t('project.ads.adSessions')}
             value={stats?.sessions ?? 0}
             change={
@@ -489,6 +485,7 @@ const AdsViewInner = ({ projectId, tnMapping }: AdsViewProps) => {
             }
           />
           <MetricCard
+            classes={SUMMARY_METRIC_CLASSES}
             label={t('project.ads.attributedRevenue')}
             value={stats?.revenue ?? 0}
             change={
@@ -502,16 +499,10 @@ const AdsViewInner = ({ projectId, tnMapping }: AdsViewProps) => {
             }
           />
           <MetricCard
+            classes={SUMMARY_METRIC_CLASSES}
             label={t('project.ads.roas')}
             value={stats?.roas ?? 0}
             valueMapper={(value) => (stats?.roas == null ? '-' : `${value}x`)}
-          />
-          <MetricCard
-            label={t('project.ads.cpa')}
-            value={stats?.cpa ?? 0}
-            valueMapper={(value) =>
-              stats?.cpa == null ? '-' : formatMoney(value)
-            }
           />
         </div>
         {data?.chart && !_isEmpty(data.chart.x) ? (
@@ -519,7 +510,6 @@ const AdsViewInner = ({ projectId, tnMapping }: AdsViewProps) => {
             chartId='ads-main-chart'
             options={chartOptions}
             className='h-80 [&_svg]:overflow-visible!'
-            deps={[data.chart, adsTimeBucket, timeFormat, period]}
           />
         ) : null}
       </div>
