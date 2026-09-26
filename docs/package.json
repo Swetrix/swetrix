@@ -21,7 +21,7 @@
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "simple-icons": "^16.31.0",
-    "swetrix": "^4.6.1",
+    "swetrix": "^4.7.0",
     "tailwind-merge": "^3.7.0"
   },
   "devDependencies": {
