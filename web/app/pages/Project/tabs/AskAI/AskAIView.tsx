@@ -1796,6 +1796,9 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
   const { t } = useTranslation('common')
   const { projectPath } = useCurrentProject()
   const [searchParams, setSearchParams] = useSearchParams()
+  const [isLoadingChat, setIsLoadingChat] = useState(() =>
+    Boolean(searchParams.get('chat')),
+  )
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -1988,6 +1991,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
     (chatId: string) => {
       if (loadChatFetcher.state !== 'idle') return
 
+      setIsLoadingChat(true)
       const formData = new FormData()
       formData.append('intent', 'get-ai-chat')
       formData.append('chatId', chatId)
@@ -2004,6 +2008,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
       // Skip if we've already processed this response
       if (lastProcessedLoadDataRef.current === loadChatFetcher.data) return
       lastProcessedLoadDataRef.current = loadChatFetcher.data
+      setIsLoadingChat(false)
 
       if (loadChatFetcher.data.success && loadChatFetcher.data.data) {
         const chat = loadChatFetcher.data.data as AIChat
@@ -2226,6 +2231,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
   }, [searchParams, loadChatById, loadRecentChats])
 
   const handleNewChat = useCallback(() => {
+    setIsLoadingChat(false)
     setMessages([])
     setCurrentChatId(null)
     currentChatIdRef.current = null
@@ -2966,6 +2972,21 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [handleTogglePin, handleSaveTags, handleRenameChat, formatRelativeTime],
   )
+
+  if (isLoadingChat) {
+    return (
+      <output
+        aria-busy='true'
+        className='flex h-[calc(100dvh-140px)] min-h-[480px] items-center justify-center gap-2 bg-gray-50 text-sm text-gray-500 dark:bg-slate-950 dark:text-gray-400'
+      >
+        <SpinnerGapIcon
+          aria-hidden='true'
+          className='h-4 w-4 animate-spin motion-reduce:animate-none'
+        />
+        <span>{t('common.loading')}</span>
+      </output>
+    )
+  }
 
   const composer = (
     <>
