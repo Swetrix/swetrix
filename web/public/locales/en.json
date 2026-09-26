@@ -2109,6 +2109,7 @@
       "rg": "Region",
       "ct": "City",
       "pg": "Page",
+      "title": "Titles",
       "host": "Host",
       "lc": "Locale",
       "map": "Map",

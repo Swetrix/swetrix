@@ -1638,6 +1638,7 @@ export class AnalyticsController {
       pid: logDTO.pid,
       host: this.analyticsService.getHostFromOrigin(headers.origin),
       pg: logDTO.pg,
+      title: logDTO.title,
       dv: deviceType,
       br: browserName,
       brv: browserVersion,

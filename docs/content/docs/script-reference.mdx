@@ -108,7 +108,7 @@ swetrix.trackViews({
 | Name                  | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Default value |
 | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
 | unique                | If true, only unique events will be saved. This param is useful when tracking single-page landing websites.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | `false`       |
-| callback              | A callback used to edit / prevent sending pageviews.<br />It accepts an object with pageview event data as a parameter which has the following structure: <br />lc: string \| undefined<br />tz: string \| undefined<br />ref: string \| undefined<br />so: string \| undefined<br />me: string \| undefined<br />ca: string \| undefined<br />te: string \| undefined<br />co: string \| undefined<br />qs: string \| undefined<br />meta: object \| undefined ("object" values must be string, number, boolean, null, or undefined)<br />pg: string \| null \| undefined<br />profileId: string \| undefined<br /><br />The callback is supposed to return the edited payload or `false` to prevent sending the pageview. If `true` is returned, the payload will be sent as-is. | `undefined`   |
+| callback              | A callback used to edit / prevent sending pageviews.<br />It accepts an object with pageview event data as a parameter which has the following structure: <br />lc: string \| undefined<br />tz: string \| undefined<br />ref: string \| undefined<br />so: string \| undefined<br />me: string \| undefined<br />ca: string \| undefined<br />te: string \| undefined<br />co: string \| undefined<br />qs: string \| undefined<br />meta: object \| undefined ("object" values must be string, number, boolean, null, or undefined)<br />pg: string \| null \| undefined<br />title: string \| null \| undefined<br />profileId: string \| undefined<br /><br />The callback is supposed to return the edited payload or `false` to prevent sending the pageview. If `true` is returned, the payload will be sent as-is. | `undefined`   |
 | heartbeatOnBackground | Send Heartbeat requests when the website tab is not active in the browser.<br />Setting this to `true` means users who keep your website open in an inactive browser tab or window can still be counted in realtime statistics.<br />Setting this to true is usually useful for services like Spotify or Youtube.                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | `false`       |
 | hash                  | Set to `true` to enable hash-based routing for every hash, or provide an array of exact hash values to include. For example, `['pricing', 'features']` includes `/path#pricing` and `/path#features` while ignoring other hashes. A leading `#` is optional in array values.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | `false`       |
 | search                | Set to `true` to enable search-based routing for every query parameter, or provide an array of parameter names to include. For example, `['search', 'page']` includes those parameters while ignoring unrelated ones. You can enable both `hash` and `search`; a pageview is fired only when an included part of the URL changes.                                                                                                                                                                                                                                                                                                                                                                                                                                                  | `false`       |
@@ -121,6 +121,30 @@ The `trackViews` function returns a `Promise` with an object with some methods a
   stop() {},
 }
 ```
+
+### Page titles
+
+The tracker reads `document.title` for each pageview, including automatic SPA navigation and manual `pageview()` calls. Titles are captured when the pageview is sent; changing only the title does not send another pageview. For routers that update the title asynchronously, send a manual pageview after the title is ready instead of enabling automatic tracking.
+
+The `trackViews` callback receives the title as `payload.title`. Return a replacement to override it, or `null` to skip title collection:
+
+```typescript
+swetrix.trackViews({
+  callback: (payload) => ({ ...payload, title: 'Product documentation' }),
+});
+```
+
+For manual tracking, pass `title` alongside `pg`:
+
+```typescript
+swetrix.pageview({
+  payload: { pg: '/pricing', title: 'Pricing' },
+});
+```
+
+The exported `IPageViewPayload` type includes `title?: string | null`. Omit it to use `document.title`; use `null` or an empty string to leave the title unset. The browser tracker limits titles to 2,048 characters. Choose a generic title or disable title collection on pages with personal information in their titles.
+
+Titles are available in **Traffic → Pages → Titles** in both Cloud and Community editions. Older pageviews, noscript visits, and requests without a title remain untitled.
 
 ## Noscript fallback
 

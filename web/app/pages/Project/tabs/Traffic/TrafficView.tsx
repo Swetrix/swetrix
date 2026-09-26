@@ -743,6 +743,7 @@ const TrafficViewInner = ({
   const pagesSubTabs = useMemo<BreakdownSubTab[]>(
     () => [
       { id: 'page', label: t('project.panelTabs.page'), dimension: 'page' },
+      { id: 'title', label: t('project.mapping.title'), dimension: 'title' },
       {
         id: 'entry_page',
         label: t('project.panelTabs.entry_page'),
@@ -889,6 +890,10 @@ const TrafficViewInner = ({
         )
       }
 
+      if (subTabId === 'title') {
+        return entryName
+      }
+
       let decodedUri = entryName
 
       try {
@@ -983,6 +988,7 @@ const TrafficViewInner = ({
             'city',
             'locale',
             'page',
+            'title',
             'entry_page',
             'exit_page',
             'host',

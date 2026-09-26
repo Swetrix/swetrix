@@ -119,6 +119,7 @@ export interface IPageViewPayload {
   te?: string
   co?: string
   pg?: string | null
+  title?: string | null
 
   /**
    * Raw URL query string of the landing page (without the leading `?`).
@@ -1266,6 +1267,7 @@ export class Lib {
     }
 
     const pvPayload = {
+      title: isInBrowser() ? document.title : undefined,
       lc: getLocale(),
       tz: getTimezone(),
       ref: getReferrer(),
@@ -1293,6 +1295,10 @@ export class Lib {
 
     if (evokeCallback) {
       this.activePage = pvPayload.pg || null
+    }
+
+    if (typeof pvPayload.title === 'string') {
+      pvPayload.title = pvPayload.title.slice(0, 2048)
     }
 
     Object.assign(pvPayload, privateData)

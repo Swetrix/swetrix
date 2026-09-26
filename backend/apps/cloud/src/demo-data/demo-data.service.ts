@@ -44,6 +44,25 @@ const BACKFILL_DAYS = 90
 const BASE_SESSIONS_PER_HOUR = 16
 const DEMO_HOST = 'swetrix.com'
 
+const DEMO_PAGE_TITLES: Record<string, string> = {
+  '/': 'Privacy-friendly web analytics | Swetrix',
+  '/pricing': 'Pricing | Swetrix',
+  '/docs': 'Documentation | Swetrix',
+  '/open-source': 'Open-source analytics | Swetrix',
+  '/alternatives/google-analytics': 'Google Analytics alternative | Swetrix',
+  '/features/errors': 'Error tracking | Swetrix',
+  '/features/session-replays': 'Session replays | Swetrix',
+  '/blog/privacy-friendly-analytics':
+    'Privacy-friendly analytics | Swetrix Blog',
+  '/blog/cookieless-tracking': 'Cookieless tracking | Swetrix Blog',
+  '/blog/session-replay-privacy': 'Session replay privacy | Swetrix Blog',
+  '/signup': 'Create an account | Swetrix',
+  '/dashboard': 'Dashboard | Swetrix',
+  '/checkout': 'Checkout | Swetrix',
+  '/thank-you': 'Thank you | Swetrix',
+  '/settings/billing': 'Billing settings | Swetrix',
+}
+
 type DemoRandom = () => number
 
 interface Weighted<T> {
@@ -1822,6 +1841,7 @@ export class DemoDataService implements OnModuleInit {
       ...eventTransformer({
         type: 'pageview',
         ...this.commonEvent(session, page),
+        title: DEMO_PAGE_TITLES[page],
       }),
       created: this.format(created),
     }

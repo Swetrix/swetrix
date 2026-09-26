@@ -1880,6 +1880,10 @@ const DetailsTable = ({
         }
       }
 
+      if (activeTabId === 'title') {
+        return entry.name || ''
+      }
+
       try {
         return decodeURIComponent(entry.name || '')
       } catch {

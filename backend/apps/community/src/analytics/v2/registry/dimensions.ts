@@ -41,6 +41,13 @@ export const V2_DIMENSIONS: V2DimensionDef[] = [
     description: 'Page path',
   },
   {
+    api: 'title',
+    column: 'title',
+    types: ['traffic'],
+    excludeNull: true,
+    description: 'Page title',
+  },
+  {
     api: 'host',
     column: 'host',
     types: GEO_TYPES,
