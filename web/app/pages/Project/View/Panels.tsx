@@ -18,7 +18,6 @@ import _sum from 'lodash/sum'
 import _toPairs from 'lodash/toPairs'
 import {
   FunnelIcon,
-  ScanIcon,
   CaretUpIcon,
   CaretDownIcon,
   CaretRightIcon,
@@ -67,6 +66,12 @@ import { nFormatter, getLocaleDisplayName } from '~/utils/generic'
 import countries from '~/utils/isoCountries'
 
 import { MainChart } from './components/MainChart'
+import {
+  PanelHeader,
+  panelControlClasses,
+  type PanelHeaderProps,
+} from './components/PanelHeader'
+import { MetadataPicker } from './components/MetadataPicker'
 import { V2Filter } from '~/api/v2/types'
 import { Customs } from './interfaces/traffic'
 import { RefetchIndicator } from './v2/loading'
@@ -88,8 +93,6 @@ const UTM_TRACKING_PANEL_IDS = new Set([
   'utm_term',
   'utm_content',
 ])
-const PANEL_HEADER_ACTIONS_CLASS =
-  'panel-header-actions flex min-w-0 max-w-full items-center gap-2.5 overflow-x-auto overflow-y-hidden pb-0.5 scrollbar-thin'
 const PANEL_EMPTY_STATE_DOCS = {
   customEvents: 'https://swetrix.com/docs/swetrix-js-reference#track',
   customEventMetadata: 'https://swetrix.com/docs/swetrix-js-reference#track',
@@ -111,13 +114,6 @@ const panelBarStyle = (pct: number) =>
   ({
     '--panel-bar-scale': Math.max(0, Math.min(100, pct)) / 100,
   }) as React.CSSProperties
-
-const PanelTabUnderline = () => (
-  <span
-    aria-hidden
-    className='absolute inset-x-0 -bottom-0.5 h-0.5 bg-slate-900 dark:bg-gray-50'
-  />
-)
 
 const getDocsEmptyStateVariant = (
   id: string,
@@ -201,43 +197,26 @@ const PanelDocsEmptyState = ({
   )
 }
 
-interface PanelContainerProps {
-  name: React.ReactNode
+interface PanelContainerProps extends PanelHeaderProps {
   children?: React.ReactNode
   icon?: React.ReactNode
   type: string
   hideHeader?: boolean
-  tooltip?: React.ReactNode
   contentClassName?: string
-  tabs?: Array<
-    | {
-        id: string
-        label: string
-      }
-    | Array<{
-        id: string
-        label: string
-      }>
-  >
-  onTabChange?: (tab: string) => void
-  activeTabId?: string
-  onDetailsClick?: () => void
-  /** Renders the details button in a disabled state, keeping the panel height stable while there is nothing to drill into. */
-  detailsDisabled?: boolean
-  dropdownPlaceholder?: string
+  headerContent?: React.ReactNode
   isRefetching?: boolean
-  /** Replaces the panel body with a centered spinner, keeping the panel at its usual height. */
   isLoading?: boolean
 }
 
 const PanelContainer = ({
   name,
   children,
-  icon,
   type,
   hideHeader,
   tooltip,
+  actions,
   contentClassName,
+  headerContent,
   tabs,
   onTabChange,
   activeTabId,
@@ -246,131 +225,41 @@ const PanelContainer = ({
   dropdownPlaceholder,
   isRefetching,
   isLoading,
-}: PanelContainerProps) => {
-  const { t } = useTranslation('common')
-  return (
-    <div
-      className={cx(
-        'relative isolate overflow-hidden rounded-lg border border-gray-200 bg-white px-4 pb-3 dark:border-slate-800/60 dark:bg-slate-900/25',
-        hideHeader ? 'pt-3' : 'pt-5',
-        {
-          'col-span-full sm:col-span-2':
-            type === 'metadata' || type === 'customEvents',
-        },
-      )}
-    >
-      {isRefetching ? <RefetchIndicator /> : null}
-      {!hideHeader ? (
-        <div className='mb-2 flex items-center justify-between gap-4'>
-          <Text
-            as='h3'
-            size='lg'
-            weight='semibold'
-            className='flex items-center leading-6 whitespace-nowrap'
-          >
-            {icon ? <span className='mr-1'>{icon}</span> : null}
-            {name}
-            {tooltip ? (
-              <span className='ml-1.5 flex items-center'>{tooltip}</span>
-            ) : null}
-          </Text>
-          <div className={PANEL_HEADER_ACTIONS_CLASS}>
-            {tabs && onTabChange ? (
-              <>
-                {tabs.map((tab, index) => {
-                  if (Array.isArray(tab)) {
-                    const dropdownTabs = tab
-                    const activeDropdownTab = dropdownTabs.find(
-                      (t) => t.id === activeTabId,
-                    )
-                    const dropdownTitle = activeDropdownTab
-                      ? activeDropdownTab.label
-                      : dropdownPlaceholder || t('project.campaigns')
-
-                    return (
-                      <div
-                        key={`dropdown-${index}`}
-                        className='relative inline-flex'
-                      >
-                        <Dropdown
-                          title={dropdownTitle}
-                          items={dropdownTabs}
-                          labelExtractor={(item) => item.label}
-                          keyExtractor={(item) => item.id}
-                          onSelect={(item) => {
-                            onTabChange(item.id)
-                          }}
-                          buttonClassName={cx(
-                            'relative border-b-2 border-transparent px-0 py-1 text-sm font-bold whitespace-nowrap transition-colors duration-200 md:px-0',
-                            {
-                              'text-slate-900 dark:text-gray-50':
-                                !!activeDropdownTab,
-                              'text-gray-500 hover:border-gray-200 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-200 dark:hover:text-gray-300':
-                                !activeDropdownTab,
-                            },
-                          )}
-                          headless
-                          chevron='mini'
-                        />
-                        {activeDropdownTab ? <PanelTabUnderline /> : null}
-                      </div>
-                    )
-                  }
-
-                  // Regular tab button
-                  return (
-                    <button
-                      key={tab.id}
-                      type='button'
-                      onClick={() => {
-                        onTabChange(tab.id)
-                      }}
-                      className={cx(
-                        'relative border-b-2 border-transparent py-1 text-sm font-bold whitespace-nowrap transition-colors duration-200',
-                        {
-                          'text-slate-900 dark:text-gray-50':
-                            activeTabId === tab.id,
-                          'text-gray-500 hover:border-gray-200 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-200 dark:hover:text-gray-300':
-                            activeTabId !== tab.id,
-                        },
-                      )}
-                    >
-                      {tab.label}
-                      {activeTabId === tab.id ? <PanelTabUnderline /> : null}
-                    </button>
-                  )
-                })}
-              </>
-            ) : null}
-          </div>
-        </div>
-      ) : null}
-      <div
-        className={cx(
-          contentClassName ??
-            'relative flex h-[19.6rem] flex-col overflow-hidden',
-        )}
+}: PanelContainerProps) => (
+  <div
+    className={cx(
+      'relative isolate min-w-0 overflow-hidden rounded-lg border border-gray-200 bg-white px-3 py-3 sm:px-4 dark:border-slate-800/60 dark:bg-slate-900/25',
+      {
+        'col-span-full sm:col-span-2':
+          type === 'metadata' || type === 'customEvents',
+      },
+    )}
+  >
+    {isRefetching ? <RefetchIndicator /> : null}
+    {!hideHeader ? (
+      <PanelHeader
+        name={name}
+        tabs={tabs}
+        onTabChange={onTabChange}
+        activeTabId={activeTabId}
+        onDetailsClick={onDetailsClick}
+        detailsDisabled={detailsDisabled}
+        dropdownPlaceholder={dropdownPlaceholder}
+        tooltip={tooltip}
+        actions={actions}
       >
-        {isLoading ? <PanelLoadingState /> : children}
-      </div>
-      {onDetailsClick ? (
-        <div className='mt-2 flex items-center justify-center'>
-          <Button
-            variant='icon'
-            className='gap-1.5 px-3 py-2'
-            type='button'
-            onClick={onDetailsClick}
-            disabled={detailsDisabled}
-            aria-label={t('common.details')}
-          >
-            <ScanIcon className='size-4' />
-            <span>{t('common.details')}</span>
-          </Button>
-        </div>
-      ) : null}
+        {headerContent}
+      </PanelHeader>
+    ) : null}
+    <div
+      className={
+        contentClassName ?? 'relative flex h-[19.6rem] flex-col overflow-hidden'
+      }
+    >
+      {isLoading ? <PanelLoadingState /> : children}
     </div>
-  )
-}
+  </div>
+)
 
 interface CustomEventsProps {
   customs?: Customs
@@ -1264,26 +1153,25 @@ const CustomEvents = ({
       <PanelContainer
         name={t('dashboard.events')}
         type='customEventsChart'
-        hideHeader
+        headerContent={
+          <Dropdown
+            className='ml-auto shrink-0'
+            title={t('project.topX', { x: chartTopLimit })}
+            items={[...CUSTOM_EVENTS_TOP_LIMITS]}
+            keyExtractor={(item) => item}
+            labelExtractor={(item) => t('project.topX', { x: item })}
+            onSelect={(item, _e, close) => {
+              setChartTopLimit(item)
+              close()
+            }}
+            headless
+            chevron='mini'
+            buttonClassName={panelControlClasses(true)}
+            menuItemsClassName='w-24'
+          />
+        }
       >
-        <div className='flex h-full flex-col'>
-          <div className='mb-2 flex justify-end'>
-            <Dropdown
-              title={t('project.topX', { x: chartTopLimit })}
-              items={[...CUSTOM_EVENTS_TOP_LIMITS]}
-              keyExtractor={(item) => item}
-              labelExtractor={(item) => t('project.topX', { x: item })}
-              onSelect={(item, _e, close) => {
-                setChartTopLimit(item)
-                close()
-              }}
-              chevron='mini'
-              buttonClassName='min-w-[96px] items-center px-2 py-1.5 text-sm leading-none font-medium md:px-2 [&_svg]:h-4 [&_svg]:w-4'
-              menuItemsClassName='w-24'
-            />
-          </div>
-          <div className='min-h-0 flex-1'>{renderStackedChart()}</div>
-        </div>
+        {renderStackedChart()}
       </PanelContainer>
     </div>
   )
@@ -1330,7 +1218,7 @@ const MetadataKeyBody = ({
 }: MetadataKeyBodyProps) => {
   const { t } = useTranslation('common')
   const navigate = useNavigate()
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(Boolean(activeKey))
   const [valuesData, setValuesData] = useState<
     Array<{ value: string; count: number }>
   >([])
@@ -1342,9 +1230,11 @@ const MetadataKeyBody = ({
   const uniques = _sum(chartData.uniques)
 
   useEffect(() => {
+    let cancelled = false
     if (!activeKey) {
       setValuesData([])
       setRawMetadata([])
+      setLoading(false)
       return
     }
 
@@ -1352,68 +1242,37 @@ const MetadataKeyBody = ({
       setLoading(true)
       try {
         const { result } = await getMetadataValues(activeKey)
+        if (cancelled) return
         if (mode === 'property') {
-          const values = result
-            .filter((item) => item.key === activeKey)
-            .map((item) => ({ value: item.value, count: item.count }))
-          setValuesData(values)
+          setValuesData(
+            result
+              .filter((item) => item.key === activeKey)
+              .map((item) => ({ value: item.value, count: item.count })),
+          )
         } else {
           setRawMetadata(result)
-          const values = result.map((item) => ({
-            value: `${item.key}: ${item.value}`,
-            count: item.count,
-          }))
-          setValuesData(values)
+          setValuesData(
+            result.map((item) => ({
+              value: `${item.key}: ${item.value}`,
+              count: item.count,
+            })),
+          )
         }
       } catch (error) {
-        console.error(
-          `[ERROR](MetadataKeyBody) Failed to load values for key ${activeKey}`,
-          error,
-        )
+        if (cancelled) return
+        console.error('[ERROR](MetadataKeyBody) Failed to load metadata', error)
         setValuesData([])
         setRawMetadata([])
       } finally {
-        setLoading(false)
+        if (!cancelled) setLoading(false)
       }
     }
 
     loadValues()
-  }, [activeKey, getMetadataValues, mode])
-
-  useEffect(() => {
-    if (activeKey) {
-      const loadValues = async () => {
-        setLoading(true)
-        try {
-          const { result } = await getMetadataValues(activeKey)
-          if (mode === 'property') {
-            const values = result
-              .filter((item) => item.key === activeKey)
-              .map((item) => ({ value: item.value, count: item.count }))
-            setValuesData(values)
-          } else {
-            setRawMetadata(result)
-            const values = result.map((item) => ({
-              value: `${item.key}: ${item.value}`,
-              count: item.count,
-            }))
-            setValuesData(values)
-          }
-        } catch (error) {
-          console.error(
-            `[ERROR](MetadataKeyBody) Failed to reload values for key ${activeKey}`,
-            error,
-          )
-          setValuesData([])
-          setRawMetadata([])
-        } finally {
-          setLoading(false)
-        }
-      }
-      loadValues()
+    return () => {
+      cancelled = true
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters])
+  }, [activeKey, getMetadataValues, mode, filters])
 
   const valuesToDisplay = useMemo(() => {
     if (mode === 'customEvent') {
@@ -1548,11 +1407,13 @@ const MetadataKeyBody = ({
     mode === 'customEvent' ? !_isEmpty(rawMetadata) : !_isEmpty(valuesData)
 
   useEffect(() => {
-    onShowDetailsChange?.(hasExistingData)
-  }, [hasExistingData, onShowDetailsChange])
+    onShowDetailsChange?.(hasExistingData && !loading)
+  }, [hasExistingData, loading, onShowDetailsChange])
 
+  const previousDetailsTrigger = useRef(detailsTrigger)
   useEffect(() => {
-    if (detailsTrigger && detailsTrigger > 0) {
+    if (detailsTrigger !== previousDetailsTrigger.current) {
+      previousDetailsTrigger.current = detailsTrigger
       setDetailsOpened(true)
     }
   }, [detailsTrigger])
@@ -1802,139 +1663,65 @@ const CombinedMetadataPanel = ({
   filters,
 }: CombinedMetadataPanelProps) => {
   const { t } = useTranslation('common')
-  const hasProperty = !_isEmpty(property.metadataKeys)
-  const hasCustomEvent = !_isEmpty(customEvent.metadataKeys)
-
-  const [activeMode, setActiveMode] = useState<'property' | 'customEvent'>(
-    () => {
-      if (hasProperty) return 'property'
-      if (hasCustomEvent) return 'customEvent'
-      return 'property'
-    },
+  const [selectedMode, setSelectedMode] = useState<'property' | 'customEvent'>(
+    'property',
   )
-
-  useEffect(() => {
-    if (activeMode === 'property' && !hasProperty && hasCustomEvent) {
-      setActiveMode('customEvent')
-    } else if (activeMode === 'customEvent' && !hasCustomEvent && hasProperty) {
-      setActiveMode('property')
-    }
-  }, [activeMode, hasProperty, hasCustomEvent])
-
+  const activeMode = (selectedMode === 'property' ? property : customEvent)
+    .metadataKeys.length
+    ? selectedMode
+    : property.metadataKeys.length || !customEvent.metadataKeys.length
+      ? 'property'
+      : 'customEvent'
   const activeSection = activeMode === 'property' ? property : customEvent
-  const activeFilterPrefix: 'event_metadata' | 'page_property' =
-    activeMode === 'property' ? 'page_property' : 'event_metadata'
-
-  const dropdownItems = useMemo(
-    () => activeSection.metadataKeys.map((key) => ({ id: key, label: key })),
-    [activeSection.metadataKeys],
-  )
-
-  const modeTabs: Array<{ id: 'property' | 'customEvent'; label: string }> =
-    useMemo(() => {
-      const tabs: Array<{ id: 'property' | 'customEvent'; label: string }> = []
-      if (hasProperty) {
-        tabs.push({ id: 'property', label: t('project.pageviewMetadata') })
-      }
-      if (hasCustomEvent) {
-        tabs.push({ id: 'customEvent', label: t('project.customEvMetadata') })
-      }
-      return tabs
-    }, [hasProperty, hasCustomEvent, t])
-
+  const activeKey = activeSection.metadataKeys.includes(activeSection.activeKey)
+    ? activeSection.activeKey
+    : activeSection.metadataKeys[0] || ''
   const [canShowDetails, setCanShowDetails] = useState(false)
   const [detailsTrigger, setDetailsTrigger] = useState(0)
-  const activeDropdownTab = dropdownItems.find(
-    (item) => item.id === activeSection.activeKey,
-  )
-  const dropdownTitle = activeDropdownTab
-    ? activeDropdownTab.label
-    : activeMode === 'customEvent'
-      ? t('project.selectEvent')
-      : t('project.selectProperty')
 
   return (
-    <div className='isolate overflow-hidden rounded-lg border border-gray-200 bg-white px-4 pt-5 pb-3 dark:border-slate-800/60 dark:bg-slate-900/25'>
-      <div className='mb-2 flex items-center justify-between gap-4'>
-        <Text
-          as='h3'
-          size='lg'
-          weight='semibold'
-          className='flex items-center leading-6 whitespace-nowrap'
-        >
-          {title}
-        </Text>
-        <div className={PANEL_HEADER_ACTIONS_CLASS}>
-          {modeTabs.map((tab) => (
-            <button
-              key={tab.id}
-              type='button'
-              onClick={() => setActiveMode(tab.id)}
-              className={cx(
-                'relative border-b-2 border-transparent py-1 text-sm font-bold whitespace-nowrap transition-colors duration-200',
-                {
-                  'text-slate-900 dark:text-gray-50': activeMode === tab.id,
-                  'text-gray-500 hover:border-gray-200 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-200 dark:hover:text-gray-300':
-                    activeMode !== tab.id,
-                },
-              )}
-            >
-              {tab.label}
-              {activeMode === tab.id ? <PanelTabUnderline /> : null}
-            </button>
-          ))}
-          {!_isEmpty(dropdownItems) ? (
-            <Dropdown
-              title={dropdownTitle}
-              items={dropdownItems}
-              labelExtractor={(item) => item.label}
-              keyExtractor={(item) => item.id}
-              onSelect={(item) => activeSection.onKeyChange(item.id)}
-              buttonClassName={cx(
-                'relative border-b-2 px-0 py-1 text-sm font-bold whitespace-nowrap transition-colors duration-200 md:px-0',
-                {
-                  'border-slate-900 text-slate-900 dark:border-gray-50 dark:text-gray-50':
-                    !!activeDropdownTab,
-                  'border-transparent text-gray-500 hover:border-gray-200 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-200 dark:hover:text-gray-300':
-                    !activeDropdownTab,
-                },
-              )}
-              headless
-              chevron='mini'
-            />
-          ) : null}
-        </div>
-      </div>
-      <div className='relative flex h-[19.6rem] flex-col overflow-hidden'>
-        <MetadataKeyBody
-          key={activeMode}
-          title={title}
-          hasMetadataKeys={!_isEmpty(activeSection.metadataKeys)}
-          getMetadataValues={activeSection.getMetadataValues}
-          getFilterLink={getFilterLink}
-          chartData={chartData}
-          filters={filters}
-          activeKey={activeSection.activeKey}
-          filterPrefix={activeFilterPrefix}
-          mode={activeMode}
-          onShowDetailsChange={setCanShowDetails}
-          detailsTrigger={detailsTrigger}
+    <PanelContainer
+      name={title}
+      type='metadataPicker'
+      onDetailsClick={() => setDetailsTrigger((n) => n + 1)}
+      detailsDisabled={!canShowDetails}
+      headerContent={
+        <MetadataPicker
+          propertyKeys={property.metadataKeys}
+          eventKeys={customEvent.metadataKeys}
+          activeMode={activeMode}
+          activeKey={activeKey}
+          onSelect={(mode, key) => {
+            if (mode === activeMode && key === activeKey) return
+            setCanShowDetails(false)
+            setSelectedMode(mode)
+            const section = mode === 'property' ? property : customEvent
+            section.onKeyChange(key)
+          }}
         />
-      </div>
-      <div className='mt-2 flex items-center justify-center'>
-        <Button
-          variant='icon'
-          className='gap-1.5 px-3 py-2'
-          type='button'
-          onClick={() => setDetailsTrigger((n) => n + 1)}
-          disabled={!canShowDetails}
-          aria-label={t('common.details')}
-        >
-          <ScanIcon className='size-4' />
-          <span>{t('common.details')}</span>
-        </Button>
-      </div>
-    </div>
+      }
+    >
+      <MetadataKeyBody
+        key={`${activeMode}:${activeKey}`}
+        title={
+          activeMode === 'property'
+            ? t('project.pageProperties')
+            : t('project.customEvMetadata')
+        }
+        hasMetadataKeys={activeSection.metadataKeys.length > 0}
+        getMetadataValues={activeSection.getMetadataValues}
+        getFilterLink={getFilterLink}
+        chartData={chartData}
+        filters={filters}
+        activeKey={activeKey}
+        filterPrefix={
+          activeMode === 'property' ? 'page_property' : 'event_metadata'
+        }
+        mode={activeMode}
+        onShowDetailsChange={setCanShowDetails}
+        detailsTrigger={detailsTrigger}
+      />
+    </PanelContainer>
   )
 }
 

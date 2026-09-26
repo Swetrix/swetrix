@@ -333,9 +333,17 @@ const PerformanceViewInner = ({ tnMapping }: PerformanceViewProps) => {
 
   const locationSubTabs = useMemo<BreakdownSubTab[]>(
     () => [
-      { id: 'country', label: t('project.mapping.cc'), dimension: 'country' },
-      { id: 'region', label: t('project.mapping.rg'), dimension: 'region' },
-      { id: 'city', label: t('project.mapping.ct'), dimension: 'city' },
+      {
+        id: 'country',
+        label: t('project.panelTabs.country'),
+        dimension: 'country',
+      },
+      {
+        id: 'region',
+        label: t('project.panelTabs.region'),
+        dimension: 'region',
+      },
+      { id: 'city', label: t('project.panelTabs.city'), dimension: 'city' },
       {
         id: 'map',
         label: t('project.mapping.map'),
@@ -349,8 +357,8 @@ const PerformanceViewInner = ({ tnMapping }: PerformanceViewProps) => {
 
   const pagesSubTabs = useMemo<BreakdownSubTab[]>(
     () => [
-      { id: 'page', label: t('project.mapping.pg'), dimension: 'page' },
-      { id: 'host', label: t('project.mapping.host'), dimension: 'host' },
+      { id: 'page', label: t('project.panelTabs.page'), dimension: 'page' },
+      { id: 'host', label: t('project.panelTabs.host'), dimension: 'host' },
     ],
     [t],
   )
@@ -359,36 +367,38 @@ const PerformanceViewInner = ({ tnMapping }: PerformanceViewProps) => {
     () => [
       {
         id: 'browser',
-        label: t('project.mapping.br'),
+        label: t('project.panelTabs.browser'),
         dimension: 'browser',
         versionsDimension: 'browser_version' as const,
         versionsParentField: 'browser' as const,
       },
-      { id: 'device', label: t('project.mapping.dv'), dimension: 'device' },
+      {
+        id: 'device',
+        label: t('project.panelTabs.device'),
+        dimension: 'device',
+      },
     ],
     [t],
   )
 
-  const networkSubTabs = useMemo<(BreakdownSubTab | BreakdownSubTab[])[]>(
+  const networkSubTabs = useMemo<BreakdownSubTab[]>(
     () => [
-      [
-        { id: 'isp', label: t('project.mapping.isp'), dimension: 'isp' },
-        {
-          id: 'organization',
-          label: t('project.mapping.og'),
-          dimension: 'organization',
-        },
-        {
-          id: 'user_type',
-          label: t('project.mapping.ut'),
-          dimension: 'user_type',
-        },
-        {
-          id: 'connection_type',
-          label: t('project.mapping.ctp'),
-          dimension: 'connection_type',
-        },
-      ],
+      { id: 'isp', label: t('project.panelTabs.isp'), dimension: 'isp' },
+      {
+        id: 'organization',
+        label: t('project.panelTabs.organization'),
+        dimension: 'organization',
+      },
+      {
+        id: 'user_type',
+        label: t('project.panelTabs.user_type'),
+        dimension: 'user_type',
+      },
+      {
+        id: 'connection_type',
+        label: t('project.panelTabs.connection_type'),
+        dimension: 'connection_type',
+      },
     ],
     [t],
   )

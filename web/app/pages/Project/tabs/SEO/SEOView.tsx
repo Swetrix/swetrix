@@ -76,6 +76,7 @@ import { getSearchEngineReferrals, getAIReferrals } from '~/utils/referrers'
 import routes from '~/utils/routes'
 
 import CompactReferralPanel from './CompactReferralPanel'
+import { PanelHeader } from '~/pages/Project/View/components/PanelHeader'
 import {
   SEO_METRICS,
   type SEOMetricKey,
@@ -595,25 +596,37 @@ const SEOViewInner = ({ tnMapping }: SEOViewProps) => {
   )
 
   const pagesSubTabs = useMemo<BreakdownSubTab[]>(
-    () => [{ id: 'page', label: t('project.seo.page'), dimension: 'page' }],
+    () => [
+      { id: 'page', label: t('project.panelTabs.page'), dimension: 'page' },
+    ],
     [t],
   )
 
   const queriesSubTabs = useMemo<BreakdownSubTab[]>(
-    () => [{ id: 'query', label: t('project.seo.query'), dimension: 'query' }],
+    () => [
+      { id: 'query', label: t('project.panelTabs.query'), dimension: 'query' },
+    ],
     [t],
   )
 
   const countriesSubTabs = useMemo<BreakdownSubTab[]>(
     () => [
-      { id: 'country', label: t('project.mapping.cc'), dimension: 'country' },
+      {
+        id: 'country',
+        label: t('project.panelTabs.country'),
+        dimension: 'country',
+      },
     ],
     [t],
   )
 
   const devicesSubTabs = useMemo<BreakdownSubTab[]>(
     () => [
-      { id: 'device', label: t('project.mapping.dv'), dimension: 'device' },
+      {
+        id: 'device',
+        label: t('project.panelTabs.device'),
+        dimension: 'device',
+      },
     ],
     [t],
   )
@@ -911,12 +924,7 @@ const SEOViewInner = ({ tnMapping }: SEOViewProps) => {
           {brandedQuery.isFetching && !brandedQuery.isPending ? (
             <RefetchIndicator />
           ) : null}
-          <div className='mb-1 flex items-center gap-1 text-gray-900 dark:text-gray-50'>
-            <MagnifyingGlassIcon className='size-5' />
-            <Text size='sm' weight='semibold'>
-              {t('project.seo.brandedTraffic')}
-            </Text>
-          </div>
+          <PanelHeader name={t('project.seo.brandedTraffic')} />
           {brandedQuery.isPending ? (
             <PanelLoadingState />
           ) : brandedQuery.isError ? (
