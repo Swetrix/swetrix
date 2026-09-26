@@ -544,13 +544,13 @@ export class AdsService {
     // linked to sessions via the swetrix_session_id metadata (session_id)
     const query = `
       SELECT
-        s.ca AS ca,
+        s.session_campaign AS ca,
         sum(r.amount) AS revenue,
         count() AS purchases
       FROM (
         SELECT
           toString(psid) AS psid_str,
-          argMin(ca, created) AS ca
+          argMin(ca, created) AS session_campaign
         FROM events
         WHERE
           pid = {pid:FixedString(12)}
@@ -563,7 +563,7 @@ export class AdsService {
       ) AS s
       INNER JOIN (
         SELECT
-          argMax(toString(session_id), synced_at) AS session_id,
+          argMax(toString(session_id), synced_at) AS latest_session_id,
           argMax(amount, synced_at) AS amount,
           argMax(type, synced_at) AS type
         FROM revenue
@@ -572,9 +572,9 @@ export class AdsService {
           AND session_id IS NOT NULL
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         GROUP BY pid, transaction_id
-      ) AS r ON r.session_id = s.psid_str
+      ) AS r ON r.latest_session_id = s.psid_str
       WHERE r.type IN ('sale', 'subscription')
-      GROUP BY s.ca
+      GROUP BY s.session_campaign
     `
 
     const { data } = await clickhouse
