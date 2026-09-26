@@ -546,11 +546,11 @@ const ToolCallSummaryDrawer = ({
               return (
                 <li key={idx} className='px-3 py-2.5'>
                   <div className='flex items-start gap-2.5'>
-                    <span className='mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gray-100 text-[10px] font-semibold text-gray-600 dark:bg-slate-800 dark:text-gray-300'>
+                    <span className='flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gray-100 text-[10px] font-semibold text-gray-600 dark:bg-slate-800 dark:text-gray-300'>
                       {idx + 1}
                     </span>
                     <div className='min-w-0 flex-1'>
-                      <div className='flex flex-wrap items-center gap-1.5'>
+                      <div className='flex min-h-5 flex-wrap items-center gap-1.5'>
                         <Icon className='h-3.5 w-3.5 text-gray-500 dark:text-gray-400' />
                         <span className='text-xs font-medium text-gray-800 dark:text-gray-100'>
                           {toolLabel}
