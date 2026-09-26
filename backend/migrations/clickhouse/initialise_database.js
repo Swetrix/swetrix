@@ -4,7 +4,6 @@ const { queriesRunner, dbName, databaselessQueriesRunner } = require('./setup')
 const CLICKHOUSE_DB_INIT_QUERIES = [`CREATE DATABASE IF NOT EXISTS ${dbName}`]
 
 const CLICKHOUSE_INIT_QUERIES = [
-
   `CREATE TABLE IF NOT EXISTS ${dbName}.events
   (
     type LowCardinality(String),
@@ -14,6 +13,7 @@ const CLICKHOUSE_INIT_QUERIES = [
     profileId Nullable(String) CODEC(ZSTD(3)),
     host Nullable(String) CODEC(ZSTD(3)),
     pg Nullable(String) CODEC(ZSTD(3)),
+    title Nullable(String) CODEC(ZSTD(3)),
     dv LowCardinality(Nullable(String)),
     br LowCardinality(Nullable(String)),
     brv Nullable(String) CODEC(ZSTD(3)),
@@ -58,6 +58,8 @@ const CLICKHOUSE_INIT_QUERIES = [
   ENGINE = MergeTree()
   PARTITION BY toYYYYMM(created)
   ORDER BY (pid, type, created);`,
+
+  `ALTER TABLE ${dbName}.events ADD COLUMN IF NOT EXISTS title Nullable(String) CODEC(ZSTD(3)) AFTER pg`,
 
   // Error events status table
   `CREATE TABLE IF NOT EXISTS ${dbName}.error_statuses (

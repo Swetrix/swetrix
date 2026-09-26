@@ -151,6 +151,18 @@ trackError({
 })
 ```
 
+### Page titles
+
+Pageviews include the current `document.title`, including SPA path changes. Read or override `payload.title` in the `trackViews` callback, or set `payload.title` when calling `pageview`. The exported `IPageViewPayload` type accepts `title?: string | null`.
+
+```typescript
+trackViews({
+  callback: (payload) => ({ ...payload, title: 'Documentation' }),
+})
+```
+
+Omitting `title` uses the document title. Set it to `null` or `''` to skip title collection. Titles are limited to 2,048 characters. Only a pageview captures a title; title changes alone do not send pageviews.
+
 ### `pageview(options)`
 
 Manually track a single page view (useful for custom routing).

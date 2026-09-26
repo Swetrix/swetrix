@@ -43,6 +43,7 @@ const TRAFFIC_DIMENSIONS = [
   'region',
   'city',
   'page',
+  'title',
   'host',
   'locale',
   'browser',

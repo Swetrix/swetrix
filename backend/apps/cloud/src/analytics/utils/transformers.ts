@@ -55,6 +55,7 @@ interface CommonOptions {
 
 interface PageviewOptions extends CommonOptions {
   type: 'pageview'
+  title?: string | null
 }
 
 interface CustomEventOptions extends CommonOptions {
@@ -147,6 +148,7 @@ export const eventTransformer = (opts: EventTransformerOptions) => {
     return {
       type: 'pageview' as const,
       ...buildCommon(opts),
+      title: opts.title || null,
       created,
     }
   }

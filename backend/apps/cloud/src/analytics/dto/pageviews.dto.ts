@@ -57,6 +57,18 @@ export class PageviewsDto {
   pg?: string
 
   @ApiProperty({
+    example: 'Pricing | Swetrix',
+    required: false,
+    nullable: true,
+    description: 'Page title at the time of the pageview',
+    maxLength: 2048,
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(2048)
+  title?: string | null
+
+  @ApiProperty({
     example: 'en-GB',
     description: "User's locale",
   })
