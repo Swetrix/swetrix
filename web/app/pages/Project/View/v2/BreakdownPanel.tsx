@@ -150,18 +150,15 @@ export const BreakdownPanel = ({
     )
   }, [activeSubTab, versionsQuery.data, primaryMetric])
 
-  const containerTabs =
-    flatSubTabs.length > 1
-      ? subTabs.map((tab) =>
-          Array.isArray(tab)
-            ? tab.map(({ id, label }) => ({ id, label }))
-            : { id: tab.id, label: tab.label },
-        )
-      : undefined
+  const containerTabs = subTabs.map((tab) =>
+    Array.isArray(tab)
+      ? tab.map(({ id, label }) => ({ id, label }))
+      : { id: tab.id, label: tab.label },
+  )
 
   if (isSentinel) {
     return (
-      <div ref={ref}>
+      <div ref={ref} className='min-w-0'>
         <PanelContainer
           name={name}
           icon={icon}
@@ -201,7 +198,7 @@ export const BreakdownPanel = ({
   )
 
   return (
-    <div ref={ref}>
+    <div ref={ref} className='min-w-0'>
       <Panel
         key={activeSubTabId}
         icon={icon}

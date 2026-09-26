@@ -140,7 +140,11 @@ const CaptchaView = (_props: CaptchaViewProps) => {
         dimension,
         name: tnMapping[dimension],
         subTabs: [
-          { id: dimension, label: tnMapping[dimension], dimension },
+          {
+            id: dimension,
+            label: t(`project.panelTabs.${dimension}`),
+            dimension,
+          },
         ] as BreakdownSubTab[],
       })),
     // eslint-disable-next-line react-hooks/exhaustive-deps
