@@ -23,12 +23,17 @@ interface RrwebRecordOptions {
   [key: string]: unknown
 }
 
+interface RrwebRecordFn {
+  (options: RrwebRecordOptions): (() => void) | undefined
+  takeFullSnapshot?: (isCheckout?: boolean) => void
+}
+
 interface RrwebGlobal {
-  record?: (options: RrwebRecordOptions) => (() => void) | undefined
+  record?: RrwebRecordFn
   Replayer?: unknown
 }
 
-type RrwebModule = RrwebGlobal & {
+type RrwebRecordModule = RrwebGlobal & {
   default?: RrwebGlobal
 }
 
@@ -41,10 +46,19 @@ interface SessionReplayStartResponse {
 
 declare global {
   interface Window {
+    // Legacy global set by full rrweb bundles (self-hosted or custom rrwebUrl).
     rrweb?: RrwebGlobal
+    // Global set by the @rrweb/record UMD bundle we ship.
+    rrwebRecord?: RrwebGlobal | RrwebRecordFn
     __SWETRIX_RRWEB_LOADING__?: Promise<void>
   }
 }
+
+/**
+ * Key / value metadata describing an identified user (email, plan, signup
+ * date, ...). Values are stored as strings; `null` removes a trait.
+ */
+export type Traits = Record<string, string | number | boolean | null>
 
 export interface LibOptions {
   /**
@@ -105,6 +119,7 @@ export interface IPageViewPayload {
   te?: string
   co?: string
   pg?: string | null
+  title?: string | null
 
   /**
    * Raw URL query string of the landing page (without the leading `?`).
@@ -205,8 +220,7 @@ export interface ErrorActions {
 
 const SESSION_REPLAY_PRIVACY_VALUES = ['total', 'normal', 'none'] as const
 
-export type SessionReplayPrivacy =
-  (typeof SESSION_REPLAY_PRIVACY_VALUES)[number]
+export type SessionReplayPrivacy = (typeof SESSION_REPLAY_PRIVACY_VALUES)[number]
 
 export interface SessionReplayOptions {
   privacy?: SessionReplayPrivacy
@@ -265,16 +279,16 @@ export interface PageViewsOptions {
   heartbeatOnBackground?: boolean
 
   /**
-   * Set to `true` to enable hash-based routing.
-   * For example if you have pages like /#/path or want to track pages like /path#hash
+   * Set to `true` to enable hash-based routing, or provide an array of hash values to include.
+   * For example, use `true` for pages like /#/path, or `['pricing', 'features']` to include only those hashes.
    */
-  hash?: boolean
+  hash?: boolean | readonly string[]
 
   /**
-   * Set to `true` to enable search-based routing.
-   * For example if you have pages like /path?search
+   * Set to `true` to enable search-based routing, or provide an array of query parameter names to include.
+   * For example, use `true` for /path?search, or `['search', 'page']` to ignore all other parameters.
    */
-  search?: boolean
+  search?: boolean | readonly string[]
 
   /**
    * Callback to edit / prevent sending pageviews.
@@ -296,6 +310,16 @@ export const defaultSessionReplayActions: SessionReplayActions = {
 
 const DEFAULT_API_HOST = 'https://api.swetrix.com/log'
 const DEFAULT_API_BASE = 'https://api.swetrix.com'
+
+/**
+ * Events carry the raw, site-supplied profileId; the server stores them behind
+ * this prefix. Mirrored here so getProfileId() can report the ID events are
+ * actually stored under without an extra round trip.
+ */
+const USER_PROFILE_PREFIX = 'usr_'
+
+const toStoredProfileId = (profileId: string) => `${USER_PROFILE_PREFIX}${profileId.trim()}`
+
 const DEFAULT_RRWEB_FILE = 'replaylibrary.min.js'
 const DEFAULT_RRWEB_URL = `https://cdn.jsdelivr.net/npm/swetrix@latest/dist/${DEFAULT_RRWEB_FILE}`
 const DEFAULT_SESSION_REPLAY_FLUSH_INTERVAL = 5000
@@ -321,14 +345,15 @@ const DEFAULT_SESSION_REPLAY_SLIM_DOM_OPTIONS = {
   headMetaAuthorship: true,
   headMetaVerification: true,
 }
-const SESSION_REPLAY_ACTIVITY_EVENTS = [
-  'click',
-  'keydown',
-  'mousedown',
-  'mousemove',
-  'scroll',
-  'touchstart',
-] as const
+const RRWEB_EVENT_FULL_SNAPSHOT = 2
+// Chunk indices are reserved server-side, so retrying with the same index is
+// idempotent - the backend dedupes on (replayId, chunkIndex).
+const SESSION_REPLAY_CHUNK_RETRY_DELAYS_MS = [2_000, 5_000, 15_000]
+// Snapshots are the largest payload we send, so a hop that rejects big bodies
+// rejects every re-seed too. Cap the attempts rather than re-uploading a
+// multi-megabyte snapshot on a loop for the rest of the session.
+const SESSION_REPLAY_MAX_SNAPSHOT_RESEEDS = 3
+const SESSION_REPLAY_ACTIVITY_EVENTS = ['click', 'keydown', 'mousedown', 'mousemove', 'scroll', 'touchstart'] as const
 
 // Default cache duration: 5 minutes
 const DEFAULT_CACHE_DURATION = 5 * 60 * 1000
@@ -356,8 +381,15 @@ export class Lib {
   private rrwebLoader: Promise<void> | null = null
   private sessionReplayActions: SessionReplayActions | null = null
   private sessionReplayInitPromise: Promise<SessionReplayActions> | null = null
+  // The server-side (usr_-prefixed) profile ID returned by the identify API
+  private identifiedProfileId: string | null = null
+  // The last profile ID sent to the identify API (to avoid duplicate requests)
+  private lastIdentifySent: string | null = null
 
-  constructor(private projectID: string, private options?: LibOptions) {
+  constructor(
+    private projectID: string,
+    private options?: LibOptions,
+  ) {
     this.trackPathChange = this.trackPathChange.bind(this)
     this.heartbeat = this.heartbeat.bind(this)
     this.captureError = this.captureError.bind(this)
@@ -647,6 +679,107 @@ export class Lib {
   }
 
   /**
+   * Identify the current visitor with your own user ID (e.g. after they log in).
+   *
+   * The visitor's current anonymous profile gets linked to the identified
+   * profile server-side, so their pre-login activity is attributed to it. All
+   * events sent after this call are associated with the identified profile.
+   *
+   * Swetrix stores nothing in the browser, so call identify() on every page
+   * load while the user is logged in. Call reset() when they log out.
+   *
+   * @param profileId A unique, stable identifier of the user, e.g. an internal
+   * user ID. It's stored as you provide it, so don't pass values you wouldn't
+   * want to see in your dashboard.
+   * @param traits Optional key / value metadata to show on the user's profile,
+   * e.g. their email, plan or signup date. Traits are merged with the ones
+   * already stored; pass `null` to remove one.
+   */
+  async identify(profileId: string, traits?: Traits): Promise<void> {
+    if (typeof profileId !== 'string' || !profileId.trim()) {
+      console.error('[Swetrix] identify() expects a non-empty string profileId')
+      return
+    }
+
+    const trimmed = profileId.trim()
+
+    this.options = {
+      ...this.options,
+      profileId: trimmed,
+    }
+
+    // Traits are part of the payload, so re-send when only they changed
+    const identifyKey = `${trimmed}:${traits ? JSON.stringify(traits) : ''}`
+
+    if (!this.canTrack() || this.lastIdentifySent === identifyKey) {
+      return
+    }
+
+    this.lastIdentifySent = identifyKey
+
+    // The profile changed, so cached flags / experiments may no longer apply
+    this.clearFeatureFlagsCache()
+
+    try {
+      const apiBase = this.getApiBase()
+      const response = await fetch(`${apiBase}/log/identify`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ pid: this.projectID, profileId: trimmed, traits }),
+      })
+
+      if (!response.ok) {
+        return
+      }
+
+      const data = (await response.json()) as { profileId: string | null }
+      this.identifiedProfileId = data.profileId || null
+    } catch {
+      // Keep the profileId set locally even if the identify request failed -
+      // events will still be attributed to the identified profile
+    }
+  }
+
+  /**
+   * Updates the traits of the already identified visitor without having to
+   * repeat their user ID. Only the keys you pass are touched; pass `null` to
+   * remove a trait.
+   */
+  async setTraits(traits: Traits): Promise<void> {
+    const profileId = this.options?.profileId
+
+    if (!profileId) {
+      console.error('[Swetrix] setTraits() requires the visitor to be identified via identify() first')
+      return
+    }
+
+    if (!traits || typeof traits !== 'object' || Array.isArray(traits)) {
+      console.error('[Swetrix] setTraits() expects an object of traits')
+      return
+    }
+
+    await this.identify(profileId, traits)
+  }
+
+  /**
+   * Resets the visitor's identity set via identify() (e.g. after they log
+   * out), so subsequent events are tracked anonymously again. Important on
+   * shared devices - otherwise the next visitor would be tracked under the
+   * previous user's identity.
+   */
+  reset(): void {
+    if (this.options) {
+      delete this.options.profileId
+    }
+
+    this.identifiedProfileId = null
+    this.lastIdentifySent = null
+    this.clearFeatureFlagsCache()
+  }
+
+  /**
    * Fetches variant assignments for running A/B test experiments returned by feature flag evaluation.
    * Results are cached for 5 minutes by default (shared cache with feature flags).
    *
@@ -724,9 +857,10 @@ export class Lib {
   }
 
   /**
-   * Gets the anonymous profile ID for the current visitor.
-   * If profileId was set via init options, returns that.
-   * Otherwise, requests server to generate one from IP/UA hash.
+   * Gets the profile ID the current visitor's events are stored under.
+   * If the visitor was identified via identify(), or a profileId was set via
+   * init options, returns the identified (usr_-prefixed) ID. Otherwise,
+   * requests server to generate an anonymous one from IP/UA hash.
    *
    * This ID can be used for revenue attribution with payment providers.
    *
@@ -747,9 +881,17 @@ export class Lib {
    * ```
    */
   async getProfileId(): Promise<string | null> {
-    // If profileId is already set in options, return it
+    // If the visitor was identified, return the server-side (usr_-prefixed)
+    // profile ID, which is what events are stored under
+    if (this.identifiedProfileId) {
+      return this.identifiedProfileId
+    }
+
+    // A profileId set via init() (or a failed identify() call) is sent raw on
+    // events and prefixed server-side, so return the prefixed form here too -
+    // returning the raw value would not match anything in the dashboard
     if (this.options?.profileId) {
-      return this.options.profileId
+      return toStoredProfileId(this.options.profileId)
     }
 
     if (!isInBrowser()) {
@@ -825,9 +967,7 @@ export class Lib {
     }
   }
 
-  async startSessionReplay(
-    options: SessionReplayOptions = {},
-  ): Promise<SessionReplayActions> {
+  async startSessionReplay(options: SessionReplayOptions = {}): Promise<SessionReplayActions> {
     if (this.sessionReplayActions) {
       return this.sessionReplayActions
     }
@@ -848,9 +988,7 @@ export class Lib {
     }
   }
 
-  private async initialiseSessionReplay(
-    options: SessionReplayOptions,
-  ): Promise<SessionReplayActions> {
+  private async initialiseSessionReplay(options: SessionReplayOptions): Promise<SessionReplayActions> {
     if (this.sessionReplayActions) {
       return this.sessionReplayActions
     }
@@ -874,8 +1012,8 @@ export class Lib {
       return defaultSessionReplayActions
     }
 
-    const rrweb = window.rrweb
-    if (!rrweb?.record) {
+    const record = this.getRrwebRecorder()
+    if (!record) {
       return defaultSessionReplayActions
     }
 
@@ -894,32 +1032,22 @@ export class Lib {
         ? options.flushIntervalMs
         : DEFAULT_SESSION_REPLAY_FLUSH_INTERVAL
     const maxEventsPerChunk =
-      typeof options.maxEventsPerChunk === 'number' &&
-      options.maxEventsPerChunk > 0
+      typeof options.maxEventsPerChunk === 'number' && options.maxEventsPerChunk > 0
         ? Math.floor(options.maxEventsPerChunk)
         : DEFAULT_SESSION_REPLAY_MAX_EVENTS
     const maxBytesPerChunkCandidate =
-      typeof options.maxBytesPerChunk === 'number'
-        ? Math.floor(options.maxBytesPerChunk)
-        : Number.NaN
+      typeof options.maxBytesPerChunk === 'number' ? Math.floor(options.maxBytesPerChunk) : Number.NaN
     const maxBytesPerChunk =
-      maxBytesPerChunkCandidate >= 1
-        ? maxBytesPerChunkCandidate
-        : DEFAULT_SESSION_REPLAY_MAX_CHUNK_BYTES
+      maxBytesPerChunkCandidate >= 1 ? maxBytesPerChunkCandidate : DEFAULT_SESSION_REPLAY_MAX_CHUNK_BYTES
     const maxBytesPerEventCandidate =
-      typeof options.maxBytesPerEvent === 'number'
-        ? Math.floor(options.maxBytesPerEvent)
-        : Number.NaN
+      typeof options.maxBytesPerEvent === 'number' ? Math.floor(options.maxBytesPerEvent) : Number.NaN
     const maxBytesPerEvent =
-      maxBytesPerEventCandidate >= 1
-        ? maxBytesPerEventCandidate
-        : DEFAULT_SESSION_REPLAY_MAX_EVENT_BYTES
+      maxBytesPerEventCandidate >= 1 ? maxBytesPerEventCandidate : DEFAULT_SESSION_REPLAY_MAX_EVENT_BYTES
     const idleTimeoutMs =
-      typeof options.idleTimeoutMs === 'number' && options.idleTimeoutMs > 0
-        ? options.idleTimeoutMs
-        : null
+      typeof options.idleTimeoutMs === 'number' && options.idleTimeoutMs > 0 ? options.idleTimeoutMs : null
 
     let chunkIndex = started.nextChunkIndex
+    let snapshotReseeds = 0
     let stopped = false
     let events: RrwebEvent[] = []
     let eventsByteLength = 0
@@ -937,15 +1065,23 @@ export class Lib {
 
       flushing = flushing
         .catch(() => undefined)
-        .then(() =>
-          this.sendSessionReplayChunk(
-            replayId,
-            privacy,
-            currentChunkIndex,
-            chunk,
-            useBeacon,
-          ),
-        )
+        .then(async () => {
+          const delivered = await this.sendSessionReplayChunk(replayId, privacy, currentChunkIndex, chunk, useBeacon)
+
+          // Losing a full snapshot makes every later event unrenderable, so
+          // re-seed the stream instead of recording into the void.
+          if (
+            !delivered &&
+            !stopped &&
+            snapshotReseeds < SESSION_REPLAY_MAX_SNAPSHOT_RESEEDS &&
+            chunk.some((event) => event.type === RRWEB_EVENT_FULL_SNAPSHOT)
+          ) {
+            snapshotReseeds += 1
+            try {
+              record.takeFullSnapshot?.()
+            } catch {}
+          }
+        })
 
       await flushing
     }
@@ -971,19 +1107,13 @@ export class Lib {
           return
         }
 
-        if (
-          events.length &&
-          eventsByteLength + eventByteLength > maxBytesPerChunk
-        ) {
+        if (events.length && eventsByteLength + eventByteLength > maxBytesPerChunk) {
           void flush()
         }
 
         events.push(event)
         eventsByteLength += eventByteLength
-        if (
-          events.length >= maxEventsPerChunk ||
-          eventsByteLength >= maxBytesPerChunk
-        ) {
+        if (events.length >= maxEventsPerChunk || eventsByteLength >= maxBytesPerChunk) {
           void flush()
         }
       },
@@ -991,7 +1121,7 @@ export class Lib {
       options.maskAllText,
     )
 
-    const stopRecording = rrweb.record(recordOptions)
+    const stopRecording = record(recordOptions)
     const timer = setInterval(() => void flush(), flushIntervalMs)
     const flushOnPageExit = () => void flush(true)
     const flushOnHidden = () => {
@@ -1032,10 +1162,7 @@ export class Lib {
     window.addEventListener('pagehide', flushOnPageExit)
     document.addEventListener('visibilitychange', flushOnHidden)
 
-    maxDurationTimer = setTimeout(
-      () => void stopSessionReplay(),
-      maxDurationMs,
-    )
+    maxDurationTimer = setTimeout(() => void stopSessionReplay(), maxDurationMs)
 
     if (idleTimeoutMs) {
       SESSION_REPLAY_ACTIVITY_EVENTS.forEach((eventName) => {
@@ -1071,9 +1198,7 @@ export class Lib {
   }
 
   private getSessionReplayPrivacy(privacy: unknown): SessionReplayPrivacy {
-    return SESSION_REPLAY_PRIVACY_VALUES.includes(
-      privacy as SessionReplayPrivacy,
-    )
+    return SESSION_REPLAY_PRIVACY_VALUES.includes(privacy as SessionReplayPrivacy)
       ? (privacy as SessionReplayPrivacy)
       : DEFAULT_SESSION_REPLAY_PRIVACY
   }
@@ -1142,6 +1267,7 @@ export class Lib {
     }
 
     const pvPayload = {
+      title: isInBrowser() ? document.title : undefined,
       lc: getLocale(),
       tz: getTimezone(),
       ref: getReferrer(),
@@ -1167,6 +1293,14 @@ export class Lib {
       }
     }
 
+    if (evokeCallback) {
+      this.activePage = pvPayload.pg || null
+    }
+
+    if (typeof pvPayload.title === 'string') {
+      pvPayload.title = pvPayload.title.slice(0, 2048)
+    }
+
     Object.assign(pvPayload, privateData)
 
     this.sendRequest('', pvPayload)
@@ -1188,11 +1322,7 @@ export class Lib {
 
   private getSessionReplayUrl(): string {
     const replayOption = this.getSessionReplayPreloadOption()
-    if (
-      replayOption &&
-      typeof replayOption === 'object' &&
-      replayOption.rrwebUrl
-    ) {
+    if (replayOption && typeof replayOption === 'object' && replayOption.rrwebUrl) {
       return replayOption.rrwebUrl
     }
 
@@ -1212,10 +1342,7 @@ export class Lib {
 
     if (trackerScript?.src) {
       const { hostname, pathname } = new URL(trackerScript.src)
-      if (
-        hostname === 'swetrix.org' &&
-        /^\/swetrix(\.min)?\.js$/i.test(pathname)
-      ) {
+      if (hostname === 'swetrix.org' && /^\/swetrix(\.min)?\.js$/i.test(pathname)) {
         return DEFAULT_RRWEB_URL
       }
 
@@ -1242,12 +1369,33 @@ export class Lib {
     return trackerScript
   }
 
+  private getRrwebRecorder(): RrwebRecordFn | undefined {
+    if (!isInBrowser()) {
+      return undefined
+    }
+
+    if (typeof window.rrweb?.record === 'function') {
+      return window.rrweb.record
+    }
+
+    const globalRecord = window.rrwebRecord
+    if (typeof globalRecord === 'function') {
+      return globalRecord
+    }
+
+    if (globalRecord && typeof globalRecord.record === 'function') {
+      return globalRecord.record
+    }
+
+    return undefined
+  }
+
   private preloadSessionReplay(): Promise<void> {
     if (!isInBrowser()) {
       return Promise.resolve()
     }
 
-    if (window.rrweb?.record) {
+    if (this.getRrwebRecorder()) {
       return Promise.resolve()
     }
 
@@ -1284,8 +1432,7 @@ export class Lib {
 
   private async loadSessionReplayRecorder(): Promise<void> {
     const replayOption = this.getSessionReplayPreloadOption()
-    const hasCustomReplayUrl =
-      replayOption && typeof replayOption === 'object' && replayOption.rrwebUrl
+    const hasCustomReplayUrl = replayOption && typeof replayOption === 'object' && replayOption.rrwebUrl
 
     if (hasCustomReplayUrl || this.getTrackerScript()) {
       await this.loadSessionReplayScript(this.getSessionReplayUrl())
@@ -1301,14 +1448,14 @@ export class Lib {
 
   private async loadSessionReplayPackage(): Promise<boolean> {
     try {
-      const rrwebModule = (await import('rrweb')) as RrwebModule
-      const rrweb = rrwebModule.record ? rrwebModule : rrwebModule.default
+      const rrwebModule = (await import('@rrweb/record')) as RrwebRecordModule
+      const record = rrwebModule.record || rrwebModule.default?.record
 
-      if (!rrweb?.record) {
+      if (typeof record !== 'function') {
         return false
       }
 
-      window.rrweb = rrweb
+      window.rrwebRecord = { record }
       return true
     } catch {
       return false
@@ -1334,12 +1481,8 @@ export class Lib {
     recordIframes: boolean,
     maskAllText?: boolean,
   ): RrwebRecordOptions {
-    const hasUserSampling =
-      userOptions &&
-      Object.prototype.hasOwnProperty.call(userOptions, 'sampling')
-    const hasUserSlimDOMOptions =
-      userOptions &&
-      Object.prototype.hasOwnProperty.call(userOptions, 'slimDOMOptions')
+    const hasUserSampling = userOptions && Object.prototype.hasOwnProperty.call(userOptions, 'sampling')
+    const hasUserSlimDOMOptions = userOptions && Object.prototype.hasOwnProperty.call(userOptions, 'slimDOMOptions')
     const sampling =
       typeof userOptions?.sampling === 'object' && userOptions.sampling !== null
         ? {
@@ -1350,8 +1493,7 @@ export class Lib {
           ? userOptions?.sampling
           : DEFAULT_SESSION_REPLAY_SAMPLING
     const slimDOMOptions =
-      typeof userOptions?.slimDOMOptions === 'object' &&
-      userOptions.slimDOMOptions !== null
+      typeof userOptions?.slimDOMOptions === 'object' && userOptions.slimDOMOptions !== null
         ? {
             ...DEFAULT_SESSION_REPLAY_SLIM_DOM_OPTIONS,
             ...(userOptions.slimDOMOptions as Record<string, unknown>),
@@ -1371,20 +1513,14 @@ export class Lib {
     }
 
     const maskInputOptions =
-      typeof options.maskInputOptions === 'object' &&
-      options.maskInputOptions !== null
+      typeof options.maskInputOptions === 'object' && options.maskInputOptions !== null
         ? (options.maskInputOptions as Record<string, unknown>)
         : {}
 
     const resolvedPrivacy = this.getSessionReplayPrivacy(privacy)
     const defaultBlockSelector = recordIframes ? undefined : 'iframe'
-    const resolvedMaskAllText =
-      typeof maskAllText === 'boolean'
-        ? maskAllText
-        : resolvedPrivacy === 'total'
-    const textMaskingOptions = resolvedMaskAllText
-      ? { maskTextSelector: '*' }
-      : {}
+    const resolvedMaskAllText = typeof maskAllText === 'boolean' ? maskAllText : resolvedPrivacy === 'total'
+    const textMaskingOptions = resolvedMaskAllText ? { maskTextSelector: '*' } : {}
 
     if (resolvedPrivacy === 'total') {
       return {
@@ -1406,10 +1542,7 @@ export class Lib {
         ...options,
         ...textMaskingOptions,
         maskAllInputs: true,
-        blockSelector: this.mergeSelectors(
-          options.blockSelector,
-          defaultBlockSelector,
-        ),
+        blockSelector: this.mergeSelectors(options.blockSelector, defaultBlockSelector),
         emit,
       }
     }
@@ -1417,10 +1550,7 @@ export class Lib {
     return {
       ...options,
       ...textMaskingOptions,
-      blockSelector: this.mergeSelectors(
-        options.blockSelector,
-        defaultBlockSelector,
-      ),
+      blockSelector: this.mergeSelectors(options.blockSelector, defaultBlockSelector),
       maskInputOptions: {
         ...maskInputOptions,
         password: true,
@@ -1429,10 +1559,7 @@ export class Lib {
     }
   }
 
-  private mergeSelectors(
-    existing: unknown,
-    required?: string,
-  ): string | undefined {
+  private mergeSelectors(existing: unknown, required?: string): string | undefined {
     if (!required) {
       return typeof existing === 'string' ? existing : undefined
     }
@@ -1488,10 +1615,7 @@ export class Lib {
           replayId: unknown
           nextChunkIndex: unknown
         }>
-        const resolvedReplayId =
-          typeof result.replayId === 'string' && result.replayId
-            ? result.replayId
-            : replayId
+        const resolvedReplayId = typeof result.replayId === 'string' && result.replayId ? result.replayId : replayId
         const resolvedChunkIndex =
           typeof result.nextChunkIndex === 'number' &&
           Number.isFinite(result.nextChunkIndex) &&
@@ -1520,7 +1644,7 @@ export class Lib {
     chunkIndex: number,
     events: RrwebEvent[],
     useBeacon: boolean,
-  ): Promise<void> {
+  ): Promise<boolean> {
     const apiBase = this.getApiBase()
     const url = `${apiBase}/log/session-replay/chunk`
     const payload = JSON.stringify({
@@ -1532,23 +1656,45 @@ export class Lib {
     })
 
     if (useBeacon && typeof navigator.sendBeacon === 'function') {
-      const sent = navigator.sendBeacon(
-        url,
-        new Blob([payload], { type: 'application/json' }),
-      )
-      if (sent) return
+      // sendBeacon refuses payloads over its ~64 KB quota; fall through to
+      // fetch when it does.
+      const sent = navigator.sendBeacon(url, new Blob([payload], { type: 'application/json' }))
+      if (sent) return true
     }
 
-    try {
-      await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        keepalive: useBeacon,
-        body: payload,
-      })
-    } catch {}
+    // On the beacon path the page is unloading, so there is no time to retry.
+    const attempts = useBeacon ? 1 : SESSION_REPLAY_CHUNK_RETRY_DELAYS_MS.length + 1
+
+    for (let attempt = 0; attempt < attempts; attempt++) {
+      if (attempt > 0) {
+        await new Promise((resolve) => setTimeout(resolve, SESSION_REPLAY_CHUNK_RETRY_DELAYS_MS[attempt - 1]))
+      }
+
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          // Browsers reject keepalive bodies over ~64 KB, so oversized
+          // payloads go through a regular request instead.
+          keepalive: useBeacon && payload.length < 60_000,
+          body: payload,
+        })
+
+        if (response.ok) {
+          return true
+        }
+
+        // Client errors (except timeouts and rate limits) won't succeed on
+        // retry.
+        if (response.status < 500 && response.status !== 408 && response.status !== 429) {
+          return false
+        }
+      } catch {}
+    }
+
+    return false
   }
 
   private async sendRequest(path: string, body: object): Promise<void> {

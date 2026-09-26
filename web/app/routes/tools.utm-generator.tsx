@@ -17,7 +17,7 @@ import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 export const meta: MetaFunction = () => {
   const title = 'Free UTM Generator tool - Create UTM parameters'
   const description =
-    'Generate trackable UTM links in seconds. Add utm_source, utm_medium, utm_campaign and optional utm_content/utm_term, then copy the final URL to measure marketing campaign performance with clean, consistent parameters.'
+    'Build UTM links with source, medium, campaign, content, and term parameters to track marketing campaigns consistently in your analytics.'
   return [
     ...getTitle(title),
     ...getDescription(description),

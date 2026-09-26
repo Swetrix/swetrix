@@ -28,6 +28,7 @@ import {
   useRouteError,
   useSearchParams,
   useLocation,
+  useMatches,
 } from 'react-router'
 
 import { getAuthenticatedUser } from '~/api/api.server'
@@ -55,7 +56,7 @@ import { detectTheme, isWWW } from '~/utils/server'
 import { createHeadersWithCookies, hasAuthTokens } from '~/utils/session.server'
 
 import AppWrapper from './App'
-import { detectLanguage } from './i18n'
+import { getLocale, i18nextMiddleware } from './i18next.server'
 import { AuthProvider } from './providers/AuthProvider'
 import { ThemeProvider, useTheme } from './providers/ThemeProvider'
 
@@ -80,6 +81,8 @@ export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: mainCss },
   { rel: 'stylesheet', href: BillboardCss },
 ]
+
+export const middleware = [i18nextMiddleware]
 
 export const headers: HeadersFunction = () => ({
   // General headers
@@ -372,7 +375,11 @@ const buildLocaliseRedirect = (
   return null
 }
 
-export async function loader({ request, url: urlObject }: LoaderFunctionArgs) {
+export async function loader({
+  request,
+  context,
+  url: urlObject,
+}: LoaderFunctionArgs) {
   const url = urlObject.toString()
   const removedLng = removeMultipleLngParams(url)
 
@@ -391,7 +398,7 @@ export async function loader({ request, url: urlObject }: LoaderFunctionArgs) {
     return redirect(localiseRedirect.url, localiseRedirect.status)
   }
 
-  const locale = detectLanguage(request, urlObject)
+  const locale = getLocale(context)
   const theme = detectTheme(request)
   const hasTokens = hasAuthTokens(request)
 
@@ -507,7 +514,24 @@ export default function App() {
   const { i18n } = useTranslation('common')
   const [searchParams] = useSearchParams()
 
+  useEffect(() => {
+    if (i18n.language !== locale) {
+      void i18n.changeLanguage(locale)
+    }
+  }, [i18n, locale])
+
   const isEmbedded = searchParams.get('embedded') === 'true'
+  const matches = useMatches()
+  const isArticle = matches.some(
+    ({ id, loaderData: data }) =>
+      ['routes/blog.$slug', 'routes/blog.$category.$slug', 'routes/$'].includes(
+        id,
+      ) &&
+      !!data &&
+      typeof data === 'object' &&
+      'html' in data &&
+      'title' in data,
+  )
 
   const canonicalUrl = (() => {
     const localisedPathname = localisePath(
@@ -516,6 +540,7 @@ export default function App() {
     )
     const next = new URL(`${MAIN_URL}${localisedPathname}${search}`)
     next.searchParams.delete('lng')
+    if (isArticle || stripLangFromPath(pathname) === '/blog') next.search = ''
     return next.toString()
   })()
 
@@ -539,7 +564,7 @@ export default function App() {
         <meta name='twitter:card' content='summary_large_image' />
         <meta property='og:site_name' content='Swetrix' />
         <meta property='og:url' content={canonicalUrl} />
-        <meta property='og:type' content='website' />
+        <meta property='og:type' content={isArticle ? 'article' : 'website'} />
         <meta name='language' content={i18n.language.toUpperCase()} />
         <meta
           httpEquiv='content-language'

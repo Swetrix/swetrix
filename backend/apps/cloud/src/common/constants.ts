@@ -32,15 +32,13 @@ const { TWO_FACTOR_AUTHENTICATION_APP_NAME } = process.env
 
 const ORIGINS_REGEX =
   /^(?=.{1,255}$)([0-9A-Za-z*:](?:(?:[0-9A-Za-z*:]|-){0,61}[0-9A-Za-z*:])?(?:\.[0-9A-Za-z*:](?:(?:[0-9A-Za-z*-]|-){0,61}[0-9A-Za-z*:])?)*)?$/
-const IP_REGEX =
-  /^(([12]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])(\.|\/)){4}([1-2]?[0-9]|3[0-2])$/
 const PID_REGEX = /^(?!.*--)[a-zA-Z0-9-]{12}$/
 const isValidPID = (pid: string) => PID_REGEX.test(pid)
 
 // redis keys
 const getRedisProjectKey = (pid: string) => `pid_${pid}`
-const getRedisUserCountKey = (uid: string) => `user_c_${uid}`
-const getRedisUserUsageInfoKey = (uid: string) => `user_ui_${uid}`
+const getRedisUserCountKey = (uid: string) => `user_c_billable_${uid}`
+const getRedisUserUsageInfoKey = (uid: string) => `user_ui_billable_${uid}`
 const getRedisCaptchaKey = (token: string) => `captcha_${hash(token)}`
 
 const REDIS_USERS_COUNT_KEY = 'stats:users_count'
@@ -61,6 +59,8 @@ const redisUserUsageinfoCacheTimeout = 300
 // 30 minues -> the amount of time analytics requests within one session are counted as non-unique
 const UNIQUE_SESSION_LIFE_TIME = 1800
 
+const ONLINE_VISITORS_WINDOW_MINUTES = 5
+
 // send email warning when 85% of events in tier are used
 const SEND_WARNING_AT_PERC = 85
 
@@ -72,8 +72,6 @@ const CAPTCHA_SECRET_KEY_LENGTH = 50
 // Funnels
 const MIN_PAGES_IN_FUNNEL = 2
 const MAX_PAGES_IN_FUNNEL = 10
-
-const TRAFFIC_SPIKE_ALLOWED_PERCENTAGE = 0.3
 
 const BLOG_POSTS_PATH = isDevelopment
   ? path.join(__dirname, '../../../..', 'blog-posts', 'posts')
@@ -89,6 +87,7 @@ const TRAFFIC_COLUMNS = [
   'ctp',
   'host',
   'pg',
+  'title',
   'lc',
   'br',
   'brv',
@@ -112,6 +111,7 @@ const V2_VIEW_FILTER_DIMENSIONS = [
   'region',
   'city',
   'page',
+  'title',
   'host',
   'locale',
   'browser',
@@ -238,6 +238,7 @@ export {
   getRedisProjectKey,
   redisProjectCacheTimeout,
   UNIQUE_SESSION_LIFE_TIME,
+  ONLINE_VISITORS_WINDOW_MINUTES,
   getRedisUserCountKey,
   redisProjectCountCacheTimeout,
   REDIS_USERS_COUNT_KEY,
@@ -247,7 +248,6 @@ export {
   SEND_WARNING_AT_PERC,
   PROJECT_INVITE_EXPIRE,
   TWO_FACTOR_AUTHENTICATION_APP_NAME,
-  IP_REGEX,
   ORIGINS_REGEX,
   EMAIL_ACTION_ENCRYPTION_KEY,
   isDevelopment,
@@ -272,6 +272,5 @@ export {
   MAX_PAGES_IN_FUNNEL,
   MAX_FUNNELS,
   ALL_COLUMNS,
-  TRAFFIC_SPIKE_ALLOWED_PERCENTAGE,
   PID_REGEX,
 }

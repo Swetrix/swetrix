@@ -71,7 +71,7 @@ const InvitationSignup = () => {
           <Text as='h1' size='2xl' weight='bold' className='mb-4'>
             {t('common.error')}
           </Text>
-          <Text colour='muted' className='mb-6'>
+          <Text colour='secondary' className='mb-6'>
             {loaderData?.error || t('auth.invitation.invalidLink')}
           </Text>
           <Link
@@ -237,7 +237,7 @@ const InvitationSignup = () => {
           </Button>
         </Form>
 
-        <Text as='p' size='sm' colour='muted' className='mt-6 text-center'>
+        <Text as='p' size='sm' colour='secondary' className='mt-6 text-center'>
           <Trans
             t={t}
             i18nKey='auth.signup.alreadyAMember'

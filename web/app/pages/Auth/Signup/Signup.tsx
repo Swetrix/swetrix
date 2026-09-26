@@ -28,6 +28,7 @@ import { useTheme } from '~/providers/ThemeProvider'
 import type { SignupActionData } from '~/routes/signup'
 import Button from '~/ui/Button'
 import Checkbox from '~/ui/Checkbox'
+import FaviconGlyph from '~/ui/FaviconGlyph'
 import Input from '~/ui/Input'
 import PasswordStrength from '~/ui/PasswordStrength'
 import { Text } from '~/ui/Text'
@@ -53,7 +54,36 @@ const featureKeys = [
   'intuitive',
 ] as const
 
-const Signup = () => {
+/**
+ * The website the visitor typed on the landing hero, shown back to them with
+ * its own favicon - "yes, we know what you're here to track". Rendered through
+ * <Trans>, so the domain sits wherever the sentence needs it.
+ *
+ * The domain stays plain inline text so it shares the sentence's baseline (an
+ * inline-flex wrapper would synthesise its own and float the whole chip); only
+ * the icon is nudged, in em units so it tracks the surrounding font size.
+ */
+const SiteChip = ({
+  domain,
+  children,
+}: {
+  domain: string
+  children?: React.ReactNode
+}) => (
+  <span className='font-medium whitespace-nowrap text-gray-900 dark:text-gray-50'>
+    <span className='mr-1.5 inline-flex size-[1.05em] align-[-0.16em]'>
+      <FaviconGlyph value={domain} className='size-full' />
+    </span>
+    {children}
+  </span>
+)
+
+interface SignupProps {
+  /** The website typed on the landing hero, if the visitor came in that way. */
+  site?: string | null
+}
+
+const Signup = ({ site = null }: SignupProps) => {
   const { t, i18n } = useTranslation('common')
   const { theme } = useTheme()
   const navigate = useNavigate()
@@ -245,8 +275,19 @@ const Signup = () => {
                   })}
             </Text>
             {isSelfhosted ? null : (
-              <Text as='p' colour='muted' className='mt-2'>
-                {t('auth.signup.trialSubtitle')}
+              <Text as='p' colour='secondary' className='mt-2'>
+                {site ? (
+                  <Trans
+                    t={t}
+                    i18nKey='auth.signup.siteSubtitle'
+                    values={{ site }}
+                    components={{
+                      site: <SiteChip domain={site} />,
+                    }}
+                  />
+                ) : (
+                  t('auth.signup.trialSubtitle')
+                )}
               </Text>
             )}
           </div>
@@ -290,7 +331,7 @@ const Signup = () => {
             <div className='relative flex justify-center text-sm'>
               <Text
                 as='span'
-                colour='muted'
+                colour='secondary'
                 size='sm'
                 className='inline-flex items-center gap-2 bg-gray-50 px-4 dark:bg-slate-950'
               >
@@ -421,7 +462,12 @@ const Signup = () => {
             </Button>
           </Form>
 
-          <Text as='p' size='sm' colour='muted' className='mt-6 text-center'>
+          <Text
+            as='p'
+            size='sm'
+            colour='secondary'
+            className='mt-6 text-center'
+          >
             <Trans
               t={t}
               i18nKey='auth.signup.alreadyAMember'

@@ -43,7 +43,7 @@ import { Markup } from 'telegraf'
 
 import { Public, CurrentUserId, Auth } from '../auth/decorators'
 import { TelegramService } from '../integrations/telegram/telegram.service'
-import { UserService } from './user.service'
+import { UserService, UserPayment } from './user.service'
 import { ProjectService, deleteProjectRedis } from '../project/project.service'
 import {
   User,
@@ -774,18 +774,6 @@ export class UserController {
         )
       }
 
-      if (userDTO.slackWebhookUrl === null) {
-        await this.userService.update(id, {
-          slackWebhookUrl: null,
-        })
-      }
-
-      if (userDTO.discordWebhookUrl === null) {
-        await this.userService.update(id, {
-          discordWebhookUrl: null,
-        })
-      }
-
       if (userDTO.timeFormat && user.timeFormat !== userDTO.timeFormat) {
         await this.userService.update(id, {
           timeFormat: userDTO.timeFormat,
@@ -793,14 +781,10 @@ export class UserController {
       }
 
       const userToUpdate = _pick(userDTO, [
-        'nickname',
         'password',
         'reportFrequency',
         'timezone',
-        'theme',
         'showLiveVisitorsInTitle',
-        'slackWebhookUrl',
-        'discordWebhookUrl',
         'telegramChatId',
         'receiveLoginNotifications',
         'timeFormat',
@@ -861,6 +845,12 @@ export class UserController {
       sessionReplays,
       last30Days: formatUsageInfo(rawLast30DaysInfo),
     }
+  }
+
+  @ApiBearerAuth()
+  @Get('payments')
+  async getPayments(@CurrentUserId() uid: string): Promise<UserPayment[]> {
+    return this.userService.getPayments(uid)
   }
 
   @ApiBearerAuth()

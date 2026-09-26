@@ -1,7 +1,9 @@
-import { ChartOptions } from 'billboard.js'
-import React, { useEffect, useRef, useMemo } from 'react'
+import { Chart, ChartOptions, GridLineOptions } from 'billboard.js'
+import React, { useEffect, useMemo } from 'react'
 
 import BillboardChart from '~/ui/BillboardChart'
+
+import { useViewProjectContext } from '../ViewProject'
 
 import { useChartManager } from './ChartManager'
 
@@ -11,6 +13,7 @@ interface MainChartProps {
   dataNames?: Record<string, string>
   className?: string
   deps?: any[]
+  xGridLines?: GridLineOptions[]
 }
 
 export const MainChart = ({
@@ -19,17 +22,17 @@ export const MainChart = ({
   dataNames,
   className,
   deps,
+  xGridLines,
 }: MainChartProps) => {
   const { registerChart, unregisterChart } = useChartManager()
-  const chartRef = useRef<any>(null)
+  const { timezone } = useViewProjectContext()
 
   const mergedDeps = useMemo(
     () => deps || [options, dataNames],
     [deps, options, dataNames],
   )
 
-  const handleChartReady = (chart: any) => {
-    chartRef.current = chart
+  const handleChartReady = (chart: Chart | null) => {
     registerChart(chartId, chart)
   }
 
@@ -46,6 +49,8 @@ export const MainChart = ({
       className={className}
       onReady={handleChartReady}
       deps={mergedDeps}
+      xGridLines={xGridLines}
+      relativeTimeTimezone={timezone}
     />
   )
 }

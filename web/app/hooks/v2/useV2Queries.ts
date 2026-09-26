@@ -84,12 +84,13 @@ export const useCompareSummaryQuery = <T extends V2DataType>(
   const params = compare
     ? { ...compareOverride(common, compare), measure: opts.measure }
     : null
+  const enabled = Boolean(params) && opts.enabled !== false
 
   return useQuery({
     queryKey: ['v2', pid, dataType, 'summary', params],
     queryFn: ({ signal }) => v2.getSummary(pid, dataType, params!, signal),
-    placeholderData: keepPreviousData,
-    enabled: Boolean(params) && opts.enabled !== false,
+    placeholderData: enabled ? keepPreviousData : undefined,
+    enabled,
   })
 }
 
@@ -141,12 +142,13 @@ export const useCompareTimeseriesQuery = (
         measure: opts.measure,
       }
     : null
+  const enabled = Boolean(params) && opts.enabled !== false
 
   return useQuery({
     queryKey: ['v2', pid, dataType, 'timeseries', params],
     queryFn: ({ signal }) => v2.getTimeseries(pid, dataType, params!, signal),
-    placeholderData: keepPreviousData,
-    enabled: Boolean(params) && opts.enabled !== false,
+    placeholderData: enabled ? keepPreviousData : undefined,
+    enabled,
   })
 }
 
@@ -365,10 +367,16 @@ export const useErrorsListQuery = (
   })
 }
 
-export const useErrorsOverviewQuery = (opts: { enabled?: boolean } = {}) => {
+export const useErrorsOverviewQuery = (
+  opts: { showResolved?: boolean; enabled?: boolean } = {},
+) => {
   const { pid, common } = useV2CommonParams('errors')
   const { timeBucket } = useViewProjectContext()
-  const params = { ...common, timeBucket: timeBucket || undefined }
+  const params = {
+    ...common,
+    timeBucket: timeBucket || undefined,
+    show_resolved: opts.showResolved,
+  }
 
   return useQuery({
     queryKey: ['v2', pid, 'errors', 'overview', params],

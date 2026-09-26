@@ -8,6 +8,7 @@ import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 
 import { clickhouse } from '../../common/integrations/clickhouse'
+import { ONLINE_VISITORS_WINDOW_MINUTES } from '../../common/constants'
 import { AppLoggerService } from '../../logger/logger.service'
 import { MAX_METRICS_IN_VIEW } from '../../project/dto/create-project-view.dto'
 import { IFunnel, PerfMeasure } from '../interfaces'
@@ -95,8 +96,6 @@ const CAPTCHA_TIMESERIES_METRICS: Record<string, string> = {
   validation_failed: 'validationFailed',
   replayed: 'replayed',
 }
-
-const ONLINE_VISITORS_WINDOW_MINUTES = 5
 
 export interface ResolvedTimeframe {
   period: string | null

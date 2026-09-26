@@ -78,7 +78,7 @@ swetrix.trackPageView(ip, userAgent, { pg: '/home' })
 ## Tracking pageviews
 
 **To track pageviews, custom events and heartbeat events you have to pass your website visitors IP address and user agent, otherwise functionality like unique visitors or live visitors tracking will not work!**\
-You can read about it in details on our [Events API](https://docs.swetrix.com/events-api#unique-visitors-tracking) documentation page.
+You can read about it in details on our [Events API](https://swetrix.com/docs/events-api#unique-visitors-tracking) documentation page.
 
 Tracking pageviews can be done by calling the following function:
 
@@ -290,7 +290,7 @@ export interface TrackErrorOptions {
   filename?: string | null
 
   /**
-   * Stack trace of the error.
+   * Stack trace of the error, up to 64,000 characters.
    */
   stackTrace?: string | null
 
@@ -431,7 +431,30 @@ const profileId = await swetrix.getProfileId('192.155.52.12', 'Mozilla/5.0...')
 // e.g., Paddle Checkout customData: { swetrix_profile_id: profileId }
 ```
 
-If you set a `profileId` in the constructor options, it will be returned directly instead of generating one.
+If you set a `profileId` in the constructor options, its identified form (`usr_`-prefixed, the way events are stored) is returned instead of generating an anonymous one. Always attribute revenue with the value this returns, not the raw ID you passed in.
+
+## Identifying users
+
+Link a visitor's anonymous profile to your own user ID (e.g. after they log in), so their pre-login activity is attributed to the identified profile:
+
+```javascript
+const identifiedProfileId = await swetrix.identify('192.155.52.12', 'Mozilla/5.0...', 'user-12345')
+```
+
+Use a unique, stable identifier (e.g. an internal user ID). Surrounding whitespace is trimmed; otherwise the ID is stored as provided and shown in your dashboard, so don't pass values you wouldn't want to see there.
+
+You can also pass **traits** — key / value metadata displayed on the user's profile. Traits are merged per key, and `null` removes one:
+
+```javascript
+await swetrix.identify('192.155.52.12', 'Mozilla/5.0...', 'user-12345', {
+  email: 'john@example.com',
+  plan: 'premium',
+})
+```
+
+Per call: max 50 keys, 128 characters per key, and 2000 characters for all keys and values combined.
+
+Note: unlike the browser tracker, `identify()` does not set a default `profileId` for subsequent calls — a `Swetrix` instance is shared across all visitors of your server. Keep passing `profileId` per `track()` / `trackPageView()` call.
 
 ## Session ID
 

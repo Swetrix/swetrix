@@ -3,6 +3,25 @@ const { queriesRunner, dbName } = require('./setup')
 const { initialiseDatabase } = require('./initialise_database')
 
 const CLICKHOUSE_INIT_QUERIES = [
+  `CREATE TABLE IF NOT EXISTS ${dbName}.session_replay_chunks
+  (
+    pid FixedString(12),
+    psid UInt64,
+    replayId String CODEC(ZSTD(3)),
+    chunkIndex UInt32,
+    objectKey String CODEC(ZSTD(3)),
+    privacyMode LowCardinality(String),
+    eventCount UInt32,
+    uncompressedBytes UInt32,
+    compressedBytes UInt32,
+    firstEventTimestamp Nullable(UInt64),
+    lastEventTimestamp Nullable(UInt64),
+    created DateTime('UTC') CODEC(Delta(4), LZ4),
+    expiresAt DateTime('UTC') CODEC(Delta(4), LZ4)
+  )
+  ENGINE = ReplacingMergeTree(created)
+  PARTITION BY toYYYYMM(created)
+  ORDER BY (pid, psid, replayId, chunkIndex);`,
   `CREATE TABLE IF NOT EXISTS ${dbName}.user
   (
     id FixedString(36),
@@ -29,6 +48,7 @@ const CLICKHOUSE_INIT_QUERIES = [
     ipBlacklist Nullable(String) CODEC(ZSTD(3)),
     ipWhitelist Nullable(String) CODEC(ZSTD(3)),
     countryBlacklist Nullable(String) CODEC(ZSTD(3)),
+    sessionReplayRetentionDays UInt16 DEFAULT 30,
     active Int8,
     public Int8,
     isPasswordProtected Int8,

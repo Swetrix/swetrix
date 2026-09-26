@@ -36,7 +36,10 @@ import {
   BreakdownPanel,
   BreakdownSubTab,
 } from '~/pages/Project/View/v2/BreakdownPanel'
-import { RefetchIndicator } from '~/pages/Project/View/v2/loading'
+import {
+  ChartErrorState,
+  RefetchIndicator,
+} from '~/pages/Project/View/v2/loading'
 import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import {
   panelIconMapping,
@@ -204,15 +207,15 @@ const PerformanceViewInner = ({ tnMapping }: PerformanceViewProps) => {
 
   const isPanelsDataEmpty = isPanelsDataEmptyRaw && !hasShownContentRef.current
 
-  // Queries keep previous data across period/filter changes, so `isLoading` only
-  // ever means "nothing cached to show yet" — exactly when a spinner is wanted.
-  const isChartLoading = summaryQuery.isLoading || timeseriesQuery.isLoading
+  // Keep the chart slot occupied through initial loading and retry delays.
+  const isChartLoading = summaryQuery.isPending || timeseriesQuery.isPending
+  const isChartError = summaryQuery.isError || timeseriesQuery.isError
 
   // The counterpart: stale data is on screen while a refresh is in flight, so
   // the panel gets the same progress bar the breakdown panels use.
   const isChartRefetching =
-    (summaryQuery.isFetching && !summaryQuery.isLoading) ||
-    (timeseriesQuery.isFetching && !timeseriesQuery.isLoading)
+    (summaryQuery.isFetching && !summaryQuery.isPending) ||
+    (timeseriesQuery.isFetching && !timeseriesQuery.isPending)
 
   const handleDataPointClick = useCallback(
     (d: { x: Date; index: number; xValue?: string }) => {
@@ -330,9 +333,17 @@ const PerformanceViewInner = ({ tnMapping }: PerformanceViewProps) => {
 
   const locationSubTabs = useMemo<BreakdownSubTab[]>(
     () => [
-      { id: 'country', label: t('project.mapping.cc'), dimension: 'country' },
-      { id: 'region', label: t('project.mapping.rg'), dimension: 'region' },
-      { id: 'city', label: t('project.mapping.ct'), dimension: 'city' },
+      {
+        id: 'country',
+        label: t('project.panelTabs.country'),
+        dimension: 'country',
+      },
+      {
+        id: 'region',
+        label: t('project.panelTabs.region'),
+        dimension: 'region',
+      },
+      { id: 'city', label: t('project.panelTabs.city'), dimension: 'city' },
       {
         id: 'map',
         label: t('project.mapping.map'),
@@ -346,8 +357,8 @@ const PerformanceViewInner = ({ tnMapping }: PerformanceViewProps) => {
 
   const pagesSubTabs = useMemo<BreakdownSubTab[]>(
     () => [
-      { id: 'page', label: t('project.mapping.pg'), dimension: 'page' },
-      { id: 'host', label: t('project.mapping.host'), dimension: 'host' },
+      { id: 'page', label: t('project.panelTabs.page'), dimension: 'page' },
+      { id: 'host', label: t('project.panelTabs.host'), dimension: 'host' },
     ],
     [t],
   )
@@ -356,36 +367,38 @@ const PerformanceViewInner = ({ tnMapping }: PerformanceViewProps) => {
     () => [
       {
         id: 'browser',
-        label: t('project.mapping.br'),
+        label: t('project.panelTabs.browser'),
         dimension: 'browser',
         versionsDimension: 'browser_version' as const,
         versionsParentField: 'browser' as const,
       },
-      { id: 'device', label: t('project.mapping.dv'), dimension: 'device' },
+      {
+        id: 'device',
+        label: t('project.panelTabs.device'),
+        dimension: 'device',
+      },
     ],
     [t],
   )
 
-  const networkSubTabs = useMemo<(BreakdownSubTab | BreakdownSubTab[])[]>(
+  const networkSubTabs = useMemo<BreakdownSubTab[]>(
     () => [
-      [
-        { id: 'isp', label: t('project.mapping.isp'), dimension: 'isp' },
-        {
-          id: 'organization',
-          label: t('project.mapping.og'),
-          dimension: 'organization',
-        },
-        {
-          id: 'user_type',
-          label: t('project.mapping.ut'),
-          dimension: 'user_type',
-        },
-        {
-          id: 'connection_type',
-          label: t('project.mapping.ctp'),
-          dimension: 'connection_type',
-        },
-      ],
+      { id: 'isp', label: t('project.panelTabs.isp'), dimension: 'isp' },
+      {
+        id: 'organization',
+        label: t('project.panelTabs.organization'),
+        dimension: 'organization',
+      },
+      {
+        id: 'user_type',
+        label: t('project.panelTabs.user_type'),
+        dimension: 'user_type',
+      },
+      {
+        id: 'connection_type',
+        label: t('project.panelTabs.connection_type'),
+        dimension: 'connection_type',
+      },
     ],
     [t],
   )
@@ -562,7 +575,14 @@ const PerformanceViewInner = ({ tnMapping }: PerformanceViewProps) => {
             overall={overall}
             overallCompare={overallCompare}
           />
-          {isChartLoading ? (
+          {isChartError ? (
+            <ChartErrorState
+              onRetry={() => {
+                summaryQuery.refetch()
+                timeseriesQuery.refetch()
+              }}
+            />
+          ) : isChartLoading ? (
             // Same box as PerformanceChart below (incl. its mobile mt-5) so the
             // chart drops straight into the spinner's place.
             <div className='mt-5 flex h-80 items-center justify-center md:mt-0'>
@@ -707,6 +727,6 @@ const PerformanceViewInner = ({ tnMapping }: PerformanceViewProps) => {
   )
 }
 
-const PerformanceView = PerformanceViewWrapper
+const PerformanceView = React.memo(PerformanceViewWrapper)
 
 export default PerformanceView

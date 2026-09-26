@@ -112,6 +112,7 @@ export interface TrackPageViewOptions {
 
   /** A page to record the pageview event for (e.g. /home). All our scripts send the pg string with a slash (/) at the beginning, it's not a requirement but it's best to do the same so the data would be consistent when used together with our official scripts */
   pg?: string
+  title?: string | null
 
   /** A locale of the user (e.g. en-US or uk-UA) */
   lc?: string
@@ -178,7 +179,7 @@ export interface TrackErrorOptions {
   filename?: string | null
 
   /**
-   * Stack trace of the error.
+   * Stack trace of the error, up to 64,000 characters.
    */
   stackTrace?: string | null
 
@@ -223,8 +224,23 @@ export interface ExperimentOptions {
   profileId?: string
 }
 
+/**
+ * Key / value metadata describing an identified user (email, plan, signup
+ * date, ...). Values are stored as strings; `null` removes a trait.
+ */
+export type Traits = Record<string, string | number | boolean | null>
+
 const DEFAULT_API_HOST = 'https://api.swetrix.com/log'
 const DEFAULT_API_BASE = 'https://api.swetrix.com'
+
+/**
+ * Events carry the raw, site-supplied profileId; the server stores them behind
+ * this prefix. Mirrored here so getProfileId() can report the ID events are
+ * actually stored under without an extra round trip.
+ */
+const USER_PROFILE_PREFIX = 'usr_'
+
+const toStoredProfileId = (profileId: string) => `${USER_PROFILE_PREFIX}${profileId.trim()}`
 
 /**
  * Server-side implementation of Swetrix tracking library.
@@ -233,12 +249,15 @@ const DEFAULT_API_BASE = 'https://api.swetrix.com'
  * @param options LibOptions
  */
 export class Swetrix {
-  constructor(private projectID: string, private options?: LibOptions) {
+  constructor(
+    private projectID: string,
+    private options?: LibOptions,
+  ) {
     this.heartbeat = this.heartbeat.bind(this)
   }
 
   /**
-   * This function is used to send custom events (implements https://docs.swetrix.com/events-api#post-logcustom).
+   * This function is used to send custom events (implements https://swetrix.com/docs/events-api#post-logcustom).
    *
    * @param ip IP address of the visitor
    * @param userAgent User agent of the visitor
@@ -259,7 +278,7 @@ export class Swetrix {
   }
 
   /**
-   * This function is used to send pageview events (implements https://docs.swetrix.com/events-api#post-log).
+   * This function is used to send pageview events (implements https://swetrix.com/docs/events-api#post-log).
    *
    * @param ip IP address of the visitor
    * @param userAgent User agent of the visitor
@@ -274,7 +293,11 @@ export class Swetrix {
     const data = {
       pid: this.projectID,
       profileId: pageview?.profileId ?? this.options?.profileId,
-      ...(pageview || {}),
+      ...pageview,
+    }
+
+    if (typeof data.title === 'string') {
+      data.title = data.title.slice(0, 2048)
     }
 
     await this.sendRequest('', ip, userAgent, data)
@@ -296,14 +319,14 @@ export class Swetrix {
 
     const data = {
       pid: this.projectID,
-      ...(error || {}),
+      ...error,
     }
 
     await this.sendRequest('error', ip, userAgent, data)
   }
 
   /**
-   * This function is used to send heartbeat events (implements https://docs.swetrix.com/events-api#post-loghb).
+   * This function is used to send heartbeat events (implements https://swetrix.com/docs/events-api#post-loghb).
    * Heartbeat events are used to determine if the user session is still active.
    * This allows you to see the 'Live Visitors' counter in the Dashboard panel.
    * It's recommended to send heartbeat events every 30 seconds.
@@ -466,9 +489,10 @@ export class Swetrix {
   }
 
   /**
-   * Gets the anonymous profile ID for a visitor.
-   * If profileId was set via constructor options, returns that.
-   * Otherwise, requests server to generate one from IP/UA hash.
+   * Gets the profile ID a visitor's events are stored under.
+   * If profileId was set via constructor options, returns the identified
+   * (usr_-prefixed) form of it. Otherwise, requests server to generate an
+   * anonymous one from IP/UA hash.
    *
    * This ID can be used for revenue attribution with payment providers like Paddle.
    *
@@ -485,9 +509,11 @@ export class Swetrix {
    * ```
    */
   public async getProfileId(ip: string, userAgent: string): Promise<string | null> {
-    // If profileId is already set in options, return it
+    // A profileId set via the constructor is sent raw on events and prefixed
+    // server-side, so return the prefixed form here too - returning the raw
+    // value would not match anything in the dashboard
     if (this.options?.profileId) {
-      return this.options.profileId
+      return toStoredProfileId(this.options.profileId)
     }
 
     try {
@@ -553,6 +579,63 @@ export class Swetrix {
       return data.sessionId
     } catch (error) {
       this.debug(`Error fetching session ID: ${error}`, true)
+      return null
+    }
+  }
+
+  /**
+   * Identify a visitor with your own user ID (e.g. after they log in),
+   * implements https://swetrix.com/docs/events-api#post-logidentify.
+   *
+   * The visitor's current anonymous profile (derived from their IP and user
+   * agent) gets linked to the identified profile server-side, so their
+   * pre-login activity is attributed to it.
+   *
+   * Note: unlike the browser tracker, this does NOT set a default profileId
+   * for subsequent calls - a Swetrix instance is shared across all visitors
+   * of your server. Keep passing `profileId` per track / trackPageView call.
+   *
+   * @param ip IP address of the visitor
+   * @param userAgent User agent of the visitor
+   * @param profileId A unique, stable identifier of the user, e.g. an internal
+   * user ID. It's stored as you provide it, so don't pass values you wouldn't
+   * want to see in your dashboard.
+   * @param traits Optional key / value metadata to show on the user's profile,
+   * e.g. their email, plan or signup date. Traits are merged with the ones
+   * already stored; pass `null` to remove one.
+   * @returns A promise that resolves to the identified (usr_-prefixed) profile
+   * ID events are stored under, or null on error.
+   */
+  public async identify(ip: string, userAgent: string, profileId: string, traits?: Traits): Promise<string | null> {
+    if (!this.canTrack()) {
+      return null
+    }
+
+    if (typeof profileId !== 'string' || !profileId.trim()) {
+      this.debug('identify() expects a non-empty string profileId', true)
+      return null
+    }
+
+    try {
+      const apiBase = this.getApiBase()
+      const response = await fetch(`${apiBase}/log/identify`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Client-IP-Address': ip,
+          'User-Agent': userAgent,
+        },
+        body: JSON.stringify({ pid: this.projectID, profileId: profileId.trim(), traits }),
+      })
+
+      if (!response.ok) {
+        return null
+      }
+
+      const data = (await response.json()) as { profileId: string | null }
+      return data.profileId
+    } catch (error) {
+      this.debug(`Error identifying profile: ${error}`, true)
       return null
     }
   }

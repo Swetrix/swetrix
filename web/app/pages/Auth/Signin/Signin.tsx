@@ -358,7 +358,7 @@ const Signin = () => {
                 >
                   {t('auth.linkAccount.title')}
                 </Text>
-                <Text as='p' colour='muted' className='mt-2'>
+                <Text as='p' colour='secondary' className='mt-2'>
                   {t('auth.linkAccount.description', {
                     email: linkingData.email,
                     provider: getProviderDisplayName(linkingData.provider),
@@ -379,7 +379,7 @@ const Signin = () => {
 
                 {linkingData.isTwoFactorAuthenticationEnabled && (
                   <>
-                    <Text as='p' colour='muted' size='sm' className='mt-2'>
+                    <Text as='p' colour='secondary' size='sm' className='mt-2'>
                       {t('auth.linkAccount.2FARequired')}
                     </Text>
                     <Input
@@ -415,7 +415,7 @@ const Signin = () => {
                 </div>
 
                 <div className='mt-6 border-t border-gray-200 pt-4 dark:border-gray-700'>
-                  <Text as='p' colour='muted' size='sm'>
+                  <Text as='p' colour='secondary' size='sm'>
                     {t('auth.linkAccount.unlinkHint')}
                   </Text>
                 </div>
@@ -434,7 +434,7 @@ const Signin = () => {
                 </Text>
                 <Text
                   as='p'
-                  colour='muted'
+                  colour='secondary'
                   className='mt-2 whitespace-pre-line'
                 >
                   {t('auth.signin.2faDesc')}
@@ -491,7 +491,7 @@ const Signin = () => {
                 >
                   {t('auth.signin.title')}
                 </Text>
-                <Text as='p' colour='muted' className='mt-2'>
+                <Text as='p' colour='secondary' className='mt-2'>
                   {t('auth.signin.welcomeBack')}
                 </Text>
               </div>
@@ -535,7 +535,7 @@ const Signin = () => {
                 <div className='relative flex justify-center text-sm'>
                   <Text
                     as='span'
-                    colour='muted'
+                    colour='secondary'
                     size='sm'
                     className='inline-flex items-center gap-2 bg-gray-50 px-4 dark:bg-slate-950'
                   >
@@ -619,7 +619,7 @@ const Signin = () => {
                 <Text
                   as='p'
                   size='sm'
-                  colour='muted'
+                  colour='secondary'
                   className='mt-6 text-center'
                 >
                   <Trans

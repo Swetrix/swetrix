@@ -437,8 +437,11 @@ export const localisedLanguages = whitelist.filter(
 // Blog and blog-style content (rendered through routes/$.tsx) stays unlocalised,
 // as do API routes and other internal endpoints.
 const UNLOCALISED_PATH_PATTERNS: RegExp[] = [
+  /^\/admin(\/|$)/,
   /^\/blog(\/|$)/,
   /^\/glossary(\/|$)/,
+  /^\/comparison(\/|$)/,
+  /^\/(privacy|imprint|security|dpa|cookie-policy|terms|data-policy|how-to-measure-core-web-vitals)(\/|$)/,
   /^\/api(\/|$)/,
   /^\/backend(\/|$)/,
   /^\/_internal_data/,
@@ -490,7 +493,7 @@ export const localisePath = (pathname: string, lang: string): string => {
 
 // Increase this counter every time some major change is done within localisation files
 // This will prevent cached version or raw locale strings being displayed in production
-export const I18N_CACHE_BREAKER = 47
+export const I18N_CACHE_BREAKER = 48
 
 export const roles: Role[] = ['admin', 'viewer']
 

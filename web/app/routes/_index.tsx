@@ -4,14 +4,12 @@ import {
   CookieIcon,
   GaugeIcon,
   GithubLogoIcon,
-  ArrowRightIcon,
   StarIcon,
 } from '@phosphor-icons/react'
 import { motion, useReducedMotion, useScroll, useTransform } from 'motion/react'
 import React, { useEffect, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import type { LoaderFunctionArgs, MetaFunction } from 'react-router'
-import { Link } from '~/ui/Link'
 import { redirect, useLoaderData } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 import { ClientOnly } from 'remix-utils/client-only'
@@ -28,9 +26,7 @@ import FAQ from '~/components/marketing/FAQ'
 import Integrations from '~/components/marketing/Integrations'
 import MarketingPricing from '~/components/pricing/MarketingPricing'
 import useBreakpoint from '~/hooks/useBreakpoint'
-import Button from '~/ui/Button'
 import {
-  LIVE_DEMO_URL,
   isSelfhosted,
   isDisableMarketingPages,
   localisePath,
@@ -38,9 +34,9 @@ import {
 import { DEFAULT_METAINFO, Metainfo } from '~/lib/models/Metainfo'
 import { useTheme } from '~/providers/ThemeProvider'
 import { cn } from '~/utils/generic'
-import routesPath from '~/utils/routes'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 import { FeaturesGrid } from '~/components/marketing/FeaturesGrid'
+import HeroSignupForm from '~/components/marketing/HeroSignupForm'
 import { LogoCloud } from '~/components/marketing/LogoCloud'
 import { ScrollReveal } from '~/components/marketing/ScrollReveal'
 import { WhySwitch } from '~/components/marketing/WhySwitch'
@@ -430,31 +426,7 @@ const Hero = () => {
             >
               {t('main.description')}
             </Text>
-            <div className='mt-8 flex w-full flex-col items-stretch justify-center gap-3 sm:w-auto sm:flex-row sm:items-center'>
-              <Link
-                to={routesPath.signup}
-                className='inline-flex h-12 items-center justify-center rounded-md bg-white px-5 text-slate-950 shadow-lg ring-1 shadow-slate-950/20 ring-white/30 transition-colors hover:bg-gray-100'
-                aria-label={t('titles.signup')}
-              >
-                <span className='text-center text-base font-semibold'>
-                  {t('main.startAXDayFreeTrial', { amount: 14 })}
-                </span>
-                <ArrowRightIcon className='mt-[1px] ml-1 h-4 w-5' />
-              </Link>
-              <Button
-                to={LIVE_DEMO_URL}
-                linkProps={{
-                  target: '_blank',
-                  rel: 'noopener noreferrer',
-                }}
-                variant='secondary'
-                size='xl'
-                className='flex h-12 items-center justify-center border-white/25 bg-white/10 px-5 text-center text-base font-semibold text-white shadow-none ring-white/25 backdrop-blur-md hover:bg-white/20 dark:border-white/25 dark:bg-white/10 dark:text-white dark:hover:bg-white/20'
-                aria-label={`${t('main.seeLiveDemo')} (opens in a new tab)`}
-              >
-                {t('common.liveDemo')}
-              </Button>
-            </div>
+            <HeroSignupForm />
             <div className='mt-8 flex max-w-4xl flex-wrap justify-center gap-x-16 gap-y-3 text-gray-50'>
               <div className='flex items-center gap-2 text-sm whitespace-nowrap'>
                 <GaugeIcon className='size-5 shrink-0' />

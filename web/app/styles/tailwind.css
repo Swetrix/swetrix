@@ -151,16 +151,18 @@
     }
   }
 
-  /* Panel row background bars: animate width retargets, and sweep in from
-     zero when rows first mount (entering rows / panel tab switches). */
+  /* Panel row background bars stay full-width and animate their scale so
+     loading a dashboard does not trigger layout on every animation frame. */
   .panel-bar {
-    width: var(--panel-bar-width, 0%);
+    width: 100%;
+    transform: scaleX(var(--panel-bar-scale, 0));
+    transform-origin: left center;
 
     @media (prefers-reduced-motion: no-preference) {
-      transition: width 400ms var(--ease-out-quint);
+      transition: transform 220ms var(--ease-out-quint);
 
       @starting-style {
-        width: 0%;
+        transform: scaleX(0);
       }
     }
   }

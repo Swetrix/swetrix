@@ -69,14 +69,14 @@ init('YOUR_PROJECT_ID', {
 })
 ```
 
-| Option | Description | Default |
-|---|---|---|
-| `apiURL` | API endpoint. Change this if you're self-hosting. | `'https://api.swetrix.com/log'` |
-| `devMode` | When `true`, localhost events are sent to the server. | `false` |
-| `disabled` | When `true`, no data is sent. Useful for dev environments. | `false` |
-| `respectDNT` | When `true`, disables tracking for users with Do Not Track enabled. | `false` |
-| `profileId` | Profile ID for long-term user tracking (MAU/DAU). | `undefined` |
-| `preloadSessionReplay` | Preload the session replay recorder after `init()`. Recording only starts after `startSessionReplay()`. | `undefined` |
+| Option                 | Description                                                                                             | Default                         |
+| ---------------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------- |
+| `apiURL`               | API endpoint. Change this if you're self-hosting.                                                       | `'https://api.swetrix.com/log'` |
+| `devMode`              | When `true`, localhost events are sent to the server.                                                   | `false`                         |
+| `disabled`             | When `true`, no data is sent. Useful for dev environments.                                              | `false`                         |
+| `respectDNT`           | When `true`, disables tracking for users with Do Not Track enabled.                                     | `false`                         |
+| `profileId`            | Profile ID for long-term user tracking (MAU/DAU).                                                       | `undefined`                     |
+| `preloadSessionReplay` | Preload the session replay recorder after `init()`. Recording only starts after `startSessionReplay()`. | `undefined`                     |
 
 ### `trackViews(options?)`
 
@@ -84,8 +84,8 @@ Automatically tracks page views, including navigation changes in SPAs. Returns a
 
 ```javascript
 const { stop } = await trackViews({
-  hash: false,
-  search: false,
+  hash: ['pricing', 'features'],
+  search: ['query', 'page'],
   unique: false,
   heartbeatOnBackground: false,
   callback: undefined,
@@ -95,13 +95,13 @@ const { stop } = await trackViews({
 stop()
 ```
 
-| Option | Description | Default |
-|---|---|---|
-| `hash` | Track hash-based routing (e.g. `/#/path`). | `false` |
-| `search` | Track search/query-based routing (e.g. `/path?query`). | `false` |
-| `unique` | Only count unique page views per session. | `false` |
-| `heartbeatOnBackground` | Send heartbeat when the tab is not active. | `false` |
-| `callback` | A function to edit or prevent pageview payloads. Return `false` to block, `true` to send as-is, or return a modified payload object. | `undefined` |
+| Option                  | Description                                                                                                                                                                          | Default     |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------- |
+| `hash`                  | Set to `true` to track every hash (e.g. `/#/path`), or provide an array of exact hash values to include (e.g. `['pricing', 'features']`). A leading `#` is optional in array values. | `false`     |
+| `search`                | Set to `true` to track every query parameter (e.g. `/path?query=value`), or provide an array of parameter names to include (e.g. `['query', 'page']`).                               | `false`     |
+| `unique`                | Only count unique page views per session.                                                                                                                                            | `false`     |
+| `heartbeatOnBackground` | Send heartbeat when the tab is not active.                                                                                                                                           | `false`     |
+| `callback`              | A function to edit or prevent pageview payloads. Return `false` to block, `true` to send as-is, or return a modified payload object.                                                 | `undefined` |
 
 ### `track(event)`
 
@@ -116,12 +116,12 @@ track({
 })
 ```
 
-| Option | Description | Default |
-|---|---|---|
-| `ev` | Event name (max 256 chars). | **required** |
-| `unique` | Only count once per session. | `false` |
-| `meta` | Key-value metadata (max 20 keys, 1000 chars total). | `{}` |
-| `profileId` | Optional profile ID. Overrides the global `profileId` for this event. | `undefined` |
+| Option      | Description                                                           | Default      |
+| ----------- | --------------------------------------------------------------------- | ------------ |
+| `ev`        | Event name (max 256 chars).                                           | **required** |
+| `unique`    | Only count once per session.                                          | `false`      |
+| `meta`      | Key-value metadata (max 20 keys, 1000 chars total).                   | `{}`         |
+| `profileId` | Optional profile ID. Overrides the global `profileId` for this event. | `undefined`  |
 
 ### `trackErrors(options?)`
 
@@ -134,10 +134,10 @@ const { stop } = trackErrors({
 })
 ```
 
-| Option | Description | Default |
-|---|---|---|
-| `sampleRate` | Fraction of errors to send (`0` to `1`). | `1` |
-| `callback` | Edit or prevent error payloads. Return `false` to block. | `undefined` |
+| Option       | Description                                              | Default     |
+| ------------ | -------------------------------------------------------- | ----------- |
+| `sampleRate` | Fraction of errors to send (`0` to `1`).                 | `1`         |
+| `callback`   | Edit or prevent error payloads. Return `false` to block. | `undefined` |
 
 ### `trackError(payload)`
 
@@ -150,6 +150,18 @@ trackError({
   meta: { gateway: 'stripe' },
 })
 ```
+
+### Page titles
+
+Pageviews include the current `document.title`, including SPA path changes. Read or override `payload.title` in the `trackViews` callback, or set `payload.title` when calling `pageview`. The exported `IPageViewPayload` type accepts `title?: string | null`.
+
+```typescript
+trackViews({
+  callback: (payload) => ({ ...payload, title: 'Documentation' }),
+})
+```
+
+Omitting `title` uses the document title. Set it to `null` or `''` to skip title collection. Titles are limited to 2,048 characters. Only a pageview captures a title; title changes alone do not send pageviews.
 
 ### `pageview(options)`
 
@@ -200,7 +212,7 @@ clearExperimentsCache()
 
 Start recording a session replay. Session replays use `total` privacy by default, which masks text and inputs and blocks media/canvas capture unless you explicitly choose another mode.
 
-If you use the npm package, rrweb is dynamically imported from your installed dependencies only when the recorder is preloaded or started. If you use the CDN/script-tag build, the standalone replay recorder is loaded with an async script tag.
+If you use the npm package, the recorder (`@rrweb/record`) is dynamically imported from your installed dependencies only when the recorder is preloaded or started. If you use the CDN/script-tag build, the standalone replay recorder is loaded with an async script tag.
 
 ```javascript
 const replay = await startSessionReplay({
@@ -217,19 +229,19 @@ await replay.flush()
 await replay.stop()
 ```
 
-| Option | Description | Default |
-|---|---|---|
-| `privacy` | Privacy mode: `total`, `normal`, or `none`. | `'total'` |
-| `maskAllText` | Mask all non-input text with asterisks. Defaults to `true` when `privacy` is `total`, otherwise `false`. | privacy-based |
-| `sampleRate` | Fraction of sessions to record (`0` to `1`). | `1` |
-| `maxDurationMs` | Stop recording after this duration. | `undefined` |
-| `idleTimeoutMs` | Stop recording after this much visitor inactivity. | `undefined` |
-| `flushIntervalMs` | Upload buffered replay events at this interval. | `5000` |
-| `maxEventsPerChunk` | Upload once this many events are buffered. | `100` |
-| `maxBytesPerChunk` | Upload once buffered replay events reach this approximate byte size. | `524288` |
-| `maxBytesPerEvent` | Drop a single replay event if it is larger than this many bytes. | `5242880` |
-| `recordIframes` | Allow iframe elements to be captured. Iframes are blocked by default to reduce replay size and avoid recording embedded third-party content. | `false` |
-| `rrweb` | Additional rrweb record options. | `undefined` |
+| Option              | Description                                                                                                                                  | Default       |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| `privacy`           | Privacy mode: `total`, `normal`, or `none`.                                                                                                  | `'total'`     |
+| `maskAllText`       | Mask all non-input text with asterisks. Defaults to `true` when `privacy` is `total`, otherwise `false`.                                     | privacy-based |
+| `sampleRate`        | Fraction of sessions to record (`0` to `1`).                                                                                                 | `1`           |
+| `maxDurationMs`     | Stop recording after this duration.                                                                                                          | `undefined`   |
+| `idleTimeoutMs`     | Stop recording after this much visitor inactivity.                                                                                           | `undefined`   |
+| `flushIntervalMs`   | Upload buffered replay events at this interval.                                                                                              | `5000`        |
+| `maxEventsPerChunk` | Upload once this many events are buffered.                                                                                                   | `100`         |
+| `maxBytesPerChunk`  | Upload once buffered replay events reach this approximate byte size.                                                                         | `524288`      |
+| `maxBytesPerEvent`  | Drop a single replay event if it is larger than this many bytes.                                                                             | `5242880`     |
+| `recordIframes`     | Allow iframe elements to be captured. Iframes are blocked by default to reduce replay size and avoid recording embedded third-party content. | `false`       |
+| `rrweb`             | Additional rrweb record options.                                                                                                             | `undefined`   |
 
 To mask text while keeping media less restricted than `total` privacy, combine `normal` privacy with `maskAllText`:
 
@@ -260,6 +272,31 @@ await startSessionReplay({
 })
 ```
 
+### `identify(profileId, traits?)` / `setTraits(traits)` / `reset()`
+
+Identify the current visitor with your own user ID (e.g. after they log in). Their current anonymous profile gets linked to the identified profile server-side, so pre-login activity is attributed to it, and all subsequent events are tracked under the identified profile.
+
+```javascript
+// After the user logs in (or on page load if they're already logged in)
+identify('user-12345')
+
+// On logout
+reset()
+```
+
+Use a unique, stable identifier (e.g. an internal user ID). The ID is stored as provided and shown in your dashboard, so don't pass values you wouldn't want to see there. Swetrix stores nothing in the browser, so call `identify()` on every page load while the user is logged in.
+
+Optionally pass **traits** — key / value metadata displayed on the user's profile:
+
+```javascript
+identify('user-12345', { email: 'john@example.com', plan: 'premium' })
+
+// Later, without repeating the user ID. null removes a trait
+setTraits({ plan: 'enterprise', trialEndsAt: null })
+```
+
+Traits are merged per key. Per call: max 50 keys, 128 characters per key, and 2000 characters for all keys and values combined.
+
 ### Session & Profile IDs
 
 ```javascript
@@ -268,6 +305,8 @@ const sessionId = await getSessionId()
 ```
 
 These are useful for revenue attribution with payment providers like Paddle.
+
+`getProfileId()` returns the ID the visitor's events are actually stored under — `usr_`-prefixed once they're identified (via `identify()` or a `profileId` on `init()`), `anon_`-prefixed otherwise. Attribute revenue with this value, not the raw ID you passed in.
 
 ## Self-Hosting
 
@@ -281,7 +320,7 @@ init('YOUR_PROJECT_ID', {
 
 ## Documentation
 
-Full reference and guides are available at [docs.swetrix.com](https://docs.swetrix.com).
+Full reference and guides are available at [docs.swetrix.com](https://swetrix.com/docs).
 
 ## Contributing
 

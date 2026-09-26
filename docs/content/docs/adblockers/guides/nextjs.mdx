@@ -1,9 +1,18 @@
 ---
 title: How to proxy Swetrix with Next.js
 slug: /adblockers/guides/nextjs
+description: "Configure a Next.js reverse proxy for Swetrix to forward tracking requests through your domain and preserve accurate visitor information."
 ---
 
 You can use [Next.js](https://nextjs.org/) to proxy Swetrix analytics traffic via your domain.
+
+<Callout type="info">
+  Swetrix reads the visitor's IP address from the `X-Forwarded-For` header, which Vercel and other
+  Next.js hosting platforms set automatically when proxying requests — so geolocation, unique
+  visitor counting and [bot protection](/bot-protection) keep working as normal. If you self-host
+  Next.js behind your own web server, make sure it forwards `X-Forwarded-For` (see the [Nginx
+  guide](/adblockers/guides/nginx)).
+</Callout>
 
 ## Setup Next.js rewrites rules
 

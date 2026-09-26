@@ -374,12 +374,7 @@ export class FeatureFlagController {
       throw new ForbiddenException('Please, verify your email address first')
     }
 
-    const project = await this.projectService.findOne({
-      where: {
-        id: flagDto.pid,
-      },
-      relations: ['featureFlags', 'admin'],
-    })
+    const project = await this.projectService.getFullProject(flagDto.pid)
 
     if (_isEmpty(project)) {
       throw new NotFoundException('Project not found')

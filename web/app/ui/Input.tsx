@@ -7,6 +7,7 @@ import {
 import cx from 'clsx'
 import { EyeIcon, EyeSlashIcon } from '@phosphor-icons/react'
 import React, { memo, useState } from 'react'
+import FaviconGlyph from './FaviconGlyph'
 import { Text } from './Text'
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -18,11 +19,22 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   error?: string | null
   disabled?: boolean
   readOnly?: boolean
+  /**
+   * `website` turns the field into a "your website" input: the leading glyph is
+   * a globe that swaps for the site's live favicon as soon as what's typed
+   * looks like a domain, the same affordance the landing hero uses. Works
+   * controlled or uncontrolled.
+   */
+  variant?: 'default' | 'website'
   classes?: {
     input?: string
     leadingIcon?: string
   }
 }
+
+const toStringValue = (
+  value: React.InputHTMLAttributes<HTMLInputElement>['value'],
+) => (value === undefined || value === null ? '' : String(value))
 
 // TODO: Merge className and classes
 
@@ -37,6 +49,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       error,
       disabled,
       readOnly,
+      variant = 'default',
       classes,
       ...rest
     },
@@ -45,8 +58,30 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     const isError = Boolean(error)
     const type = rest.type || 'text'
     const isPassword = type === 'password'
-    const hasLeadingIcon = Boolean(leadingIcon)
+    const isWebsite = variant === 'website'
     const [showPassword, setShowPassword] = useState(false)
+
+    // The favicon needs the current value. Mirror it internally so the variant
+    // works uncontrolled too, and prefer the prop whenever there is one.
+    const [uncontrolledValue, setUncontrolledValue] = useState(() =>
+      toStringValue(rest.defaultValue as InputProps['value']),
+    )
+    const websiteValue =
+      rest.value === undefined ? uncontrolledValue : toStringValue(rest.value)
+
+    const resolvedLeadingIcon =
+      leadingIcon ??
+      (isWebsite ? (
+        <FaviconGlyph value={websiteValue} className='size-4.5' />
+      ) : null)
+    const hasLeadingIcon = Boolean(resolvedLeadingIcon)
+
+    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+      if (isWebsite && rest.value === undefined) {
+        setUncontrolledValue(event.target.value)
+      }
+      rest.onChange?.(event)
+    }
 
     const { type: _type, ...restWithoutType } = rest
 
@@ -74,9 +109,12 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         invalid={isError}
         aria-invalid={isError || undefined}
         {...restWithoutType}
+        onChange={handleChange}
         autoComplete={
-          rest.autoComplete ?? (isPassword ? 'current-password' : undefined)
+          rest.autoComplete ??
+          (isPassword ? 'current-password' : isWebsite ? 'url' : undefined)
         }
+        inputMode={rest.inputMode ?? (isWebsite ? 'url' : undefined)}
         type={isPassword && showPassword ? 'text' : type}
       />
     )
@@ -92,7 +130,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
                 classes?.leadingIcon,
               )}
             >
-              {leadingIcon}
+              {resolvedLeadingIcon}
             </div>
           ) : null}
           {inputElement}

@@ -2,6 +2,7 @@
 title: Tracking script reference
 slug: /swetrix-js-reference
 icon: FileCode
+description: "Configure the Swetrix JavaScript tracker to record pageviews, custom events, user properties, and errors on your website."
 ---
 
 The Swetrix.js is a highly customisable tracking script. The following is a reference of all the available functions and options it provides.
@@ -29,14 +30,14 @@ swetrix.init("YOUR_PROJECT_ID", {
 });
 ```
 
-| Name                 | Description                                                                                                                                                                                                                                                              | Default value                   |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------- |
-| devMode              | When set to `true`, localhost events will be sent to server.                                                                                                                                                                                                             | `false`                         |
-| disabled             | When set to true, the tracking library won't send any data to server.<br />Useful for development purposes when this value is set based on '.env' var.                                                                                                                   | `false`                         |
-| respectDNT           | By setting this flag to true, we will not collect ANY kind of data about the user with the DNT setting. <br />This setting is not true by default because our service anonymises all incoming data and does not pass it on to any third parties under any circumstances. | `false`                         |
-| apiURL               | If you use Swetrix Cloud, you don't need to change this parameter. If you're self-hosting Swetrix CE, you should put the URL of your API instance here, like `[BASE_URL]/backend/v1/log`.                                                                                | `'https://api.swetrix.com/log'` |
-| profileId            | Optional profile ID for long-term user tracking (MAU/DAU). If set, it will be used for all pageviews and events unless overridden per-call. This allows you to track users across sessions and devices.                                                                  | `undefined`                     |
-| preloadSessionReplay | Set to `true` to preload the session replay recorder after `init()`, or pass `{ rrwebUrl: "https://example.com/rrweb.min.js" }` to load it from a custom URL. Recording only starts after you call `startSessionReplay()`.                                               | `undefined`                     |
+| Name                 | Description                                                                                                                                                                                                                                                                                                          | Default value                   |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
+| devMode              | When set to `true`, localhost events will be sent to server.                                                                                                                                                                                                                                                         | `false`                         |
+| disabled             | When set to true, the tracking library won't send any data to server.<br />Useful for development purposes when this value is set based on '.env' var.                                                                                                                                                               | `false`                         |
+| respectDNT           | By setting this flag to true, we will not collect ANY kind of data about the user with the DNT setting. <br />This setting is not true by default because our service anonymises all incoming data and does not pass it on to any third parties under any circumstances.                                             | `false`                         |
+| apiURL               | If you use Swetrix Cloud, you don't need to change this parameter. If you're self-hosting Swetrix CE, you should put the URL of your API instance here, like `[BASE_URL]/backend/v1/log`.                                                                                                                            | `'https://api.swetrix.com/log'` |
+| profileId            | Optional profile ID for long-term user tracking (MAU/DAU). If set, it will be used for all pageviews and events unless overridden per-call. This allows you to track users across sessions and devices. To also link the visitor's previous anonymous activity to this profile, use [identify()](#identify) instead. | `undefined`                     |
+| preloadSessionReplay | Set to `true` to preload the session replay recorder after `init()`, or pass `{ rrwebUrl: "https://example.com/rrweb.min.js" }` to load it from a custom URL. Recording only starts after you call `startSessionReplay()`.                                                                                           | `undefined`                     |
 
 ## track()
 
@@ -98,8 +99,8 @@ Here's an example of how to use this function with all the available options:
 swetrix.trackViews({
   unique: false,
   heartbeatOnBackground: false,
-  hash: false,
-  search: false,
+  hash: ["pricing", "features"],
+  search: ["query", "page"],
   callback: undefined,
 });
 ```
@@ -107,10 +108,10 @@ swetrix.trackViews({
 | Name                  | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Default value |
 | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
 | unique                | If true, only unique events will be saved. This param is useful when tracking single-page landing websites.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | `false`       |
-| callback              | A callback used to edit / prevent sending pageviews.<br />It accepts an object with pageview event data as a parameter which has the following structure: <br />lc: string \| undefined<br />tz: string \| undefined<br />ref: string \| undefined<br />so: string \| undefined<br />me: string \| undefined<br />ca: string \| undefined<br />te: string \| undefined<br />co: string \| undefined<br />qs: string \| undefined<br />meta: object \| undefined ("object" values must be string, number, boolean, null, or undefined)<br />pg: string \| null \| undefined<br />profileId: string \| undefined<br /><br />The callback is supposed to return the edited payload or `false` to prevent sending the pageview. If `true` is returned, the payload will be sent as-is. | `undefined`   |
+| callback              | A callback used to edit / prevent sending pageviews.<br />It accepts an object with pageview event data as a parameter which has the following structure: <br />lc: string \| undefined<br />tz: string \| undefined<br />ref: string \| undefined<br />so: string \| undefined<br />me: string \| undefined<br />ca: string \| undefined<br />te: string \| undefined<br />co: string \| undefined<br />qs: string \| undefined<br />meta: object \| undefined ("object" values must be string, number, boolean, null, or undefined)<br />pg: string \| null \| undefined<br />title: string \| null \| undefined<br />profileId: string \| undefined<br /><br />The callback is supposed to return the edited payload or `false` to prevent sending the pageview. If `true` is returned, the payload will be sent as-is. | `undefined`   |
 | heartbeatOnBackground | Send Heartbeat requests when the website tab is not active in the browser.<br />Setting this to `true` means users who keep your website open in an inactive browser tab or window can still be counted in realtime statistics.<br />Setting this to true is usually useful for services like Spotify or Youtube.                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | `false`       |
-| hash                  | Set to `true` to enable hash-based routing. For example if you have pages like `/#/path` or want to track pages like `/path#hash`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | `false`       |
-| search                | Set to `true` to enable search-based routing. For example if you have pages like `/path?search`. Although it's not recommended in most cases, you can set both `hash` and `search` to `true` at the same time, in which case the pageview event will be fired when either the hash or the search part of the URL changes (again, both the hash and the search are sent to the server).                                                                                                                                                                                                                                                                                                                                                                                             | `false`       |
+| hash                  | Set to `true` to enable hash-based routing for every hash, or provide an array of exact hash values to include. For example, `['pricing', 'features']` includes `/path#pricing` and `/path#features` while ignoring other hashes. A leading `#` is optional in array values.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | `false`       |
+| search                | Set to `true` to enable search-based routing for every query parameter, or provide an array of parameter names to include. For example, `['search', 'page']` includes those parameters while ignoring unrelated ones. You can enable both `hash` and `search`; a pageview is fired only when an included part of the URL changes.                                                                                                                                                                                                                                                                                                                                                                                                                                                  | `false`       |
 
 The `trackViews` function returns a `Promise` with an object with some methods allowing you to alter the behaviour of page tracking:
 
@@ -120,6 +121,30 @@ The `trackViews` function returns a `Promise` with an object with some methods a
   stop() {},
 }
 ```
+
+### Page titles
+
+The tracker reads `document.title` for each pageview, including automatic SPA navigation and manual `pageview()` calls. Titles are captured when the pageview is sent; changing only the title does not send another pageview. For routers that update the title asynchronously, send a manual pageview after the title is ready instead of enabling automatic tracking.
+
+The `trackViews` callback receives the title as `payload.title`. Return a replacement to override it, or `null` to skip title collection:
+
+```typescript
+swetrix.trackViews({
+  callback: (payload) => ({ ...payload, title: 'Product documentation' }),
+});
+```
+
+For manual tracking, pass `title` alongside `pg`:
+
+```typescript
+swetrix.pageview({
+  payload: { pg: '/pricing', title: 'Pricing' },
+});
+```
+
+The exported `IPageViewPayload` type includes `title?: string | null`. Omit it to use `document.title`; use `null` or an empty string to leave the title unset. The browser tracker limits titles to 2,048 characters. Choose a generic title or disable title collection on pages with personal information in their titles.
+
+Titles are available in **Traffic → Pages → Titles** in both Cloud and Community editions. Older pageviews, noscript visits, and requests without a title remain untitled.
 
 ## Noscript fallback
 
@@ -162,6 +187,71 @@ swetrix.pageview({
 });
 ```
 
+## identify()
+
+Identify the current visitor with your own user ID (e.g. after they log in).
+
+Calling this function does two things:
+
+1. **Links the anonymous history** — the visitor's current anonymous profile is linked to the identified profile server-side, so the activity they had before logging in (recent sessions, pageviews, events) is attributed to the identified profile in the dashboard.
+2. **Stamps all future events** — every pageview, custom event, error, feature flag and experiment call sent after `identify()` is associated with the identified profile, exactly as if you had passed `profileId` to `init()`.
+
+```javascript
+swetrix.init("YOUR_PROJECT_ID");
+swetrix.trackViews();
+
+// After the user logs in (or on page load if they're already logged in)
+swetrix.identify("user-12345");
+```
+
+Swetrix stores nothing in the browser (no cookies, no `localStorage`), so the identification only lasts for the current page life. Call `identify()` on every page load while the user is logged in — repeated calls with the same ID are deduplicated and cost you nothing extra.
+
+You can also pass **traits** — arbitrary key / value metadata shown in the "User traits" section of the user's profile:
+
+```javascript
+swetrix.identify("user-12345", {
+  email: "john@example.com",
+  name: "John Doe",
+  plan: "premium",
+});
+```
+
+Traits are merged per key, so a later call only overwrites the keys it carries and `null` removes a trait. Per call you can send up to 50 keys, keys of up to 128 characters, and 2000 characters for all keys and values combined; values must be strings, numbers, booleans or `null` and are stored as strings.
+
+<Callout type="warn">
+  Use a unique, **stable** identifier — your application's internal user ID is the best choice.
+  Don't use values like `null`, `undefined` or `"guest"`: the API rejects those, as they would fuse
+  unrelated visitors into a single profile. Surrounding whitespace is trimmed; otherwise the ID you
+  pass is stored as provided (behind a `usr_` prefix) and shown in your dashboard, so if you want a
+  user's email on their profile, send it as a trait rather than using it as the ID.
+</Callout>
+
+A few things to know about how linking works:
+
+- An anonymous profile is linked to the **first** identified profile that claims it. If a second person logs in with a different account on the same device and network, their identity is stamped on their own events going forward, but the shared anonymous history stays with the first account.
+- Anonymous profiles rotate monthly (see [visitor identification](/visitor-identification)), so `identify()` links the visitor's recent anonymous activity — up to about a month back on that device and network.
+- Identification works across devices: call `identify()` with the same ID on any device and all of that activity is unified under one profile.
+
+## setTraits()
+
+Updates the traits of an already identified visitor without repeating their user ID. Only the keys you pass are touched; pass `null` to remove a trait.
+
+```javascript
+swetrix.setTraits({ plan: "enterprise", trialEndsAt: null });
+```
+
+Requires [`identify()`](#identify) (or a `profileId` on `init()`) to have been called first — otherwise there's no profile to attach the traits to and the call is a no-op. The same per-call limits as `identify()` apply.
+
+## reset()
+
+Resets the visitor's identity set via `identify()` (e.g. after they log out), so subsequent events are tracked anonymously again.
+
+```javascript
+swetrix.reset();
+```
+
+Always call this on logout if your users may share devices — otherwise the next visitor's events would be tracked under the previous user's identity.
+
 ## trackErrors()
 
 This function is used to enable automatic client-side error monitoring. It adds an `error` event listener on your site and when an error happens - send it to our APIs.
@@ -176,7 +266,7 @@ The data we collect includes the following params if available:
 6. `message` - error message (e.g. Malformed input)
 7. `lineno` / `colno` - on what line and column in your code did the error occur
 8. `filename` - in what file did the error occur
-9. `stackTrace` - the stack trace of the error (e.g. `Uncaught Error\n    at query (:10:11)\n    at database (:6:5)`)
+9. `stackTrace` - the stack trace of the error, up to 64,000 characters (e.g. `Uncaught Error\n    at query (:10:11)\n    at database (:6:5)`)
 10. `meta` - an object that contains event-related metadata. You can set it via a `callback` function.
 
 Here's an example of how to use this function with all the available options:
@@ -212,8 +302,8 @@ This function takes a payload object with the following fields:
 2. (optional) `message` - error message (e.g. Malformed input)
 3. (optional) `lineno` - on what line in your code did the error occur (e.g. 1520)
 4. (optional) `colno` - on what column in your code did the error occur (e.g. 26)
-5. (optional) `filename` - in what file did the error occur (e.g. https://example.com/broken.js)
-6. (optional) `stackTrace` - the stack trace of the error (e.g. `Uncaught Error\n    at query (:10:11)\n    at database (:6:5)`)
+5. (optional) `filename` - in what file did the error occur (e.g. `https://example.com/broken.js`)
+6. (optional) `stackTrace` - the stack trace of the error, up to 64,000 characters (e.g. `Uncaught Error\n    at query (:10:11)\n    at database (:6:5)`)
 7. (optional) `meta` - an object that contains event-related metadata. The values of the object must be a primitive type (string, number, boolean, null) which will be converted to a string, the maximum number of keys allowed is `100` and the total length of the values combined must be less than `2000` characters.
 
 Here is an example of how to use this function:
@@ -278,7 +368,7 @@ const replay = await startSessionReplay({
 });
 ```
 
-For npm installs, Swetrix dynamically imports the installed `rrweb` package only when the recorder is preloaded or started, so it can be split into an async chunk by your bundler. For script-tag installs, Swetrix loads the standalone replay recorder with an async script tag.
+For npm installs, Swetrix dynamically imports the installed `@rrweb/record` package only when the recorder is preloaded or started, so it can be split into an async chunk by your bundler. For script-tag installs, Swetrix loads the standalone replay recorder with an async script tag.
 
 | Name              | Description                                                                                                                                                                                                                                            | Default value |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------- |
@@ -449,7 +539,13 @@ swetrix.clearExperimentsCache();
 
 ## getProfileId()
 
-Gets the anonymous profile ID for the current visitor. If `profileId` was set via `init`, returns that. Otherwise, requests server to generate one from IP/UA hash.
+Gets the profile ID the current visitor's events are stored under. If the visitor was identified via [identify()](#identify), or a `profileId` was set via `init`, returns the identified (`usr_`-prefixed) profile ID. Otherwise, requests server to generate an anonymous (`anon_`-prefixed) one from IP/UA hash.
+
+<Callout type="info">
+  The prefix matters: your own user ID is stored behind `usr_`, so a raw `user-12345` won't match
+  anything in the dashboard. Always attribute revenue with the value `getProfileId()` returns rather
+  than the ID you passed to `init()` / `identify()`.
+</Callout>
 
 This ID is commonly used for [revenue attribution](/analytics-dashboard/revenue-tracking#user-attribution) — pass it to your payment provider (`swetrix_profile_id` in Stripe metadata or Paddle `customData`) or include it in the request body when posting to [`/log/revenue`](/events-api#post-logrevenue) to link transactions to specific visitors.
 

@@ -1,4 +1,4 @@
-import { init, track } from '../src/index'
+import { init, track, trackViews } from '../src/index'
 import { Lib } from '../src/Lib'
 import { setLocation } from './testUtils'
 
@@ -86,6 +86,23 @@ describe('Custom Event Tracking', () => {
         meta: metadata,
       }),
     )
+  })
+
+  test('track function should use the page overridden by the pageview callback', async () => {
+    const page = '/articles/:slug'
+    const { stop } = await trackViews({
+      unique: true,
+      callback: () => ({ pg: page }),
+    })
+
+    await track({ ev: 'article_cta_click' })
+
+    expect((libInstance as any).sendRequest).toHaveBeenLastCalledWith(
+      'custom',
+      expect.objectContaining({ pg: page }),
+    )
+
+    stop()
   })
 
   test('should not track when library is not initialized', async () => {

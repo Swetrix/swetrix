@@ -145,6 +145,7 @@ export class GoalController {
   async getGoal(
     @CurrentUserId() userId: string,
     @Param('goalId') goalId: string,
+    @Headers() headers: { 'x-password'?: string },
   ) {
     this.logger.log({ userId, goalId }, 'GET /goal/:goalId')
 
@@ -159,7 +160,7 @@ export class GoalController {
 
     const project = await this.projectService.getFullProject(goal.project.id)
 
-    this.projectService.allowedToView(project, userId)
+    this.projectService.allowedToView(project, userId, headers['x-password'])
 
     return {
       ..._omit(goal, ['project']),
@@ -174,6 +175,7 @@ export class GoalController {
   async getProjectGoals(
     @CurrentUserId() userId: string,
     @Param('projectId') projectId: string,
+    @Headers() headers: { 'x-password'?: string },
     @Query('take', new ParseIntPipe({ optional: true })) take?: number,
     @Query('skip', new ParseIntPipe({ optional: true })) skip?: number,
     @Query('search') search?: string,
@@ -189,7 +191,7 @@ export class GoalController {
       throw new NotFoundException('Project not found')
     }
 
-    this.projectService.allowedToView(project, userId)
+    this.projectService.allowedToView(project, userId, headers['x-password'])
 
     const { take: safeTake, skip: safeSkip } = clampPagination(take, skip)
 
@@ -231,12 +233,7 @@ export class GoalController {
       throw new ForbiddenException('Please, verify your email address first')
     }
 
-    const project = await this.projectService.findOne({
-      where: {
-        id: goalDto.pid,
-      },
-      relations: ['goals', 'admin'],
-    })
+    const project = await this.projectService.getFullProject(goalDto.pid)
 
     if (_isEmpty(project)) {
       throw new NotFoundException('Project not found')
@@ -252,14 +249,14 @@ export class GoalController {
       where: { project: { id: goalDto.pid } },
     })
 
-    if (user.planCode === PlanCode.none) {
+    if (project.admin?.planCode === PlanCode.none) {
       throw new HttpException(
         'You cannot create new goals due to no active subscription. Please upgrade your account plan to continue.',
         HttpStatus.PAYMENT_REQUIRED,
       )
     }
 
-    if (user.isAccountBillingSuspended) {
+    if (project.admin?.isAccountBillingSuspended) {
       throw new HttpException(
         'The account that owns this site is currently suspended, this is because of a billing issue. Please resolve the issue to continue.',
         HttpStatus.PAYMENT_REQUIRED,

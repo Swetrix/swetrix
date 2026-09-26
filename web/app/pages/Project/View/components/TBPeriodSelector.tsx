@@ -65,7 +65,7 @@ const TBPeriodSelector = ({
             <span>{title}</span>
             <CaretDownIcon
               className={cx(
-                'ml-2 h-5 w-5 transform-gpu text-gray-700 transition ease-in-out dark:text-gray-50',
+                'ml-2 h-5 w-5 transform-gpu text-gray-700 transition-transform duration-150 ease-out-quint motion-reduce:transition-none dark:text-gray-50',
                 {
                   'rotate-180': open,
                 },

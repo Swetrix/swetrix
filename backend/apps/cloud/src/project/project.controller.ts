@@ -753,6 +753,8 @@ export class ProjectController {
     const queries = [
       'ALTER TABLE events DELETE WHERE pid={pid:FixedString(12)}',
       'ALTER TABLE error_statuses DELETE WHERE pid={pid:FixedString(12)}',
+      'ALTER TABLE profile_aliases DELETE WHERE pid={pid:FixedString(12)}',
+      'ALTER TABLE profile_traits DELETE WHERE pid={pid:FixedString(12)}',
     ]
 
     try {
@@ -1203,6 +1205,9 @@ export class ProjectController {
         'project.admin',
         'project.share',
         'project.share.user',
+        'project.organisation',
+        'project.organisation.members',
+        'project.organisation.members.user',
       ],
     })
 
@@ -1210,7 +1215,6 @@ export class ProjectController {
       throw new NotFoundException(`Share with ID ${shareId} does not exist`)
     }
 
-    // TODO: ORG
     this.projectService.allowedToManage(share.project, uid)
 
     const adminShare = _find(
@@ -1641,6 +1645,8 @@ export class ProjectController {
     const queries = [
       'ALTER TABLE events DELETE WHERE pid={pid:FixedString(12)}',
       'ALTER TABLE error_statuses DELETE WHERE pid={pid:FixedString(12)}',
+      'ALTER TABLE profile_aliases DELETE WHERE pid={pid:FixedString(12)}',
+      'ALTER TABLE profile_traits DELETE WHERE pid={pid:FixedString(12)}',
     ]
 
     try {

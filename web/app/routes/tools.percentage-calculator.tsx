@@ -14,9 +14,9 @@ import { Text } from '~/ui/Text'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 
 export const meta: MetaFunction = () => {
-  const title = 'Free Percentage Calculator - Calculate Percentages Instantly'
+  const title = 'Free Percentage Calculator'
   const description =
-    'Calculate percentages with ease. Find what X% of Y is, what percentage X is of Y, or the percentage change between two numbers. Free, fast, and no signup required.'
+    'Calculate a percentage of a number, find what percentage one value is of another, or measure percentage change with this free calculator.'
   return [
     ...getTitle(title),
     ...getDescription(description),

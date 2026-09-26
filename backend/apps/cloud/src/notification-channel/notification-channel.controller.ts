@@ -207,45 +207,37 @@ export class NotificationChannelController {
     @Param('token') token: string,
     @Res() res: Response,
   ) {
-    const channel = await this.channelService.findByVerificationToken(token)
-    if (channel) {
-      await this.channelService.markVerified(channel.id)
-    }
+    const verified = await this.verifyChannel(token)
     const clientUrl =
       this.configService.get<string>('CLIENT_URL') || 'https://swetrix.com'
     res.redirect(
       HttpStatus.FOUND,
-      `${clientUrl}/notification-channels?verified=${channel ? '1' : '0'}`,
+      `${clientUrl}/dashboard?notificationChannelVerified=${verified ? '1' : '0'}`,
     )
+  }
+
+  @Public()
+  @Post('/verify/:token')
+  async completeVerificationFromClient(@Param('token') token: string) {
+    return { success: await this.verifyChannel(token) }
   }
 
   @Public()
   @Get('/unsubscribe/:token')
   async unsubscribeEmail(@Param('token') token: string, @Res() res: Response) {
-    let channelId: string | null
-    try {
-      channelId = this.emailDispatcher.verifyUnsubscribeToken(token)
-    } catch (reason) {
-      if (reason instanceof Error) {
-        throw new HttpException(
-          {
-            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-            message: reason.message,
-          },
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        )
-      }
-      throw reason
-    }
-    if (channelId) {
-      await this.channelService.setEmailUnsubscribed(channelId, true)
-    }
+    const unsubscribed = await this.unsubscribeChannel(token)
     const clientUrl =
       this.configService.get<string>('CLIENT_URL') || 'https://swetrix.com'
     res.redirect(
       HttpStatus.FOUND,
-      `${clientUrl}/notification-channels/unsubscribed?ok=${channelId ? '1' : '0'}`,
+      `${clientUrl}/dashboard?notificationChannelUnsubscribed=${unsubscribed ? '1' : '0'}`,
     )
+  }
+
+  @Public()
+  @Post('/unsubscribe/:token')
+  async unsubscribeEmailFromClient(@Param('token') token: string) {
+    return { success: await this.unsubscribeChannel(token) }
   }
 
   @ApiBearerAuth()
@@ -295,6 +287,37 @@ export class NotificationChannelController {
       'Confirm your Swetrix notification channel',
       html,
     )
+  }
+
+  private async verifyChannel(token: string) {
+    const channel = await this.channelService.findByVerificationToken(token)
+    if (!channel) return false
+
+    await this.channelService.markVerified(channel.id)
+    return true
+  }
+
+  private async unsubscribeChannel(token: string) {
+    let channelId: string | null
+    try {
+      channelId = this.emailDispatcher.verifyUnsubscribeToken(token)
+    } catch (reason) {
+      if (reason instanceof Error) {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+            message: reason.message,
+          },
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        )
+      }
+      throw reason
+    }
+
+    if (!channelId) return false
+
+    await this.channelService.setEmailUnsubscribed(channelId, true)
+    return true
   }
 
   private serialise(channel: NotificationChannel) {

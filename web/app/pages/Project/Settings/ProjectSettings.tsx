@@ -109,6 +109,7 @@ const isProjectTextAutosaveField = (
 const getFormFromProject = (project: Project): Form => ({
   name: project.name || '',
   id: project.id,
+  organisationId: project.organisationId,
   public: project.public || false,
   isPasswordProtected: project.isPasswordProtected || false,
   origins: _isString(project.origins)
@@ -315,7 +316,9 @@ const ProjectSettings = () => {
             description: t('project.settings.tabs.alertsDesc'),
             icon: BellRingingIcon,
             iconColor: 'text-cyan-500',
-            visible: !isSelfhosted && project?.role === 'owner',
+            visible:
+              !isSelfhosted &&
+              (project?.role === 'owner' || project?.role === 'admin'),
           },
           {
             id: 'channels',
@@ -323,7 +326,9 @@ const ProjectSettings = () => {
             description: t('project.settings.tabs.channelsDesc'),
             icon: BellRingingIcon,
             iconColor: 'text-pink-500',
-            visible: !isSelfhosted && project?.role === 'owner',
+            visible:
+              !isSelfhosted &&
+              (project?.role === 'owner' || project?.role === 'admin'),
           },
           {
             id: 'revenue',
@@ -339,7 +344,7 @@ const ProjectSettings = () => {
             description: t('project.settings.tabs.sessionReplaysDesc'),
             icon: VideoCameraIcon,
             iconColor: 'text-violet-500',
-            visible: !isSelfhosted,
+            visible: true,
           },
           {
             id: 'emails',
@@ -395,7 +400,7 @@ const ProjectSettings = () => {
   )
 
   const sessionReplayMaxRetentionDays = useMemo(() => {
-    return user?.sessionReplayRetentionDays || 30
+    return isSelfhosted ? 1825 : user?.sessionReplayRetentionDays || 30
   }, [user?.sessionReplayRetentionDays])
 
   const activeTab = useMemo<SettingsTab>(() => {
@@ -1336,7 +1341,7 @@ const ProjectSettings = () => {
                         ),
                         url: (
                           <a
-                            href='https://docs.swetrix.com/selfhosting/google-search-console'
+                            href='https://swetrix.com/docs/selfhosting/google-search-console'
                             aria-label={t(
                               'ariaLabels.openGoogleSearchConsoleSelfHostingGuide',
                             )}

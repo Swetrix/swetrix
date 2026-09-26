@@ -13,6 +13,10 @@ import { DEFAULT_METAINFO, Metainfo } from '~/lib/models/Metainfo'
 import { Project } from '~/lib/models/Project'
 import { User } from '~/lib/models/User'
 import Onboarding from '~/pages/Onboarding'
+import {
+  clearOnboardingSiteCookie,
+  readOnboardingSite,
+} from '~/utils/onboardingSite.server'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 import {
   redirectIfNotAuthenticated,
@@ -48,6 +52,12 @@ export interface OnboardingLoaderData {
   }
   metainfo: Metainfo
   onboardingStep: string | null
+  /**
+   * The website typed on the landing hero (hero signup experiment), carried
+   * here in a cookie so the "create your first project" step is already filled
+   * in - nobody gets asked for their site twice.
+   */
+  prefill: { name: string; websiteUrl: string } | null
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -68,6 +78,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
       os: parser.getOS().name || null,
     }
   }
+
+  const heroSite = readOnboardingSite(request)
+  const prefill = heroSite
+    ? { name: heroSite, websiteUrl: `https://${heroSite}` }
+    : null
 
   const authResult = await getAuthenticatedUser(request)
   const user = authResult?.user
@@ -115,6 +130,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       deviceInfo,
       metainfo,
       onboardingStep: onboardingStep ?? null,
+      prefill,
     }
 
     if (finalCookies.length > 0) {
@@ -133,6 +149,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         deviceInfo,
         metainfo,
         onboardingStep: onboardingStep ?? null,
+        prefill,
       } as OnboardingLoaderData,
       {
         headers: createHeadersWithCookies(allCookies),
@@ -145,6 +162,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     deviceInfo,
     metainfo,
     onboardingStep: onboardingStep ?? null,
+    prefill,
   } as OnboardingLoaderData
 }
 
@@ -251,6 +269,8 @@ export async function action({ request }: ActionFunctionArgs) {
       }
 
       responseCookies.push(...result.cookies)
+      // The hero handoff has served its purpose now that the project exists.
+      responseCookies.push(clearOnboardingSiteCookie())
 
       return data<OnboardingActionData>(
         {
@@ -302,7 +322,12 @@ export async function action({ request }: ActionFunctionArgs) {
 
       return data<OnboardingActionData>(
         { intent, success: true, user: result.data as User },
-        { headers: createHeadersWithCookies(result.cookies) },
+        {
+          headers: createHeadersWithCookies([
+            ...result.cookies,
+            clearOnboardingSiteCookie(),
+          ]),
+        },
       )
     }
 

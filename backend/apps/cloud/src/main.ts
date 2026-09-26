@@ -27,6 +27,10 @@ async function bootstrap() {
 
   app.use(cookieParser())
   app.use(
+    '/webhook/rankpine',
+    express.raw({ type: 'application/json', limit: DEFAULT_JSON_BODY_LIMIT }),
+  )
+  app.use(
     SESSION_REPLAY_CHUNK_PATHS,
     express.json({ limit: SESSION_REPLAY_CHUNK_BODY_LIMIT }),
   )
@@ -79,8 +83,6 @@ async function bootstrap() {
 
     next()
   })
-
-  app.use('/webhook', express.raw({ type: 'application/json' }))
 
   app.use('/webhook/sns', express.raw())
   app.use('/webhook/sns', express.text())

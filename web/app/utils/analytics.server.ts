@@ -17,7 +17,7 @@ export async function getExperimentVariant(
   experimentId: string,
   defaultVariant: string | null = null,
 ): Promise<string | null> {
-  if (isSelfhosted) {
+  if (isSelfhosted || !experimentId) {
     return defaultVariant
   }
 

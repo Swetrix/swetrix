@@ -31,28 +31,39 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return Response.redirect(new URL(FALLBACK_ICO, url.origin).toString(), 302)
   }
 
-  try {
-    const upstream = await fetch(
-      `https://icons.duckduckgo.com/ip3/${encodeURIComponent(domain)}.ico`,
-      { signal: AbortSignal.timeout(4000) },
-    )
+  // Google first: it flattens icons onto their own background, so a site whose
+  // favicon is a bare transparent glyph (stripe.com is white, vercel.com is
+  // black) still reads on whatever surface we drop it on. DuckDuckGo serves the
+  // raw file, which is better quality but disappears against half our
+  // backgrounds - so it's the second opinion, for domains Google misses.
+  const sources = [
+    `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=64`,
+    `https://icons.duckduckgo.com/ip3/${encodeURIComponent(domain)}.ico`,
+  ]
 
-    if (!upstream.ok || !upstream.body) {
-      return Response.redirect(
-        new URL(FALLBACK_ICO, url.origin).toString(),
-        302,
-      )
+  for (const source of sources) {
+    try {
+      const upstream = await fetch(source, {
+        signal: AbortSignal.timeout(4000),
+      })
+
+      if (!upstream.ok || !upstream.body) {
+        continue
+      }
+
+      return new Response(upstream.body, {
+        status: 200,
+        headers: {
+          'Content-Type':
+            upstream.headers.get('Content-Type') || 'image/x-icon',
+          'Cache-Control': `public, max-age=${CACHE_TTL}, stale-while-revalidate=${STALE_TTL}`,
+          Vary: VARY,
+        },
+      })
+    } catch {
+      // Timeout or network blip - try the next source.
     }
-
-    return new Response(upstream.body, {
-      status: 200,
-      headers: {
-        'Content-Type': upstream.headers.get('Content-Type') || 'image/x-icon',
-        'Cache-Control': `public, max-age=${CACHE_TTL}, stale-while-revalidate=${STALE_TTL}`,
-        Vary: VARY,
-      },
-    })
-  } catch {
-    return Response.redirect(new URL(FALLBACK_ICO, url.origin).toString(), 302)
   }
+
+  return Response.redirect(new URL(FALLBACK_ICO, url.origin).toString(), 302)
 }

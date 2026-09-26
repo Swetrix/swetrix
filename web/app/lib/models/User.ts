@@ -2,10 +2,10 @@ import { OrganisationMembership } from './Organisation'
 import { SharedProject } from './SharedProject'
 
 export enum DashboardBlockReason {
-  'exceeding_plan_limits' = 'exceeding_plan_limits',
-  'trial_ended' = 'trial_ended',
-  'payment_failed' = 'payment_failed',
-  'subscription_cancelled' = 'subscription_cancelled',
+  exceeding_plan_limits = 'exceeding_plan_limits',
+  trial_ended = 'trial_ended',
+  payment_failed = 'payment_failed',
+  subscription_cancelled = 'subscription_cancelled',
 }
 
 enum PlanCode {
@@ -85,7 +85,6 @@ export interface User {
   effectivePlanType: PlanType | null
   addonOverrides: Record<string, unknown> | null
   entitlementOverrides: Record<string, unknown> | null
-  nickname: string
   email: string
   isActive: boolean
   trialEndDate: string
@@ -99,13 +98,10 @@ export interface User {
   subCancelURL: string | null
   timezone: string
   isTwoFactorAuthenticationEnabled: boolean
-  trialReminderSent: boolean
   billingFrequency: string | null
   nextBillDate: string | null
   cancellationEffectiveDate: string | null
   apiKey: string | null
-  slackWebhookUrl: string | null
-  discordWebhookUrl: string | null
   telegramChatId: string | null
   isTelegramChatIdConfirmed: boolean
   timeFormat: '12-hour' | '24-hour'

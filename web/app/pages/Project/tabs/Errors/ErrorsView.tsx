@@ -702,7 +702,10 @@ const ErrorsViewInner = () => {
     showResolved,
     enabled: !activeEID,
   })
-  const overviewQuery = useErrorsOverviewQuery({ enabled: !activeEID })
+  const overviewQuery = useErrorsOverviewQuery({
+    showResolved,
+    enabled: !activeEID,
+  })
   const detailsQuery = useErrorDetailsQuery(activeEID)
 
   const errors = useMemo(
@@ -871,10 +874,22 @@ const ErrorsViewInner = () => {
 
   const locationSubTabs = useMemo<BreakdownSubTab[]>(
     () => [
-      { id: 'country', label: t('project.mapping.cc'), dimension: 'country' },
-      { id: 'region', label: t('project.mapping.rg'), dimension: 'region' },
-      { id: 'city', label: t('project.mapping.ct'), dimension: 'city' },
-      { id: 'locale', label: t('project.mapping.lc'), dimension: 'locale' },
+      {
+        id: 'country',
+        label: t('project.panelTabs.country'),
+        dimension: 'country',
+      },
+      {
+        id: 'region',
+        label: t('project.panelTabs.region'),
+        dimension: 'region',
+      },
+      { id: 'city', label: t('project.panelTabs.city'), dimension: 'city' },
+      {
+        id: 'locale',
+        label: t('project.panelTabs.locale'),
+        dimension: 'locale',
+      },
       {
         id: 'map',
         label: t('project.mapping.map'),
@@ -886,8 +901,8 @@ const ErrorsViewInner = () => {
 
   const pagesSubTabs = useMemo<BreakdownSubTab[]>(
     () => [
-      { id: 'page', label: t('project.mapping.pg'), dimension: 'page' },
-      { id: 'host', label: t('project.mapping.host'), dimension: 'host' },
+      { id: 'page', label: t('project.panelTabs.page'), dimension: 'page' },
+      { id: 'host', label: t('project.panelTabs.host'), dimension: 'host' },
     ],
     [t],
   )
@@ -896,39 +911,43 @@ const ErrorsViewInner = () => {
     () => [
       {
         id: 'browser',
-        label: t('project.mapping.br'),
+        label: t('project.panelTabs.browser'),
         dimension: 'browser',
         versionsDimension: 'browser_version' as const,
         versionsParentField: 'browser' as const,
       },
       {
         id: 'os',
-        label: t('project.mapping.os'),
+        label: t('project.panelTabs.os'),
         dimension: 'os',
         versionsDimension: 'os_version' as const,
         versionsParentField: 'os' as const,
       },
-      { id: 'device', label: t('project.mapping.dv'), dimension: 'device' },
+      {
+        id: 'device',
+        label: t('project.panelTabs.device'),
+        dimension: 'device',
+      },
     ],
     [t],
   )
 
   const networkSubTabs = useMemo<BreakdownSubTab[]>(
     () => [
-      { id: 'isp', label: t('project.mapping.isp'), dimension: 'isp' },
+      { id: 'isp', label: t('project.panelTabs.isp'), dimension: 'isp' },
       {
         id: 'organization',
-        label: t('project.mapping.og'),
+        label: t('project.panelTabs.organization'),
         dimension: 'organization',
       },
       {
         id: 'user_type',
-        label: t('project.mapping.ut'),
+        label: t('project.panelTabs.user_type'),
         dimension: 'user_type',
       },
       {
         id: 'connection_type',
-        label: t('project.mapping.ctp'),
+        label: t('project.panelTabs.connection_type'),
         dimension: 'connection_type',
       },
     ],
@@ -1128,6 +1147,7 @@ const ErrorsViewInner = () => {
                           value={activeError.details.count || 0}
                         />
                       ),
+                      valueClassName: 'text-xl sm:text-2xl',
                     },
                     {
                       key: 'users',
@@ -1137,6 +1157,7 @@ const ErrorsViewInner = () => {
                           value={activeError.details.users || 0}
                         />
                       ),
+                      valueClassName: 'text-xl sm:text-2xl',
                     },
                     {
                       key: 'firstSeen',
@@ -1147,7 +1168,8 @@ const ErrorsViewInner = () => {
                           language,
                         ) || '-',
                       // A relative date is a sentence, not a figure — at the
-                      // numeric card size it dwarfs the rest of the row.
+                      // default card size it dwarfs the row, so all four stats
+                      // share this smaller size.
                       valueClassName: 'text-xl sm:text-2xl',
                     },
                     {

@@ -3,9 +3,14 @@ import type { LoaderFunctionArgs, MetaFunction } from 'react-router'
 import { data, redirect } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 
-import { getAuthenticatedUser, serverFetch } from '~/api/api.server'
+import {
+  getAuthenticatedUser,
+  getGeneralStats,
+  serverFetch,
+} from '~/api/api.server'
 import { getOgImageUrl, isSelfhosted } from '~/lib/constants'
 import { DEFAULT_METAINFO, Metainfo } from '~/lib/models/Metainfo'
+import type { Stats } from '~/lib/models/Stats'
 import Subscribe from '~/pages/Subscribe'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 import {
@@ -32,6 +37,7 @@ export const meta: MetaFunction = () => {
 
 export interface SubscribeLoaderData {
   metainfo: Metainfo
+  stats: Stats | null
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -67,13 +73,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return redirect('/dashboard')
   }
 
-  const metainfoResult = await serverFetch<Metainfo>(request, 'user/metainfo', {
-    skipAuth: true,
-  })
+  const [metainfoResult, stats] = await Promise.all([
+    serverFetch<Metainfo>(request, 'user/metainfo', {
+      skipAuth: true,
+    }),
+    getGeneralStats(request),
+  ])
   const metainfo = metainfoResult.data ?? DEFAULT_METAINFO
   const allCookies = [...cookies, ...metainfoResult.cookies]
 
-  const loaderData: SubscribeLoaderData = { metainfo }
+  const loaderData: SubscribeLoaderData = { metainfo, stats }
 
   if (allCookies.length > 0) {
     return data(loaderData, {

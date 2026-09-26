@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next'
 import type { Entry } from '~/lib/models/Entry'
 import { PanelEmptyState, PanelLoadingState } from '~/pages/Project/View/Panels'
 import { RefetchIndicator } from '~/pages/Project/View/v2/loading'
+import { PanelHeader } from '~/pages/Project/View/components/PanelHeader'
 import { Text } from '~/ui/Text'
 import { nFormatter } from '~/utils/generic'
 
@@ -24,7 +25,6 @@ interface CompactReferralPanelProps {
 const CompactReferralPanel = ({
   title,
   data,
-  icon,
   rowMapper,
   isLoading,
   isRefetching,
@@ -60,14 +60,9 @@ const CompactReferralPanel = ({
 
   if (isLoading || _isEmpty(data)) {
     return (
-      <div className='relative overflow-hidden rounded-lg border border-gray-200 bg-white px-4 py-3 dark:border-slate-800/60 dark:bg-slate-900/25'>
+      <div className='relative min-w-0 overflow-hidden rounded-lg border border-gray-200 bg-white px-4 py-3 dark:border-slate-800/60 dark:bg-slate-900/25'>
         {isRefetching ? <RefetchIndicator /> : null}
-        <div className='flex items-center gap-1 text-gray-900 dark:text-gray-50'>
-          {icon}
-          <Text size='sm' weight='semibold'>
-            {title}
-          </Text>
-        </div>
+        <PanelHeader name={title} />
         {isLoading ? (
           <PanelLoadingState />
         ) : (
@@ -120,19 +115,16 @@ const CompactReferralPanel = ({
   }
 
   return (
-    <div className='relative overflow-hidden rounded-lg border border-gray-200 bg-white px-4 py-3 dark:border-slate-800/60 dark:bg-slate-900/25'>
+    <div className='relative min-w-0 overflow-hidden rounded-lg border border-gray-200 bg-white px-4 py-3 dark:border-slate-800/60 dark:bg-slate-900/25'>
       {isRefetching ? <RefetchIndicator /> : null}
-      <div className='mb-2 flex items-center justify-between'>
-        <div className='flex items-center gap-1 text-gray-900 dark:text-gray-50'>
-          {icon}
-          <Text size='sm' weight='semibold'>
-            {title}
+      <PanelHeader
+        name={title}
+        actions={
+          <Text size='sm' weight='medium' className='shrink-0 tabular-nums'>
+            {nFormatter(total, 1)}
           </Text>
-        </div>
-        <Text size='sm' weight='medium' className='tabular-nums'>
-          {nFormatter(total, 1)}
-        </Text>
-      </div>
+        }
+      />
       <div className='grid grid-cols-2 gap-x-3'>
         <div className='space-y-0.5'>
           {col1.map((row, i) => renderRow(row, i))}

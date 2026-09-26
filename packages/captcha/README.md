@@ -8,7 +8,7 @@
 
 Swetrix CAPTCHA is a privacy-oriented, simple and opensource CAPTCHA service.
 
-See the full documentation at https://docs.swetrix.com/captcha/introduction
+See the full documentation at https://swetrix.com/docs/captcha/introduction
 
 ## Features
 
@@ -84,7 +84,7 @@ To build the captcha run:
 npm run build
 ```
 
-After you build it, a new folder `dist` will appear. You can run `test.html` file via an extension like `Live server` to test it (don't forget to set up a valid project ID or one of our [dummy project IDs](https://docs.swetrix.com/captcha/testing)).
+After you build it, a new folder `dist` will appear. You can run `test.html` file via an extension like `Live server` to test it (don't forget to set up a valid project ID or one of our [dummy project IDs](https://swetrix.com/docs/captcha/testing)).
 
 ## License
 

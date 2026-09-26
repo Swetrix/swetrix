@@ -86,8 +86,9 @@ const conditionOperatorToV2Operator = (
   return 'is'
 }
 
-const getMetadataConditionDimension = (eventType: GoalCondition['eventType']) =>
-  eventType === 'custom_event' ? 'event_metadata' : 'page_property'
+const getMetadataConditionDimension = (
+  eventType: GoalCondition['eventType'],
+) => (eventType === 'custom_event' ? 'event_metadata' : 'page_property')
 
 const filterToCondition = (filter: V2Filter): GoalCondition | null => {
   const value = typeof filter.value === 'string' ? filter.value : ''
@@ -204,7 +205,7 @@ const GoalSettingsModal = ({
   isOpen,
   onClose,
   onSuccess,
-  projectId: _projectId,
+  projectId,
   goalId,
   tnMapping,
 }: GoalSettingsModalProps) => {
@@ -260,7 +261,7 @@ const GoalSettingsModal = ({
     if (!goalId) return
     setIsLoading(true)
     try {
-      const goal = await goalProxy.fetchGoal(goalId)
+      const goal = await goalProxy.fetchGoal(goalId, projectId)
       if (!goal) {
         throw new Error('Failed to load goal')
       }

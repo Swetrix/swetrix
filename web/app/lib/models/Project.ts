@@ -126,6 +126,10 @@ export interface SessionDetails {
   city: string | null
   device: string | null
   profileId: string | null
+  isp: string | null
+  organization: string | null
+  user_type: string | null
+  connection_type: string | null
 
   duration?: number
   isLive?: boolean
@@ -157,11 +161,16 @@ export interface Profile {
 
 export interface ProfileDetails extends Profile {
   avgDuration: number
+  traits?: Record<string, string>
   region: string | null
   city: string | null
   locale: string | null
   os_version: string | null
   browser_version: string | null
+  isp: string | null
+  organization: string | null
+  user_type: string | null
+  connection_type: string | null
   topPages: { page: string; count: number }[]
   activityCalendar: { date: string; pageviews: number; events: number }[]
   totalRevenue?: number

@@ -27,6 +27,10 @@ import { PROJECT_TABS } from '~/lib/constants'
 import { ProfileDetails as ProfileDetailsType } from '~/lib/models/Project'
 import { BackButton } from '~/pages/Project/View/components/BackButton'
 import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
+import {
+  getUsageTypeLabel,
+  getConnectionTypeLabel,
+} from '~/pages/Project/View/ViewProject.helpers'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import Button from '~/ui/Button'
@@ -610,6 +614,11 @@ export const ProfileDetails = ({
     [details?.lastSeen],
   )
 
+  const traits = useMemo(
+    () => Object.entries(details?.traits || {}),
+    [details?.traits],
+  )
+
   if (!details) return <Loader />
 
   const avgDurationStr = details.avgDuration
@@ -629,6 +638,33 @@ export const ProfileDetails = ({
   const locationSummary =
     [countryName, details.region, details.city].filter(Boolean).join(', ') ||
     t('project.unknown')
+  const networkRows: {
+    key: string
+    label: string
+    value: string | null
+    valueClassName?: string
+  }[] = [
+    { key: 'isp', label: t('project.mapping.isp'), value: details.isp },
+    { key: 'og', label: t('project.mapping.og'), value: details.organization },
+    {
+      key: 'ut',
+      label: t('project.mapping.ut'),
+      value: details.user_type ? getUsageTypeLabel(details.user_type, t) : null,
+      // Hosting means the visitor came from a data centre rather than a real
+      // consumer connection — a useful hint when triaging suspicious profiles.
+      valueClassName:
+        details.user_type === 'hosting'
+          ? 'text-amber-600 dark:text-amber-500'
+          : undefined,
+    },
+    {
+      key: 'ctp',
+      label: t('project.mapping.ctp'),
+      value: details.connection_type
+        ? getConnectionTypeLabel(details.connection_type, t)
+        : null,
+    },
+  ].filter(({ value }) => value)
   const osTooltipLabel = formatVersionLabel(details.os, details.os_version)
   const browserTooltipLabel = formatVersionLabel(
     details.browser,
@@ -995,6 +1031,20 @@ export const ProfileDetails = ({
             </div>
           </PanelSection>
 
+          {_isEmpty(traits) ? null : (
+            <PanelSection title={t('project.userTraits')}>
+              <div>
+                {traits.map(([key, value]) => (
+                  <InfoRow
+                    key={key}
+                    label={key}
+                    value={<span title={value}>{value}</span>}
+                  />
+                ))}
+              </div>
+            </PanelSection>
+          )}
+
           <PanelSection title={t('project.locationAndDevice')}>
             <div>
               <InfoRow
@@ -1020,6 +1070,21 @@ export const ProfileDetails = ({
               />
             </div>
           </PanelSection>
+
+          {networkRows.length > 0 ? (
+            <PanelSection title={t('project.network')}>
+              <div>
+                {networkRows.map(({ key, label, value, valueClassName }) => (
+                  <InfoRow
+                    key={key}
+                    label={label}
+                    value={value}
+                    valueClassName={valueClassName}
+                  />
+                ))}
+              </div>
+            </PanelSection>
+          ) : null}
 
           <PanelSection title={t('project.activityCalendar')}>
             <ActivityCalendar data={details.activityCalendar || []} />

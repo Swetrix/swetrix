@@ -19,7 +19,6 @@ import React, {
   Suspense,
 } from 'react'
 import { createPortal } from 'react-dom'
-import { motion } from 'motion/react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams, useLoaderData } from 'react-router'
 import { toast } from 'sonner'
@@ -50,7 +49,6 @@ import CustomMetrics from '~/pages/Project/tabs/Traffic/CustomMetrics'
 import {
   MetricCard,
   MetricCards,
-  metricCardsContainerVariants,
 } from '~/pages/Project/tabs/Traffic/MetricCards'
 import PageLinkRow from '~/pages/Project/tabs/Traffic/PageLinkRow'
 import RefRow from '~/pages/Project/tabs/Traffic/RefRow'
@@ -83,7 +81,10 @@ import {
   pivotTrafficTimeseries,
   summaryToOverall,
 } from '~/pages/Project/View/v2/adapters'
-import { RefetchIndicator } from '~/pages/Project/View/v2/loading'
+import {
+  ChartErrorState,
+  RefetchIndicator,
+} from '~/pages/Project/View/v2/loading'
 import { TrafficMap } from '~/pages/Project/View/v2/TrafficMap'
 import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import {
@@ -390,15 +391,15 @@ const TrafficViewInner = ({
 
   const isPanelsDataEmpty = isPanelsDataEmptyRaw && !hasShownContentRef.current
 
-  // Queries keep previous data across period/filter changes, so `isLoading` only
-  // ever means "nothing cached to show yet" — exactly when a spinner is wanted.
-  const isChartLoading = summaryQuery.isLoading || timeseriesQuery.isLoading
+  // Keep the chart slot occupied through initial loading and retry delays.
+  const isChartLoading = summaryQuery.isPending || timeseriesQuery.isPending
+  const isChartError = summaryQuery.isError || timeseriesQuery.isError
 
   // The counterpart: stale data is on screen while a refresh is in flight, so
   // the panel gets the same progress bar the breakdown panels use.
   const isChartRefetching =
-    (summaryQuery.isFetching && !summaryQuery.isLoading) ||
-    (timeseriesQuery.isFetching && !timeseriesQuery.isLoading)
+    (summaryQuery.isFetching && !summaryQuery.isPending) ||
+    (timeseriesQuery.isFetching && !timeseriesQuery.isPending)
 
   const isMountedRef = useRef(true)
 
@@ -757,10 +758,22 @@ const TrafficViewInner = ({
 
   const locationSubTabs = useMemo<BreakdownSubTab[]>(
     () => [
-      { id: 'country', label: t('project.mapping.cc'), dimension: 'country' },
-      { id: 'region', label: t('project.mapping.rg'), dimension: 'region' },
-      { id: 'city', label: t('project.mapping.ct'), dimension: 'city' },
-      { id: 'locale', label: t('project.mapping.lc'), dimension: 'locale' },
+      {
+        id: 'country',
+        label: t('project.panelTabs.country'),
+        dimension: 'country',
+      },
+      {
+        id: 'region',
+        label: t('project.panelTabs.region'),
+        dimension: 'region',
+      },
+      { id: 'city', label: t('project.panelTabs.city'), dimension: 'city' },
+      {
+        id: 'locale',
+        label: t('project.panelTabs.locale'),
+        dimension: 'locale',
+      },
       {
         id: 'map',
         label: t('project.mapping.map'),
@@ -772,18 +785,19 @@ const TrafficViewInner = ({
 
   const pagesSubTabs = useMemo<BreakdownSubTab[]>(
     () => [
-      { id: 'page', label: t('project.mapping.pg'), dimension: 'page' },
+      { id: 'page', label: t('project.panelTabs.page'), dimension: 'page' },
+      { id: 'title', label: t('project.mapping.title'), dimension: 'title' },
       {
         id: 'entry_page',
-        label: t('project.entryPages'),
+        label: t('project.panelTabs.entry_page'),
         dimension: 'entry_page',
       },
       {
         id: 'exit_page',
-        label: t('project.exitPages'),
+        label: t('project.panelTabs.exit_page'),
         dimension: 'exit_page',
       },
-      { id: 'host', label: t('project.mapping.host'), dimension: 'host' },
+      { id: 'host', label: t('project.panelTabs.host'), dimension: 'host' },
     ],
     [t],
   )
@@ -792,19 +806,23 @@ const TrafficViewInner = ({
     () => [
       {
         id: 'browser',
-        label: t('project.mapping.br'),
+        label: t('project.panelTabs.browser'),
         dimension: 'browser',
         versionsDimension: 'browser_version' as const,
         versionsParentField: 'browser' as const,
       },
       {
         id: 'os',
-        label: t('project.mapping.os'),
+        label: t('project.panelTabs.os'),
         dimension: 'os',
         versionsDimension: 'os_version' as const,
         versionsParentField: 'os' as const,
       },
-      { id: 'device', label: t('project.mapping.dv'), dimension: 'device' },
+      {
+        id: 'device',
+        label: t('project.panelTabs.device'),
+        dimension: 'device',
+      },
     ],
     [t],
   )
@@ -813,33 +831,33 @@ const TrafficViewInner = ({
     () => [
       {
         id: 'referrer',
-        label: t('project.mapping.ref'),
+        label: t('project.panelTabs.referrer'),
         dimension: 'referrer',
       },
       [
         {
           id: 'utm_source',
-          label: t('project.mapping.so'),
+          label: t('project.panelTabs.utm_source'),
           dimension: 'utm_source',
         },
         {
           id: 'utm_medium',
-          label: t('project.mapping.me'),
+          label: t('project.panelTabs.utm_medium'),
           dimension: 'utm_medium',
         },
         {
           id: 'utm_campaign',
-          label: t('project.mapping.ca'),
+          label: t('project.panelTabs.utm_campaign'),
           dimension: 'utm_campaign',
         },
         {
           id: 'utm_term',
-          label: t('project.mapping.te'),
+          label: t('project.panelTabs.utm_term'),
           dimension: 'utm_term',
         },
         {
           id: 'utm_content',
-          label: t('project.mapping.co'),
+          label: t('project.panelTabs.utm_content'),
           dimension: 'utm_content',
         },
       ],
@@ -847,26 +865,24 @@ const TrafficViewInner = ({
     [t],
   )
 
-  const networkSubTabs = useMemo<(BreakdownSubTab | BreakdownSubTab[])[]>(
+  const networkSubTabs = useMemo<BreakdownSubTab[]>(
     () => [
-      [
-        { id: 'isp', label: t('project.mapping.isp'), dimension: 'isp' },
-        {
-          id: 'organization',
-          label: t('project.mapping.og'),
-          dimension: 'organization',
-        },
-        {
-          id: 'user_type',
-          label: t('project.mapping.ut'),
-          dimension: 'user_type',
-        },
-        {
-          id: 'connection_type',
-          label: t('project.mapping.ctp'),
-          dimension: 'connection_type',
-        },
-      ],
+      { id: 'isp', label: t('project.panelTabs.isp'), dimension: 'isp' },
+      {
+        id: 'organization',
+        label: t('project.panelTabs.organization'),
+        dimension: 'organization',
+      },
+      {
+        id: 'user_type',
+        label: t('project.panelTabs.user_type'),
+        dimension: 'user_type',
+      },
+      {
+        id: 'connection_type',
+        label: t('project.panelTabs.connection_type'),
+        dimension: 'connection_type',
+      },
     ],
     [t],
   )
@@ -915,6 +931,10 @@ const TrafficViewInner = ({
               : t('common.notSet')}
           </span>
         )
+      }
+
+      if (subTabId === 'title') {
+        return entryName
       }
 
       let decodedUri = entryName
@@ -1036,6 +1056,7 @@ const TrafficViewInner = ({
             'city',
             'locale',
             'page',
+            'title',
             'entry_page',
             'exit_page',
             'host',
@@ -1234,15 +1255,8 @@ const TrafficViewInner = ({
               <HasImportedIndicator />
             </Suspense>
           </div>
-          {/* Always rendered: the cards read zero until the summary lands and
-              then roll up to it, so the row holds its height instead of
-              appearing late and shoving the chart and panels down. */}
-          <motion.div
-            initial='hidden'
-            animate='visible'
-            variants={metricCardsContainerVariants}
-            className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'
-          >
+          {/* Always rendered so the row holds its height while data loads. */}
+          <div className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'>
             <MetricCards
               overall={overallForCards}
               overallCompare={overallCompare}
@@ -1275,8 +1289,15 @@ const TrafficViewInner = ({
                   ),
                 )
               : null}
-          </motion.div>
-          {isChartLoading ? (
+          </div>
+          {isChartError ? (
+            <ChartErrorState
+              onRetry={() => {
+                summaryQuery.refetch()
+                timeseriesQuery.refetch()
+              }}
+            />
+          ) : isChartLoading ? (
             // Same box as TrafficChart below (incl. its mobile mt-5) so the
             // chart drops straight into the spinner's place.
             <div className='mt-5 flex h-80 items-center justify-center md:mt-0'>
@@ -1464,6 +1485,6 @@ const TrafficViewInner = ({
   )
 }
 
-const TrafficView = TrafficViewWrapper
+const TrafficView = React.memo(TrafficViewWrapper)
 
 export default TrafficView

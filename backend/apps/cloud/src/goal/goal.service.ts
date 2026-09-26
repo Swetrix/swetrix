@@ -64,7 +64,15 @@ export class GoalService {
   findOneWithRelations(id: string): Promise<Goal | null> {
     return this.goalsRepository.findOne({
       where: { id },
-      relations: ['project', 'project.admin'],
+      relations: [
+        'project',
+        'project.admin',
+        'project.share',
+        'project.share.user',
+        'project.organisation',
+        'project.organisation.members',
+        'project.organisation.members.user',
+      ],
     })
   }
 

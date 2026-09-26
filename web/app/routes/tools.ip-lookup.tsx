@@ -5,8 +5,10 @@ import {
   CopyIcon,
   MagnifyingGlassIcon,
 } from '@phosphor-icons/react'
+import leafletStyles from 'leaflet/dist/leaflet.css?url'
+import mapLibreStyles from 'maplibre-gl/dist/maplibre-gl.css?url'
 import { useState, useEffect, useMemo, useRef } from 'react'
-import type { MetaFunction } from 'react-router'
+import type { LinksFunction, MetaFunction } from 'react-router'
 import { redirect, useFetcher, useLoaderData } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 import { ClientOnly } from 'remix-utils/client-only'
@@ -25,10 +27,15 @@ import Spin from '~/ui/icons/Spin'
 import { cn } from '~/utils/generic'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 
+export const links: LinksFunction = () => [
+  { rel: 'stylesheet', href: leafletStyles },
+  { rel: 'stylesheet', href: mapLibreStyles },
+]
+
 export const meta: MetaFunction = () => {
-  const title = 'Free IP Address Lookup tool - What is my IP address?'
+  const title = 'Free IP Address Lookup tool'
   const description =
-    'Find your public IP address instantly and look up any IPv4 or IPv6 for detailed geolocation and network data: country, region, city, coordinates, timezone, ISP, organization, connection type, and EU status, plus an interactive map. Free, no registration or limits.'
+    'Find your public IP address or look up an IPv4 or IPv6 address for location, timezone, ISP, and network details on an interactive map.'
   return [
     ...getTitle(title),
     ...getDescription(description),
@@ -64,6 +71,13 @@ export async function loader({ request }: { request: Request }) {
 }
 
 export async function action({ request }: { request: Request }) {
+  // Same reason as the loader gate above, which this action does not inherit:
+  // on a document POST the action runs before the loader redirect, and the
+  // single-fetch endpoint returns the action payload directly.
+  if (isSelfhosted) {
+    throw redirect('/login', 302)
+  }
+
   const formData = await request.formData()
   const ip = formData.get('ip') as string | null
 
@@ -124,6 +138,34 @@ function FlyToLocation({
   return null
 }
 
+function OpenFreeMapLayer({
+  style,
+  useMap,
+  maplibreGL,
+}: {
+  style: string
+  useMap: typeof import('react-leaflet').useMap
+  maplibreGL: typeof import('@maplibre/maplibre-gl-leaflet').maplibreGL
+}) {
+  const map = useMap()
+
+  useEffect(() => {
+    const layer = maplibreGL({
+      style,
+      attributionControl: {
+        customAttribution:
+          '<a href="https://openfreemap.org/">OpenFreeMap</a> &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> Data from <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      },
+    }).addTo(map)
+
+    return () => {
+      map.removeLayer(layer)
+    }
+  }, [map, maplibreGL, style])
+
+  return null
+}
+
 function LocationMap({ latitude, longitude }: LocationMapProps) {
   const { theme } = useTheme()
   const isDark = theme === 'dark'
@@ -131,14 +173,23 @@ function LocationMap({ latitude, longitude }: LocationMapProps) {
   const [modules, setModules] = useState<{
     rl: typeof import('react-leaflet') | null
     L: typeof import('leaflet') | null
-  }>({ rl: null, L: null })
+    gl: typeof import('@maplibre/maplibre-gl-leaflet') | null
+  }>({ rl: null, L: null, gl: null })
 
   useEffect(() => {
-    Promise.all([import('react-leaflet'), import('leaflet')]).then(
-      ([rl, L]) => {
-        setModules({ rl, L })
-      },
-    )
+    let cancelled = false
+
+    Promise.all([
+      import('react-leaflet'),
+      import('leaflet'),
+      import('@maplibre/maplibre-gl-leaflet'),
+    ]).then(([rl, L, gl]) => {
+      if (!cancelled) setModules({ rl, L, gl })
+    })
+
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   const icon = useMemo(() => {
@@ -157,7 +208,7 @@ function LocationMap({ latitude, longitude }: LocationMapProps) {
     })
   }, [modules.L, isDark])
 
-  if (!modules.rl || !icon) {
+  if (!modules.rl || !modules.gl || !icon) {
     return (
       <div className='flex h-[420px] items-center justify-center bg-gray-50 sm:h-[480px] dark:bg-slate-900'>
         <Spin />
@@ -165,23 +216,18 @@ function LocationMap({ latitude, longitude }: LocationMapProps) {
     )
   }
 
-  const { MapContainer, TileLayer, Marker, useMap } = modules.rl
+  const { MapContainer, AttributionControl, Marker, useMap } = modules.rl
 
-  const tileUrl = isDark
-    ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-    : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png'
+  const mapStyle = isDark
+    ? 'https://tiles.openfreemap.org/styles/dark'
+    : 'https://tiles.openfreemap.org/styles/positron'
 
   const gmapsUrl = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`
 
   return (
     <div className='relative isolate'>
-      <link
-        rel='stylesheet'
-        href='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css'
-      />
       <style>{MAP_MARKER_STYLE}</style>
       <MapContainer
-        key={isDark ? 'dark' : 'light'}
         center={[latitude, longitude]}
         zoom={11}
         scrollWheelZoom
@@ -193,9 +239,11 @@ function LocationMap({ latitude, longitude }: LocationMapProps) {
           background: isDark ? 'rgb(15 23 42)' : 'rgb(249 250 251)',
         }}
       >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
-          url={tileUrl}
+        <AttributionControl position='bottomleft' prefix={false} />
+        <OpenFreeMapLayer
+          style={mapStyle}
+          useMap={useMap}
+          maplibreGL={modules.gl.maplibreGL}
         />
         <Marker position={[latitude, longitude]} icon={icon} />
         <FlyToLocation
@@ -209,7 +257,7 @@ function LocationMap({ latitude, longitude }: LocationMapProps) {
         href={gmapsUrl}
         target='_blank'
         rel='noopener noreferrer'
-        className='absolute right-3 bottom-3 z-[1000] inline-flex items-center gap-1.5 rounded-md bg-white px-2.5 py-1.5 text-xs font-medium text-gray-700 shadow-sm ring-1 ring-gray-200 transition hover:text-gray-900 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-700 dark:hover:text-white'
+        className='absolute right-3 bottom-8 z-[1000] inline-flex items-center gap-1.5 rounded-md bg-white px-2.5 py-1.5 text-xs font-medium text-gray-700 shadow-sm ring-1 ring-gray-200 transition hover:text-gray-900 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-700 dark:hover:text-white'
       >
         Open in Google Maps
         <ArrowSquareOutIcon className='size-3' weight='bold' />

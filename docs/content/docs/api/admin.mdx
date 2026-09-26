@@ -1,6 +1,7 @@
 ---
 title: Admin API reference
 slug: /admin-api
+description: "Use the Swetrix Admin API to manage projects and automate analytics administration with authenticated requests and documented parameters."
 ---
 
 Swetrix provides the ability to control your projects (and soon your account) via an API as well.
@@ -126,7 +127,7 @@ Each entry in `customEvents` describes a custom-event metric to render on the da
 
 | Name              | Type                             | Required | Description                                                         |
 | ----------------- | -------------------------------- | -------- | ------------------------------------------------------------------- |
-| `customEventName` | `string`                         | `true`   | Name of the [custom event](/api/events) to aggregate (1–100 chars). |
+| `customEventName` | `string`                         | `true`   | Name of the [custom event](/events-api) to aggregate (1–100 chars). |
 | `metricKey`       | `string`                         | `true`   | Display key for the metric on the dashboard (1–100 chars).          |
 | `metaKey`         | `string`                         | `false`  | Optional event metadata key to group on (max 100 chars).            |
 | `metaValue`       | `string`                         | `false`  | Optional event metadata value to filter on (max 100 chars).         |

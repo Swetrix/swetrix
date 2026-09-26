@@ -21,6 +21,8 @@ interface SelectProps<T> {
   labelClassName?: string
   buttonClassName?: string
   hintClassName?: string
+  /** Overrides the options panel sizing/positioning classes (defaults to `w-full`) */
+  menuClassName?: string
   capitalise?: boolean
   items: readonly T[]
   id?: string
@@ -55,6 +57,7 @@ function Select<T>({
   fieldLabelClassName,
   selectedItem,
   hintClassName,
+  menuClassName,
   wrap,
   disabled,
 }: SelectProps<T>) {
@@ -157,7 +160,10 @@ function Select<T>({
             <ListboxOptions
               modal={false}
               transition
-              className='absolute z-30 mt-1.5 max-h-72 w-full origin-top-left overflow-auto rounded-lg bg-white py-1 text-sm shadow-lg ring-1 ring-gray-200/80 transition-[opacity,transform] duration-150 ease-out-quint focus:outline-hidden data-closed:scale-95 data-closed:opacity-0 data-leave:duration-100 dark:bg-slate-950 dark:ring-slate-700/60'
+              className={cx(
+                'absolute z-30 mt-1.5 max-h-72 origin-top-left overflow-auto rounded-lg bg-white py-1 text-sm shadow-lg ring-1 ring-gray-200/80 transition-[opacity,transform] duration-150 ease-out-quint focus:outline-hidden data-closed:scale-95 data-closed:opacity-0 data-leave:duration-100 dark:bg-slate-950 dark:ring-slate-700/60',
+                menuClassName || 'w-full',
+              )}
             >
               {_map(items, (item, index) => {
                 const selected = isItemSelected(item)

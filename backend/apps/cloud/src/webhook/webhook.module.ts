@@ -7,6 +7,9 @@ import { AppLoggerModule } from '../logger/logger.module'
 import { MailerModule } from '../mailer/mailer.module'
 import { WebhookService } from './webhook.service'
 import { RevenueModule } from '../revenue/revenue.module'
+import { BlogModule } from '../blog/blog.module'
+import { IndexNowService } from './indexnow.service'
+import { RankPineBlogService } from './rankpine-blog.service'
 
 @Module({
   imports: [
@@ -15,8 +18,9 @@ import { RevenueModule } from '../revenue/revenue.module'
     AppLoggerModule,
     MailerModule,
     RevenueModule,
+    BlogModule,
   ],
-  providers: [WebhookService],
+  providers: [WebhookService, IndexNowService, RankPineBlogService],
   exports: [WebhookService],
   controllers: [WebhookController],
 })

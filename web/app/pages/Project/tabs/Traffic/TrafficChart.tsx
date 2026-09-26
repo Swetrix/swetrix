@@ -6,7 +6,10 @@ import { Annotation } from '~/lib/models/Project'
 import type { ChartDataPointClick } from '~/pages/Project/View/utils/chartPoint'
 
 import { MainChart } from '../../View/components/MainChart'
-import { getSettings } from '../../View/ViewProject.helpers'
+import {
+  getAnnotationGridLines,
+  getSettings,
+} from '../../View/ViewProject.helpers'
 
 interface TrafficChartProps {
   chartData: any
@@ -54,6 +57,11 @@ export const TrafficChart = ({
     [onDataPointClick, t],
   )
 
+  const annotationLines = useMemo(
+    () => getAnnotationGridLines(annotations),
+    [annotations],
+  )
+
   const options: ChartOptions = useMemo(() => {
     return getSettings(
       chartData,
@@ -67,7 +75,7 @@ export const TrafficChart = ({
       dataChartCompare,
       onZoom,
       enableZoom,
-      annotations,
+      undefined,
       period,
       timezone,
       onDataPointClick,
@@ -85,7 +93,6 @@ export const TrafficChart = ({
     dataChartCompare,
     onZoom,
     enableZoom,
-    annotations,
     period,
     timezone,
     onDataPointClick,
@@ -105,7 +112,6 @@ export const TrafficChart = ({
       dataChartCompare,
       onZoom,
       enableZoom,
-      annotations,
       period,
       timezone,
       onDataPointClick,
@@ -123,7 +129,6 @@ export const TrafficChart = ({
       dataChartCompare,
       onZoom,
       enableZoom,
-      annotations,
       period,
       timezone,
       onDataPointClick,
@@ -138,6 +143,7 @@ export const TrafficChart = ({
       dataNames={dataNames}
       className={className}
       deps={deps}
+      xGridLines={annotationLines}
     />
   )
 }

@@ -201,6 +201,10 @@ const getArticlesMetaData = async () => {
 export class BlogService {
   constructor(private readonly logger: AppLoggerService) {}
 
+  async clearSitemapCache(): Promise<void> {
+    await redis.del(REDIS_SITEMAP_KEY)
+  }
+
   async getArticleBySlug(slug: string, category?: string) {
     if (!slug) {
       return null

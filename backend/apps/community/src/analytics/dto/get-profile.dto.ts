@@ -13,6 +13,7 @@ import {
 import { DEFAULT_TIMEZONE } from '../../user/entities/user.entity'
 import { PID_REGEX } from '../../common/constants'
 import { GetDataDto } from './getData.dto'
+import { MAX_STORED_PROFILE_ID_LENGTH } from './identify.dto'
 
 export class GetProfileDto {
   @ApiProperty({
@@ -27,11 +28,11 @@ export class GetProfileDto {
   @ApiProperty({
     required: true,
     description: 'The profile ID',
-    maxLength: 256,
+    maxLength: MAX_STORED_PROFILE_ID_LENGTH,
   })
   @IsNotEmpty()
   @IsString()
-  @MaxLength(256)
+  @MaxLength(MAX_STORED_PROFILE_ID_LENGTH)
   profileId: string
 
   @ApiProperty({
@@ -53,11 +54,11 @@ export class GetProfileSessionsDto extends PickType(GetDataDto, [
   @ApiProperty({
     required: true,
     description: 'The profile ID',
-    maxLength: 256,
+    maxLength: MAX_STORED_PROFILE_ID_LENGTH,
   })
   @IsNotEmpty()
   @IsString()
-  @MaxLength(256)
+  @MaxLength(MAX_STORED_PROFILE_ID_LENGTH)
   profileId: string
 
   @ApiProperty({ required: false, default: 30 })

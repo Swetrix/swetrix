@@ -46,10 +46,10 @@ export enum PlanFeatureCode {
 }
 
 export enum DashboardBlockReason {
-  'exceeding_plan_limits' = 'exceeding_plan_limits',
-  'trial_ended' = 'trial_ended',
-  'payment_failed' = 'payment_failed',
-  'subscription_cancelled' = 'subscription_cancelled',
+  exceeding_plan_limits = 'exceeding_plan_limits',
+  trial_ended = 'trial_ended',
+  payment_failed = 'payment_failed',
+  subscription_cancelled = 'subscription_cancelled',
 }
 
 interface PlanSignature {
@@ -642,9 +642,6 @@ export class User {
   @Column({ type: 'json', nullable: true })
   entitlementOverrides: Record<string, unknown> | null
 
-  @Column('varchar', { length: 100, nullable: true, default: null })
-  nickname: string | null
-
   @Column('varchar', { length: 254, unique: true })
   email: string
 
@@ -712,9 +709,6 @@ export class User {
   @Column({ default: false })
   isTwoFactorAuthenticationEnabled: boolean
 
-  @Column({ default: false })
-  trialReminderSent: boolean
-
   @Column({ type: 'json', nullable: true })
   trialLifecycleEmailsSent: Record<string, string> | null
 
@@ -778,12 +772,6 @@ export class User {
     default: null,
   })
   apiKey: string | null
-
-  @Column('varchar', { default: null })
-  slackWebhookUrl: string | null
-
-  @Column('varchar', { default: null })
-  discordWebhookUrl: string | null
 
   @Column({
     type: 'varchar',

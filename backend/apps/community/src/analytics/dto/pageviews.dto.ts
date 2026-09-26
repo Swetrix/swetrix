@@ -52,7 +52,21 @@ export class PageviewsDto {
     example: '/articles/my-awesome-article-1',
     description: 'A page that user sent data from',
   })
+  @IsOptional()
+  @IsString()
   pg?: string
+
+  @ApiProperty({
+    example: 'Pricing | Swetrix',
+    required: false,
+    nullable: true,
+    description: 'Page title at the time of the pageview',
+    maxLength: 2048,
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(2048)
+  title?: string | null
 
   @ApiProperty({
     example: 'en-GB',

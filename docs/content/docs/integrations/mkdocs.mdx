@@ -1,11 +1,12 @@
 ---
 title: MkDocs / Material for MkDocs
 slug: /mkdocs-integration
+description: "Integrate Swetrix with MkDocs / Material for MkDocs using this installation guide. Add privacy-friendly website analytics and verify that tracking works."
 ---
 
 Integrate Swetrix with your [MkDocs](https://www.mkdocs.org/) site to track page views, monitor errors, and capture custom events — all while staying privacy-friendly and GDPR-compliant.
 
-MkDocs is a Python-powered static site generator geared towards building project documentation. [Material for MkDocs](https://squidfundez.github.io/mkdocs-material/) is the most popular MkDocs theme. Since MkDocs produces plain HTML pages, Swetrix tracks each page view automatically on every navigation.
+MkDocs is a Python-powered static site generator geared towards building project documentation. [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/) is the most popular MkDocs theme. Since MkDocs produces plain HTML pages, Swetrix tracks each page view automatically on every navigation.
 
 ## Installation
 
@@ -13,7 +14,7 @@ The recommended approach is to override the base template and inject the Swetrix
 
 ### Material for MkDocs
 
-If you're using the Material theme (most common), use the [theme extension](https://squidfundez.github.io/mkdocs-material/customization/#extending-the-theme) mechanism.
+If you're using the Material theme (most common), use the [theme extension](https://squidfunk.github.io/mkdocs-material/customization/#extending-the-theme) mechanism.
 
 #### 1. Enable the overrides directory
 
@@ -206,4 +207,4 @@ After adding the tracking script, build your site with `mkdocs build` and deploy
 
 - [Tracking script reference](/swetrix-js-reference) — full API documentation for `init()`, `track()`, `trackViews()`, `trackErrors()`, and more.
 - [MkDocs documentation](https://www.mkdocs.org/) — official MkDocs user guide.
-- [Material for MkDocs](https://squidfundez.github.io/mkdocs-material/) — documentation for the Material theme.
+- [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/) — documentation for the Material theme.

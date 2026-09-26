@@ -11,7 +11,6 @@ import {
   ChartPieIcon,
   GlobeIcon,
   TreeStructureIcon,
-  LockKeyIcon,
   PulseIcon,
   ArticleIcon,
   EnvelopeIcon,
@@ -399,13 +398,6 @@ const productionNavigation = {
   ] as NavItem[],
   comparisons,
   company: [
-    {
-      key: 'open',
-      href: routesPath.open,
-      internal: true,
-      icon: LockKeyIcon,
-      iconColor: 'text-teal-400',
-    },
     {
       key: 'blog',
       href: routesPath.blog,

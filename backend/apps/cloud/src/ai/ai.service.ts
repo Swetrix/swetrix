@@ -29,7 +29,7 @@ import { PlanFeatureCode } from '../user/entities/user.entity'
 
 const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1'
 
-const PRIMARY_MODEL = 'openai/gpt-5.6-luna'
+const PRIMARY_MODEL = 'openai/gpt-6-luna'
 const TITLE_MODEL = 'google/gemini-3.1-flash-lite-preview'
 
 const ALLOWED_FILTER_COLUMNS = new Set([
@@ -357,6 +357,7 @@ export class AiService {
   ): Promise<
     StreamTextResult<
       typeof this.buildTools extends (...args: any[]) => infer R ? R : never,
+      any,
       never
     >
   > {

@@ -23,7 +23,9 @@ export type BotEndpoint =
   | 'error'
   | 'feature_flag'
   | 'heartbeat'
+  | 'identify'
   | 'noscript'
+  | 'session_replay'
 
 interface BotDetectionInput {
   pid: string

@@ -36,6 +36,7 @@ import {
   RevenueStatus,
   RevenueType,
 } from '../revenue/interfaces/revenue.interface'
+import { RankPineBlogService } from './rankpine-blog.service'
 
 const BILLING_URL = 'https://swetrix.com/user-settings?tab=billing'
 const BILLING_DUNNING_GRACE_DAYS = 7
@@ -52,6 +53,7 @@ export class WebhookController {
     private readonly mailerService: MailerService,
     private readonly revenueService: RevenueService,
     private readonly currencyService: CurrencyService,
+    private readonly rankPineBlogService: RankPineBlogService,
   ) {}
 
   private getPaddleField(
@@ -571,6 +573,16 @@ export class WebhookController {
     }
   }
 
+  @Post('/rankpine')
+  @HttpCode(200)
+  async rankPineWebhook(
+    @Body() body: Buffer,
+    @Headers('x-rankpine-signature') signature?: string,
+    @Headers('x-rankpine-event') event?: string,
+  ) {
+    return this.rankPineBlogService.handle(body, signature, event)
+  }
+
   // AWS SNS webhook
   @Post('/sns')
   @HttpCode(200)
@@ -726,6 +738,18 @@ export class WebhookController {
         }
 
         await this.userService.update(currentUser.id, updateParams)
+        await this.userService.recordUserSubscription({
+          userId: currentUser.id,
+          subID,
+          paddleUserId: this.getPaddleField(body, ['user_id']),
+          planId: subscriptionPlanId,
+          // only `subscription_created` carries the real start of the
+          // subscription; an update's event_time would be misleading
+          startedAt:
+            body.alert_name === 'subscription_created'
+              ? this.getPaddleCreatedAt(body)
+              : null,
+        })
         await this.userService.refreshWebsiteAddonEntitlements(currentUser.id)
         await this.userService.refreshSessionReplayAddonEntitlements(
           currentUser.id,
@@ -755,6 +779,10 @@ export class WebhookController {
           nextBillDate: null,
           cancellationEffectiveDate,
         })
+        await this.userService.markUserSubscriptionEnded(
+          subID,
+          this.getPaddleDate(body, ['cancellation_effective_date']),
+        )
         await this.userService.resolveSubscriptionDunningsBySubID(
           subID,
           SubscriptionDunningStatus.cancelled,
@@ -840,6 +868,15 @@ export class WebhookController {
           )
           return
         }
+
+        // safety net: a paid subscription whose `subscription_created` never
+        // landed would otherwise leave its receipts unreachable forever
+        await this.userService.recordUserSubscription({
+          userId: subscriber.id,
+          subID,
+          paddleUserId: this.getPaddleField(body, ['user_id']),
+          planId: this.getPaddleField(body, ['subscription_plan_id']),
+        })
 
         const dunning = await this.userService.getOpenSubscriptionDunning(
           subscriber.id,

@@ -66,6 +66,7 @@ import {
   REDIS_TRIALS_COUNT_KEY,
   REDIS_PROJECTS_COUNT_KEY,
   REDIS_EVENTS_COUNT_KEY,
+  ONLINE_VISITORS_WINDOW_MINUTES,
 } from '../common/constants'
 import { clickhouse } from '../common/integrations/clickhouse'
 import { checkRateLimit, getIPDetails, getIPFromHeaders } from '../common/utils'
@@ -111,6 +112,7 @@ import { GetKeywordsDto } from './dto/get-keywords.dto'
 import { GetBotStatsDto } from './dto/get-bot-stats.dto'
 import { GSC_ALL_TIME_DAYS, GSCService } from '../project/gsc.service'
 import { GetProfileIdDto, GetSessionIdDto } from './dto/get-id.dto'
+import { IdentifyDto } from './dto/identify.dto'
 import { ExperimentService } from '../experiment/experiment.service'
 import {
   ExperimentStatus,
@@ -126,8 +128,6 @@ const DEFAULT_MEASURE = 'median'
 // Silent 200 response for bots
 // https://github.com/Swetrix/swetrix/issues/371
 const BOT_RESPONSE = { message: 'Bot traffic detected, request is ignored' }
-
-const ONLINE_VISITORS_WINDOW_MINUTES = 5 // minutes
 
 // Performance object validator: none of the values cannot be bigger than 1000 * 60 * 5 (5 minutes) and are >= 0
 const MAX_PERFORMANCE_VALUE = 1000 * 60 * 5
@@ -1610,11 +1610,12 @@ export class AnalyticsController {
 
     const project = await this.analyticsService.validate(errorDTO, origin, ip)
 
-    const [, psid] = await this.analyticsService.generateAndStoreSessionId(
-      errorDTO.pid,
-      userAgent,
-      ip,
-    )
+    const [isNewSession, psid, sid] =
+      await this.analyticsService.generateAndStoreSessionId(
+        errorDTO.pid,
+        userAgent,
+        ip,
+      )
 
     const profileId = await this.analyticsService.generateProfileId(
       errorDTO.pid,
@@ -1624,9 +1625,11 @@ export class AnalyticsController {
     )
 
     await this.analyticsService.recordSessionActivity(
+      sid,
       psid,
       errorDTO.pid,
       profileId,
+      isNewSession,
     )
 
     const {
@@ -1656,6 +1659,7 @@ export class AnalyticsController {
     const transformed = eventTransformer({
       type: 'error',
       psid,
+      sid,
       profileId,
       eid: this.analyticsService.getErrorID(errorDTO),
       pid: errorDTO.pid,
@@ -1787,11 +1791,12 @@ export class AnalyticsController {
     const { deviceType, browserName, browserVersion, osName, osVersion } =
       await this.analyticsService.getRequestInformation(headers)
 
-    const [, psid] = await this.analyticsService.generateAndStoreSessionId(
-      eventsDTO.pid,
-      userAgent,
-      ip,
-    )
+    const [isNewSession, psid, sid] =
+      await this.analyticsService.generateAndStoreSessionId(
+        eventsDTO.pid,
+        userAgent,
+        ip,
+      )
 
     const profileId = await this.analyticsService.generateProfileId(
       eventsDTO.pid,
@@ -1801,9 +1806,11 @@ export class AnalyticsController {
     )
 
     await this.analyticsService.recordSessionActivity(
+      sid,
       psid,
       eventsDTO.pid,
       profileId,
+      isNewSession,
     )
 
     enrichTrafficSource(eventsDTO)
@@ -1811,6 +1818,7 @@ export class AnalyticsController {
     const transformed = eventTransformer({
       type: 'custom_event',
       psid,
+      sid,
       profileId,
       pid: eventsDTO.pid,
       host: this.analyticsService.getHostFromOrigin(headers.origin),
@@ -1967,13 +1975,13 @@ export class AnalyticsController {
 
     await this.analyticsService.validateHeartbeat(logDTO, origin, ip)
 
-    const { exists, psid } = await this.analyticsService.getSessionId(
+    const { exists, psid, sid } = await this.analyticsService.getSessionId(
       pid,
       userAgent,
       ip,
     )
 
-    if (!exists) {
+    if (!exists || !sid) {
       throw new ForbiddenException(
         'The heartbeat was not saved because there is no session for this request. Please, send a pageview or custom event request first to initialise the session.',
       )
@@ -1987,7 +1995,7 @@ export class AnalyticsController {
     )
 
     await this.analyticsService.extendSessionTTL(psid)
-    await this.analyticsService.recordSessionActivity(psid, pid, profileId)
+    await this.analyticsService.recordSessionActivity(sid, psid, pid, profileId)
 
     this.logger.log(`pid: ${pid}, psid: ${psid}`, 'POST /analytics/hb')
 
@@ -2018,7 +2026,7 @@ export class AnalyticsController {
 
     const project = await this.analyticsService.validate(logDTO, origin, ip)
 
-    const [unique, psid] =
+    const [unique, psid, sid] =
       await this.analyticsService.generateAndStoreSessionId(
         logDTO.pid,
         userAgent,
@@ -2033,9 +2041,11 @@ export class AnalyticsController {
     )
 
     await this.analyticsService.recordSessionActivity(
+      sid,
       psid,
       logDTO.pid,
       profileId,
+      unique,
     )
 
     if (!unique && logDTO.unique) {
@@ -2067,10 +2077,12 @@ export class AnalyticsController {
     const transformed = eventTransformer({
       type: 'pageview',
       psid,
+      sid,
       profileId,
       pid: logDTO.pid,
       host: this.analyticsService.getHostFromOrigin(headers.origin),
       pg: logDTO.pg,
+      title: logDTO.title,
       dv: deviceType,
       br: browserName,
       brv: browserVersion,
@@ -2111,6 +2123,7 @@ export class AnalyticsController {
       perfTransformed = eventTransformer({
         type: 'performance',
         psid,
+        sid,
         profileId,
         pid: logDTO.pid,
         host: this.analyticsService.getHostFromOrigin(headers.origin),
@@ -2201,11 +2214,12 @@ export class AnalyticsController {
 
     const project = await this.analyticsService.validate(logDTO, origin, ip)
 
-    const [, psid] = await this.analyticsService.generateAndStoreSessionId(
-      logDTO.pid,
-      userAgent,
-      ip,
-    )
+    const [isNewSession, psid, sid] =
+      await this.analyticsService.generateAndStoreSessionId(
+        logDTO.pid,
+        userAgent,
+        ip,
+      )
 
     const profileId = await this.analyticsService.generateProfileId(
       logDTO.pid,
@@ -2214,9 +2228,11 @@ export class AnalyticsController {
     )
 
     await this.analyticsService.recordSessionActivity(
+      sid,
       psid,
       logDTO.pid,
       profileId,
+      isNewSession,
     )
 
     const {
@@ -2240,6 +2256,7 @@ export class AnalyticsController {
     const transformed = eventTransformer({
       type: 'pageview',
       psid,
+      sid,
       profileId,
       pid: logDTO.pid,
       host: this.analyticsService.getHostFromOrigin(headers.origin),
@@ -3295,6 +3312,105 @@ export class AnalyticsController {
     )
 
     return { ...result, appliedFilters, timeBucket: timeBucketForAllTime }
+  }
+
+  /**
+   * Links the visitor's current anonymous profile to an identified profile
+   * derived from the user ID supplied by the site (e.g. after log in). Events
+   * previously recorded for the anonymous profile get attributed to the
+   * identified profile at query time; the tracker stamps all subsequent
+   * events with the supplied profileId directly.
+   *
+   * Optional traits (email, plan, ...) are stored against the identified
+   * profile and shown on its dashboard page.
+   */
+  @Post('identify')
+  @Public()
+  async identify(
+    @Body() dto: IdentifyDto,
+    @Headers() headers,
+    @Ip() reqIP,
+  ): Promise<{ profileId: string } | typeof BOT_RESPONSE> {
+    const { 'user-agent': userAgent, origin } = headers
+    const ip = getIPFromHeaders(headers) || reqIP || ''
+
+    await checkRateLimit(ip, 'identify', 120, 60)
+    await checkRateLimit(dto.pid, 'identify', 2000, 60)
+
+    const botResult = await this.analyticsService.checkBot(
+      dto.pid,
+      userAgent,
+      headers,
+      ip,
+      headers.referer || headers.referrer,
+      null,
+      'identify',
+    )
+
+    if (botResult.isBot) {
+      return BOT_RESPONSE
+    }
+
+    const profileId = this.analyticsService.validateUserSuppliedProfileId(
+      dto.profileId,
+    )
+
+    await this.analyticsService.validate(dto, origin, ip)
+
+    const userProfileId = await this.analyticsService.generateProfileId(
+      dto.pid,
+      userAgent,
+      ip,
+      profileId,
+    )
+
+    if (!_isEmpty(dto.traits)) {
+      await this.analyticsService.saveProfileTraits(
+        dto.pid,
+        userProfileId,
+        dto.traits,
+      )
+    }
+
+    const anonProfileId = await this.analyticsService.generateProfileId(
+      dto.pid,
+      userAgent,
+      ip,
+    )
+
+    const linked = await this.analyticsService.linkProfiles(
+      dto.pid,
+      anonProfileId,
+      userProfileId,
+    )
+
+    // Flip the visitor's current session (if any) to the identified profile.
+    // Skipped when the anonymous profile is already linked to a different
+    // identified profile (e.g. a second account on a shared device) - the
+    // session stays with the current identity until new events re-stamp it.
+    if (linked) {
+      const { exists, psid, sid } = await this.analyticsService.getSessionId(
+        dto.pid,
+        userAgent,
+        ip,
+      )
+
+      if (exists && sid) {
+        await this.analyticsService.recordSessionActivity(
+          sid,
+          psid,
+          dto.pid,
+          userProfileId,
+        )
+      }
+    }
+
+    this.logger.log(
+      `pid: ${dto.pid}, profileId: ${userProfileId}`,
+      'POST /analytics/identify',
+    )
+
+    return { profileId: userProfileId }
   }
 
   // Revenue attribution endpoints

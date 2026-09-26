@@ -1,5 +1,17 @@
-import billboard, { type Chart, type ChartOptions } from 'billboard.js'
+import billboard, {
+  grid,
+  regions,
+  type Chart,
+  type ChartOptions,
+  type GridLineOptions,
+} from 'billboard.js'
+import cx from 'clsx'
 import React, { useEffect, useMemo, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
+
+import { trackError } from '~/utils/analytics'
+
+import { attachRelativeTimeBadge } from './chartRelativeTime'
 
 interface BillboardChartProps {
   options: ChartOptions
@@ -7,6 +19,8 @@ interface BillboardChartProps {
   className?: string
   onReady?: (chart: Chart | null) => void
   deps?: any[]
+  xGridLines?: GridLineOptions[]
+  relativeTimeTimezone?: string
 }
 
 const BillboardChart = ({
@@ -15,10 +29,14 @@ const BillboardChart = ({
   className,
   onReady,
   deps,
+  xGridLines,
+  relativeTimeTimezone,
 }: BillboardChartProps) => {
+  const { i18n } = useTranslation()
   const containerRef = useRef<HTMLDivElement | null>(null)
   const chartRef = useRef<Chart | null>(null)
   const isDestroyingRef = useRef(false)
+  const appliedXGridLinesRef = useRef<GridLineOptions[] | undefined>(undefined)
 
   const mergedDeps = useMemo(
     () => deps || [options, dataNames],
@@ -45,7 +63,19 @@ const BillboardChart = ({
 
     // Wrap callbacks to guard against destroyed chart access
     const wrappedOptions: ChartOptions = {
+      ...grid(),
+      ...regions(),
       ...options,
+      grid:
+        xGridLines === undefined
+          ? options.grid
+          : {
+              ...options.grid,
+              x: {
+                ...options.grid?.x,
+                lines: xGridLines,
+              },
+            },
       bindto: containerRef.current as unknown as HTMLElement,
     }
 
@@ -112,10 +142,39 @@ const BillboardChart = ({
       }
     }
 
-    const chart = billboard.generate(wrappedOptions)
-    chartRef.current = chart
+    const removeRelativeTimeBadge =
+      relativeTimeTimezone &&
+      wrappedOptions.axis?.x?.type === 'timeseries' &&
+      !wrappedOptions.axis.rotated
+        ? attachRelativeTimeBadge(
+            containerRef.current,
+            wrappedOptions,
+            relativeTimeTimezone,
+            i18n.language,
+          )
+        : undefined
 
-    if (dataNames) {
+    // Translation tools (Google Translate, Immersive Translate etc.) can
+    // rewrite the SVG internals mid-session, which makes billboard.js throw
+    // during re-render. Keep the page alive instead of crashing to the
+    // route-level ErrorBoundary, but still report the error.
+    let chart: Chart | null = null
+    try {
+      chart = billboard.generate(wrappedOptions)
+    } catch (reason) {
+      containerRef.current.replaceChildren()
+      trackError({
+        name: `BillboardChart: ${reason instanceof Error ? reason.message : String(reason)}`,
+        message: reason instanceof Error ? reason.message : String(reason),
+        lineno: 0,
+        colno: 0,
+        stackTrace: reason instanceof Error ? reason.stack || '' : '',
+      })
+    }
+    chartRef.current = chart
+    appliedXGridLinesRef.current = chart ? xGridLines : undefined
+
+    if (chart && dataNames) {
       try {
         chart.data.names(dataNames)
       } catch {
@@ -126,6 +185,7 @@ const BillboardChart = ({
     if (onReady) onReady(chart)
 
     return () => {
+      removeRelativeTimeBadge?.()
       const chartToDestroy = chartRef.current
       if (!chartToDestroy) return
 
@@ -149,9 +209,36 @@ const BillboardChart = ({
       if (onReady) onReady(null)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, mergedDeps)
+  }, [...mergedDeps, relativeTimeTimezone, i18n.language])
 
-  return <div ref={containerRef} className={className} />
+  useEffect(() => {
+    const chart = chartRef.current
+
+    if (
+      !chart ||
+      xGridLines === undefined ||
+      appliedXGridLinesRef.current === xGridLines
+    ) {
+      return
+    }
+
+    try {
+      chart.xgrids(xGridLines)
+      appliedXGridLinesRef.current = xGridLines
+    } catch {
+      return
+    }
+  }, [xGridLines])
+
+  // translate='no' + notranslate: page translators rewriting SVG <text> nodes
+  // break billboard.js's tick measurement (getBBox on a non-SVG element)
+  return (
+    <div
+      ref={containerRef}
+      translate='no'
+      className={cx('notranslate', className)}
+    />
+  )
 }
 
 export default BillboardChart

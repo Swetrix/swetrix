@@ -134,6 +134,7 @@ export class ExperimentController {
   async getProjectExperiments(
     @CurrentUserId() userId: string,
     @Param('projectId') projectId: string,
+    @Headers() headers: { 'x-password'?: string },
     @Query('take', new ParseIntPipe({ optional: true })) take?: number,
     @Query('skip', new ParseIntPipe({ optional: true })) skip?: number,
     @Query('search') search?: string,
@@ -149,7 +150,7 @@ export class ExperimentController {
       throw new NotFoundException('Project not found')
     }
 
-    this.projectService.allowedToView(project, userId)
+    this.projectService.allowedToView(project, userId, headers['x-password'])
     this.projectService.assertProjectOwnerFeatureAccess(
       project,
       PlanFeatureCode.experiments,
@@ -190,6 +191,7 @@ export class ExperimentController {
   async getExperiment(
     @CurrentUserId() userId: string,
     @Param('id') id: string,
+    @Headers() headers: { 'x-password'?: string },
   ) {
     this.logger.log({ userId, id }, 'GET /experiment/:id')
 
@@ -203,7 +205,7 @@ export class ExperimentController {
       experiment.project.id,
     )
 
-    this.projectService.allowedToView(project, userId)
+    this.projectService.allowedToView(project, userId, headers['x-password'])
     this.projectService.assertProjectOwnerFeatureAccess(
       project,
       PlanFeatureCode.experiments,
@@ -242,12 +244,7 @@ export class ExperimentController {
       throw new ForbiddenException('Please, verify your email address first')
     }
 
-    const project = await this.projectService.findOne({
-      where: {
-        id: experimentDto.pid,
-      },
-      relations: ['experiments', 'admin'],
-    })
+    const project = await this.projectService.getFullProject(experimentDto.pid)
 
     if (_isEmpty(project)) {
       throw new NotFoundException('Project not found')
@@ -963,6 +960,7 @@ export class ExperimentController {
   async getExperimentResults(
     @CurrentUserId() userId: string,
     @Param('id') id: string,
+    @Headers() headers: { 'x-password'?: string },
     @Query('period') period: string,
     @Query('timeBucket') timeBucketParam?: TimeBucketType,
     @Query('from') from?: string,
@@ -984,7 +982,7 @@ export class ExperimentController {
     const project = await this.projectService.getFullProject(
       experiment.project.id,
     )
-    this.projectService.allowedToView(project, userId)
+    this.projectService.allowedToView(project, userId, headers['x-password'])
     this.projectService.assertProjectOwnerFeatureAccess(
       project,
       PlanFeatureCode.experiments,

@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from '~/providers/AuthProvider'
 import Button from '~/ui/Button'
 import Tooltip from '~/ui/Tooltip'
-import { cn } from '~/utils/generic'
 
 import { useViewProjectContext } from '../ViewProject'
 
@@ -27,10 +26,9 @@ export const RefreshStatsButton = ({ onRefresh }: RefreshStatsButtonProps) => {
   const hasTriggeredRefresh = useRef(false)
 
   useEffect(() => {
-    let animationFrameId: number
     let lastRenderedProgress = 0
 
-    const animate = () => {
+    const updateProgress = () => {
       const elapsed = Date.now() - startTimeRef.current
       const newProgress = Math.min((elapsed / REFRESH_INTERVAL_MS) * 100, 100)
 
@@ -66,13 +64,12 @@ export const RefreshStatsButton = ({ onRefresh }: RefreshStatsButtonProps) => {
           }
         })()
       }
-
-      animationFrameId = requestAnimationFrame(animate)
     }
 
-    animationFrameId = requestAnimationFrame(animate)
+    updateProgress()
+    const intervalId = window.setInterval(updateProgress, 250)
 
-    return () => cancelAnimationFrame(animationFrameId)
+    return () => window.clearInterval(intervalId)
   }, [onRefresh, isRefreshing, authLoading, dataLoading])
 
   const handleManualRefresh = async () => {
@@ -113,28 +110,22 @@ export const RefreshStatsButton = ({ onRefresh }: RefreshStatsButtonProps) => {
           disabled={authLoading || dataLoading || isRefreshing}
         >
           <span className='relative size-5'>
-            <ArrowClockwiseIcon
-              className={cn(
-                'absolute inset-0 size-5 text-gray-400/80 dark:text-slate-600',
-                {
-                  'animate-spin': showSpinner,
-                },
-              )}
-            />
-            {!showSpinner ? (
-              <span
-                className='absolute inset-0'
-                style={{
-                  maskImage: `conic-gradient(from 100deg, black ${progress}%, transparent ${progress}%)`,
-                  WebkitMaskImage: `conic-gradient(from 100deg, black ${progress}%, transparent ${progress}%)`,
-                }}
-              >
-                <ArrowClockwiseIcon className='size-5 text-gray-700 dark:text-gray-50' />
-              </span>
-            ) : null}
             {showSpinner ? (
-              <ArrowClockwiseIcon className='absolute inset-0 size-5 animate-spin text-gray-700 dark:text-gray-50' />
-            ) : null}
+              <ArrowClockwiseIcon className='absolute inset-0 size-5 animate-spin text-gray-700 motion-reduce:animate-none dark:text-gray-50' />
+            ) : (
+              <>
+                <ArrowClockwiseIcon className='absolute inset-0 size-5 text-gray-400/80 dark:text-slate-600' />
+                <span
+                  className='absolute inset-0'
+                  style={{
+                    maskImage: `conic-gradient(from 100deg, black ${progress}%, transparent ${progress}%)`,
+                    WebkitMaskImage: `conic-gradient(from 100deg, black ${progress}%, transparent ${progress}%)`,
+                  }}
+                >
+                  <ArrowClockwiseIcon className='size-5 text-gray-700 dark:text-gray-50' />
+                </span>
+              </>
+            )}
           </span>
         </Button>
       }

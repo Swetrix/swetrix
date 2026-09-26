@@ -61,6 +61,7 @@ export const filterCategoryIcons: Record<string, ReactNode> = {
   region: <MapTrifoldIcon className='size-4' />,
   city: <BuildingIcon className='size-4' />,
   page: <FileTextIcon className='size-4' />,
+  title: <FileTextIcon className='size-4' />,
   entry_page: <SignInIcon className='size-4' />,
   exit_page: <SignOutIcon className='size-4' />,
   host: <HardDrivesIcon className='size-4' />,

@@ -26,6 +26,7 @@ const processMetaKV = (
 interface CommonOptions {
   pid: string
   psid?: string | null
+  sid?: string | null
   profileId?: string | null
   host?: string | null
   pg?: string | null
@@ -54,6 +55,7 @@ interface CommonOptions {
 
 interface PageviewOptions extends CommonOptions {
   type: 'pageview'
+  title?: string | null
 }
 
 interface CustomEventOptions extends CommonOptions {
@@ -108,6 +110,7 @@ type EventTransformerOptions =
 const buildCommon = (opts: CommonOptions) => ({
   pid: opts.pid,
   psid: opts.psid ?? null,
+  sid: opts.sid ?? null,
   profileId: opts.profileId ?? null,
   host: opts.host || null,
   pg: opts.pg || null,
@@ -145,6 +148,7 @@ export const eventTransformer = (opts: EventTransformerOptions) => {
     return {
       type: 'pageview' as const,
       ...buildCommon(opts),
+      title: opts.title || null,
       created,
     }
   }
@@ -178,6 +182,7 @@ export const eventTransformer = (opts: EventTransformerOptions) => {
       type: 'performance' as const,
       pid: opts.pid,
       psid: opts.psid ?? null,
+      sid: opts.sid ?? null,
       profileId: opts.profileId ?? null,
       host: opts.host || null,
       pg: opts.pg || null,

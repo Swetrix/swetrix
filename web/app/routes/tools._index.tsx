@@ -14,7 +14,7 @@ export const meta: MetaFunction = () => {
   return [
     ...getTitle('Free Website, SEO and Marketing Tools'),
     ...getDescription(
-      'Free website, SEO, analytics, hosting, and marketing tools to debug domains, validate technical setup, plan campaigns, and improve performance. No sign-up required.',
+      'Free website, SEO, analytics, and marketing tools to check technical setup, plan campaigns, and improve performance. No sign-up required.',
     ),
     ...getPreviewImage(getOgImageUrl('Free Website, SEO and Marketing Tools')),
   ]

@@ -1,6 +1,7 @@
 ---
 title: Configuring
 slug: /selfhosting/configuring
+description: "Configure self-hosted Swetrix with environment variables for databases, email, authentication, API endpoints, and deployment settings."
 ---
 
 <Callout>
@@ -34,6 +35,12 @@ The `BASE_URL` must be publicly reachable from your users' browsers. Do not set 
 | `IP_GEOLOCATION_DB_PATH`             | ``                                 | Path to the `.mmdb` file for IP geolocation database. By default Swetrix uses the IP to City Lite database by DB-IP, which provides country / region / city only. To populate the **Network intelligence** panel (ISP, organisation, usage type, connection type), point this at a paid MaxMind GeoIP2 ISP / Insights database or a paid DB-IP database that includes those fields. |
 | `IS_PRIMARY_NODE`                    | `true`                             | You should not touch this variable unless you know what you are doing. It's used to spin off multiple API instances in a cluster, where only one of them will be primary. If changed to `false`, things like cron task manager will be disabled for this instance.                                                                                                                  |
 | `TWO_FACTOR_AUTHENTICATION_APP_NAME` | `Swetrix CE`                       | The app name shown in authenticator apps when users set up 2FA.                                                                                                                                                                                                                                                                                                                     |
+
+### Session replay storage
+
+Community Edition supports session replays with a private S3-compatible bucket. Configure `SESSION_REPLAY_S3_ENDPOINT`, `SESSION_REPLAY_S3_BUCKET`, `SESSION_REPLAY_S3_REGION`, `SESSION_REPLAY_S3_ACCESS_KEY_ID`, and `SESSION_REPLAY_S3_SECRET_ACCESS_KEY` on the API container. Set `SESSION_REPLAY_S3_FORCE_PATH_STYLE=true` for providers such as MinIO that use path-style URLs.
+
+See [Session replays](/selfhosting/session-replays) for provider examples, Docker environment forwarding, proxy limits, retention, and MP4 export setup.
 
 ### Email configuration (SMTP)
 

@@ -4,15 +4,16 @@ const { queriesRunner, dbName, databaselessQueriesRunner } = require('./setup')
 const CLICKHOUSE_DB_INIT_QUERIES = [`CREATE DATABASE IF NOT EXISTS ${dbName}`]
 
 const CLICKHOUSE_INIT_QUERIES = [
-
   `CREATE TABLE IF NOT EXISTS ${dbName}.events
   (
     type LowCardinality(String),
     pid FixedString(12),
     psid Nullable(UInt64),
+    sid Nullable(UInt64),
     profileId Nullable(String) CODEC(ZSTD(3)),
     host Nullable(String) CODEC(ZSTD(3)),
     pg Nullable(String) CODEC(ZSTD(3)),
+    title Nullable(String) CODEC(ZSTD(3)),
     dv LowCardinality(Nullable(String)),
     br LowCardinality(Nullable(String)),
     brv Nullable(String) CODEC(ZSTD(3)),
@@ -58,6 +59,8 @@ const CLICKHOUSE_INIT_QUERIES = [
   PARTITION BY toYYYYMM(created)
   ORDER BY (pid, type, created);`,
 
+  `ALTER TABLE ${dbName}.events ADD COLUMN IF NOT EXISTS title Nullable(String) CODEC(ZSTD(3)) AFTER pg`,
+
   // Error events status table
   `CREATE TABLE IF NOT EXISTS ${dbName}.error_statuses (
     eid FixedString(32),
@@ -68,20 +71,50 @@ const CLICKHOUSE_INIT_QUERIES = [
   ENGINE = ReplacingMergeTree()
   PRIMARY KEY (eid, pid);`,
 
-  // Sessions table with ReplacingMergeTree for tracking session state
+  // Sessions table with ReplacingMergeTree for tracking session state.
+  // Keyed on sid (one row per browsing session, 30 min of inactivity ends it),
+  // not psid (one value per visitor per day) — see the 2026_08_01_session_id
+  // migration, which this definition has to stay in sync with.
   `CREATE TABLE IF NOT EXISTS ${dbName}.sessions
   (
+    sid UInt64 DEFAULT psid,
     psid UInt64,
     pid FixedString(12),
     profileId Nullable(String) CODEC(ZSTD(3)),
     firstSeen DateTime('UTC') CODEC(Delta(4), LZ4),
-    lastSeen DateTime('UTC') CODEC(Delta(4), LZ4),
-    pageviews UInt32 DEFAULT 1,
-    events UInt32 DEFAULT 0
+    lastSeen DateTime('UTC') CODEC(Delta(4), LZ4)
   )
   ENGINE = ReplacingMergeTree(lastSeen)
-  ORDER BY (pid, psid)
+  ORDER BY (pid, sid)
   PARTITION BY toYYYYMM(firstSeen);`,
+
+  // Profile aliases table: maps anonymous (anon_) profile IDs to identified (usr_)
+  // profile IDs created via the identify API. Resolved at query time with
+  // argMin(userProfileId, created) so the first identification wins.
+  `CREATE TABLE IF NOT EXISTS ${dbName}.profile_aliases
+  (
+    pid FixedString(12),
+    anonProfileId String CODEC(ZSTD(3)),
+    userProfileId String CODEC(ZSTD(3)),
+    created DateTime('UTC') CODEC(Delta(4), LZ4)
+  )
+  ENGINE = ReplacingMergeTree()
+  ORDER BY (pid, anonProfileId, userProfileId);`,
+
+  // Profile traits table: arbitrary key/value metadata (email, plan, ...) set
+  // for identified profiles via the identify API. One row per key so traits
+  // merge across calls; the latest value of each key wins and an empty value
+  // means the trait was removed.
+  `CREATE TABLE IF NOT EXISTS ${dbName}.profile_traits
+  (
+    pid FixedString(12),
+    profileId String CODEC(ZSTD(3)),
+    key String CODEC(ZSTD(3)),
+    value String CODEC(ZSTD(3)),
+    created DateTime64(3, 'UTC') CODEC(Delta(4), LZ4)
+  )
+  ENGINE = ReplacingMergeTree(created)
+  ORDER BY (pid, profileId, key);`,
 
   // Feature flag evaluations table
   `CREATE TABLE IF NOT EXISTS ${dbName}.feature_flag_evaluations

@@ -49,6 +49,7 @@ import {
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import Filters from '~/pages/Project/View/components/Filters'
 import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
+import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { typeNameMapping } from '~/pages/Project/View/ViewProject.helpers'
 import type { ProjectViewActionData } from '~/routes/projects.$id'
 import Alert from '~/ui/Alert'
@@ -723,6 +724,7 @@ const ExperimentResults = ({
   const goalProxy = useGoalProxy()
   const completeFetcher = useFetcher<ProjectViewActionData>()
   const processedCompleteRef = useRef<string | null>(null)
+  const { id: projectId } = useCurrentProject()
   const { filters } = useViewProjectContext()
 
   const [experiment, setExperiment] = useState<Experiment | null>(null)
@@ -760,21 +762,28 @@ const ExperimentResults = ({
 
       try {
         const [experimentData, resultsData] = await Promise.all([
-          experimentProxy.fetchExperiment(experimentId),
-          resultsProxy.fetchResults(experimentId, {
-            period,
-            timeBucket,
-            from,
-            to,
-            timezone,
-            filters,
-          }),
+          experimentProxy.fetchExperiment(experimentId, projectId),
+          resultsProxy.fetchResults(
+            experimentId,
+            {
+              period,
+              timeBucket,
+              from,
+              to,
+              timezone,
+              filters,
+            },
+            projectId,
+          ),
         ])
 
         let goalData: Goal | null = null
         if (experimentData?.goalId) {
           try {
-            goalData = await goalProxy.fetchGoal(experimentData.goalId)
+            goalData = await goalProxy.fetchGoal(
+              experimentData.goalId,
+              projectId,
+            )
           } catch {
             goalData = null
           }

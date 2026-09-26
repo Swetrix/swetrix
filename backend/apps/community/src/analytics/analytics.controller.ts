@@ -1,3 +1,12 @@
+import type { Response as ExpressResponse } from 'express'
+import { SessionReplayExportService } from './session-replay-export.service'
+import {
+  GetSessionReplayDto,
+  GetSessionReplaysDto,
+  SessionReplayExportStartDto,
+  SessionReplayChunkDto,
+  SessionReplayStartDto,
+} from './dto/session-replay.dto'
 import _isEmpty from 'lodash/isEmpty'
 import _isArray from 'lodash/isArray'
 import _map from 'lodash/map'
@@ -8,6 +17,9 @@ import utc from 'dayjs/plugin/utc'
 import dayjsTimezone from 'dayjs/plugin/timezone'
 import {
   Controller,
+  Delete,
+  Param,
+  StreamableFile,
   Body,
   Query,
   UseGuards,
@@ -39,6 +51,7 @@ import { normalizeFiltersToV1Json } from './v2/query/filters.translator'
 import { VALID_PERIODS } from './decorators/validate-period.decorator'
 import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
 import { DEFAULT_TIMEZONE } from '../user/entities/user.entity'
+import { ONLINE_VISITORS_WINDOW_MINUTES } from '../common/constants'
 import { AuthenticationGuard } from '../auth/guards/authentication.guard'
 import { PageviewsDto } from './dto/pageviews.dto'
 import { EventsDto } from './dto/events.dto'
@@ -63,6 +76,7 @@ import { GetSessionDto } from './dto/get-session.dto'
 import { GetProfilesDto } from './dto/get-profiles.dto'
 import { GetProfileDto, GetProfileSessionsDto } from './dto/get-profile.dto'
 import { GetProfileIdDto, GetSessionIdDto } from './dto/get-id.dto'
+import { IdentifyDto } from './dto/identify.dto'
 import { ErrorDto } from './dto/error.dto'
 import { GetErrorsDto } from './dto/get-errors.dto'
 import { GetErrorDto } from './dto/get-error.dto'
@@ -91,8 +105,6 @@ const DEFAULT_MEASURE = 'median'
 // Silent 200 response for bots
 // https://github.com/Swetrix/swetrix/issues/371
 const BOT_RESPONSE = { message: 'Bot traffic detected, request is ignored' }
-
-const ONLINE_VISITORS_WINDOW_MINUTES = 5 // minutes
 
 // Performance object validator: none of the values cannot be bigger than 1000 * 60 * 5 (5 minutes) and are >= 0
 const MAX_PERFORMANCE_VALUE = 1000 * 60 * 5
@@ -210,6 +222,7 @@ const getPageFromReferrer = (referrer?: string | string[] | null) => {
 export class AnalyticsController {
   constructor(
     private readonly analyticsService: AnalyticsService,
+    private readonly sessionReplayExportService: SessionReplayExportService,
     private readonly logger: AppLoggerService,
     private readonly gscService: GSCService,
     private readonly experimentService: ExperimentService,
@@ -1339,11 +1352,12 @@ export class AnalyticsController {
     const { deviceType, browserName, browserVersion, osName, osVersion } =
       await this.analyticsService.getRequestInformation(headers)
 
-    const [, psid] = await this.analyticsService.generateAndStoreSessionId(
-      eventsDTO.pid,
-      userAgent,
-      ip,
-    )
+    const [isNewSession, psid, sid] =
+      await this.analyticsService.generateAndStoreSessionId(
+        eventsDTO.pid,
+        userAgent,
+        ip,
+      )
 
     const profileId = await this.analyticsService.generateProfileId(
       eventsDTO.pid,
@@ -1353,9 +1367,11 @@ export class AnalyticsController {
     )
 
     await this.analyticsService.recordSessionActivity(
+      sid,
       psid,
       eventsDTO.pid,
       profileId,
+      isNewSession,
     )
 
     enrichTrafficSource(eventsDTO)
@@ -1363,6 +1379,7 @@ export class AnalyticsController {
     const transformed = eventTransformer({
       type: 'custom_event',
       psid,
+      sid,
       profileId,
       pid: eventsDTO.pid,
       host: this.analyticsService.getHostFromOrigin(headers.origin),
@@ -1515,13 +1532,13 @@ export class AnalyticsController {
 
     await this.analyticsService.validateHeartbeat(logDTO, origin, ip)
 
-    const { exists, psid } = await this.analyticsService.getSessionId(
+    const { exists, psid, sid } = await this.analyticsService.getSessionId(
       pid,
       userAgent,
       ip,
     )
 
-    if (!exists) {
+    if (!exists || !sid) {
       throw new ForbiddenException(
         'The heartbeat was not saved because there is no session for this request. Please, send a pageview or custom event request first to initialise the session.',
       )
@@ -1535,7 +1552,7 @@ export class AnalyticsController {
     )
 
     await this.analyticsService.extendSessionTTL(psid)
-    await this.analyticsService.recordSessionActivity(psid, pid, profileId)
+    await this.analyticsService.recordSessionActivity(sid, psid, pid, profileId)
 
     this.logger.log(`pid: ${pid}, psid: ${psid}`, 'POST /analytics/hb')
 
@@ -1565,7 +1582,7 @@ export class AnalyticsController {
 
     const project = await this.analyticsService.validate(logDTO, origin, ip)
 
-    const [unique, psid] =
+    const [unique, psid, sid] =
       await this.analyticsService.generateAndStoreSessionId(
         logDTO.pid,
         userAgent,
@@ -1580,9 +1597,11 @@ export class AnalyticsController {
     )
 
     await this.analyticsService.recordSessionActivity(
+      sid,
       psid,
       logDTO.pid,
       profileId,
+      unique,
     )
 
     if (!unique && logDTO.unique) {
@@ -1614,10 +1633,12 @@ export class AnalyticsController {
     const transformed = eventTransformer({
       type: 'pageview',
       psid,
+      sid,
       profileId,
       pid: logDTO.pid,
       host: this.analyticsService.getHostFromOrigin(headers.origin),
       pg: logDTO.pg,
+      title: logDTO.title,
       dv: deviceType,
       br: browserName,
       brv: browserVersion,
@@ -1657,6 +1678,9 @@ export class AnalyticsController {
 
       perfTransformed = eventTransformer({
         type: 'performance',
+        psid,
+        sid,
+        profileId,
         pid: logDTO.pid,
         host: this.analyticsService.getHostFromOrigin(headers.origin),
         pg: logDTO.pg,
@@ -1746,11 +1770,12 @@ export class AnalyticsController {
 
     const project = await this.analyticsService.validate(logDTO, origin, ip)
 
-    const [, psid] = await this.analyticsService.generateAndStoreSessionId(
-      logDTO.pid,
-      userAgent,
-      ip,
-    )
+    const [isNewSession, psid, sid] =
+      await this.analyticsService.generateAndStoreSessionId(
+        logDTO.pid,
+        userAgent,
+        ip,
+      )
 
     // For noscript requests, we generate an anonymous profile ID since
     // user-supplied profileId is not available without JavaScript
@@ -1761,9 +1786,11 @@ export class AnalyticsController {
     )
 
     await this.analyticsService.recordSessionActivity(
+      sid,
       psid,
       logDTO.pid,
       profileId,
+      isNewSession,
     )
 
     const {
@@ -1787,6 +1814,7 @@ export class AnalyticsController {
     const transformed = eventTransformer({
       type: 'pageview',
       psid,
+      sid,
       profileId,
       pid: logDTO.pid,
       host: this.analyticsService.getHostFromOrigin(headers.origin),
@@ -2136,11 +2164,12 @@ export class AnalyticsController {
 
     const project = await this.analyticsService.validate(errorDTO, origin, ip)
 
-    const [, psid] = await this.analyticsService.generateAndStoreSessionId(
-      errorDTO.pid,
-      userAgent,
-      ip,
-    )
+    const [isNewSession, psid, sid] =
+      await this.analyticsService.generateAndStoreSessionId(
+        errorDTO.pid,
+        userAgent,
+        ip,
+      )
 
     const profileId = await this.analyticsService.generateProfileId(
       errorDTO.pid,
@@ -2150,9 +2179,11 @@ export class AnalyticsController {
     )
 
     await this.analyticsService.recordSessionActivity(
+      sid,
       psid,
       errorDTO.pid,
       profileId,
+      isNewSession,
     )
 
     const {
@@ -2182,6 +2213,7 @@ export class AnalyticsController {
     const transformed = eventTransformer({
       type: 'error',
       psid,
+      sid,
       profileId,
       eid: this.analyticsService.getErrorID(errorDTO),
       pid: errorDTO.pid,
@@ -2788,6 +2820,105 @@ export class AnalyticsController {
     return { sessions, appliedFilters, take, skip }
   }
 
+  /**
+   * Links the visitor's current anonymous profile to an identified profile
+   * derived from the user ID supplied by the site (e.g. after log in). Events
+   * previously recorded for the anonymous profile get attributed to the
+   * identified profile at query time; the tracker stamps all subsequent
+   * events with the supplied profileId directly.
+   *
+   * Optional traits (email, plan, ...) are stored against the identified
+   * profile and shown on its dashboard page.
+   */
+  @Post('identify')
+  @Public()
+  async identify(
+    @Body() dto: IdentifyDto,
+    @Headers() headers,
+    @Ip() reqIP,
+  ): Promise<{ profileId: string } | typeof BOT_RESPONSE> {
+    const { 'user-agent': userAgent, origin } = headers
+    const ip = getIPFromHeaders(headers) || reqIP || ''
+
+    await checkRateLimit(ip, 'identify', 120, 60)
+    await checkRateLimit(dto.pid, 'identify', 2000, 60)
+
+    const botResult = await this.analyticsService.checkBot(
+      dto.pid,
+      userAgent,
+      headers,
+      ip,
+      headers.referer || headers.referrer,
+      null,
+      'identify',
+    )
+
+    if (botResult.isBot) {
+      return BOT_RESPONSE
+    }
+
+    const profileId = this.analyticsService.validateUserSuppliedProfileId(
+      dto.profileId,
+    )
+
+    await this.analyticsService.validate(dto, origin, ip)
+
+    const userProfileId = await this.analyticsService.generateProfileId(
+      dto.pid,
+      userAgent,
+      ip,
+      profileId,
+    )
+
+    if (!_isEmpty(dto.traits)) {
+      await this.analyticsService.saveProfileTraits(
+        dto.pid,
+        userProfileId,
+        dto.traits,
+      )
+    }
+
+    const anonProfileId = await this.analyticsService.generateProfileId(
+      dto.pid,
+      userAgent,
+      ip,
+    )
+
+    const linked = await this.analyticsService.linkProfiles(
+      dto.pid,
+      anonProfileId,
+      userProfileId,
+    )
+
+    // Flip the visitor's current session (if any) to the identified profile.
+    // Skipped when the anonymous profile is already linked to a different
+    // identified profile (e.g. a second account on a shared device) - the
+    // session stays with the current identity until new events re-stamp it.
+    if (linked) {
+      const { exists, psid, sid } = await this.analyticsService.getSessionId(
+        dto.pid,
+        userAgent,
+        ip,
+      )
+
+      if (exists && sid) {
+        await this.analyticsService.recordSessionActivity(
+          sid,
+          psid,
+          dto.pid,
+          userProfileId,
+        )
+      }
+    }
+
+    this.logger.log(
+      `pid: ${dto.pid}, profileId: ${userProfileId}`,
+      'POST /analytics/identify',
+    )
+
+    return { profileId: userProfileId }
+  }
+
   @Post('profile-id')
   @Public()
   async getOrCreateProfileId(
@@ -2881,5 +3012,289 @@ export class AnalyticsController {
 
     const keywords = await this.gscService.getKeywords(pid, groupFrom, groupTo)
     return { keywords }
+  }
+
+  @Post('session-replay/start')
+  @Public()
+  async startSessionReplay(
+    @Body() replayDTO: SessionReplayStartDto,
+    @Headers() headers,
+    @Ip() reqIP,
+  ) {
+    const { 'user-agent': userAgent, origin } = headers
+    const ip = getIPFromHeaders(headers) || reqIP || ''
+
+    await checkRateLimit(ip, 'session-replay-start', 120, 60)
+    await checkRateLimit(replayDTO.pid, 'session-replay-start', 2000, 60)
+
+    const botResult = await this.analyticsService.checkBot(
+      replayDTO.pid,
+      userAgent,
+      headers,
+      ip,
+      headers.referer || headers.referrer,
+      replayDTO.pg,
+      'session_replay',
+    )
+
+    if (botResult.isBot) {
+      return BOT_RESPONSE
+    }
+
+    const project = await this.analyticsService.validate(replayDTO, origin, ip)
+    const { country } = getIPDetails(ip, replayDTO.tz)
+    this.analyticsService.checkCountryBlacklist(project, country)
+
+    this.logger.log(
+      `pid: ${replayDTO.pid}, replayId: ${replayDTO.replayId}`,
+      'POST /analytics/session-replay/start',
+    )
+
+    return this.analyticsService.startSessionReplay(
+      project,
+      replayDTO.pid,
+      replayDTO.replayId,
+      replayDTO.privacy,
+      userAgent,
+      ip,
+      replayDTO.profileId,
+    )
+  }
+
+  @Post('session-replay/chunk')
+  @Public()
+  async uploadSessionReplayChunk(
+    @Body() replayDTO: SessionReplayChunkDto,
+    @Headers() headers,
+    @Ip() reqIP,
+  ) {
+    const { 'user-agent': userAgent, origin } = headers
+    const ip = getIPFromHeaders(headers) || reqIP || ''
+
+    await checkRateLimit(ip, 'session-replay-chunk', 600, 60)
+    await checkRateLimit(replayDTO.pid, 'session-replay-chunk', 5000, 60)
+
+    const botResult = await this.analyticsService.checkBot(
+      replayDTO.pid,
+      userAgent,
+      headers,
+      ip,
+      headers.referer || headers.referrer,
+      replayDTO.pg,
+      'session_replay',
+    )
+
+    if (botResult.isBot) {
+      return BOT_RESPONSE
+    }
+
+    const project = await this.analyticsService.validate(replayDTO, origin, ip)
+    const { country } = getIPDetails(ip, replayDTO.tz)
+    this.analyticsService.checkCountryBlacklist(project, country)
+
+    this.logger.log(
+      `pid: ${replayDTO.pid}, replayId: ${replayDTO.replayId}, chunkIndex: ${replayDTO.chunkIndex}`,
+      'POST /analytics/session-replay/chunk',
+    )
+
+    return this.analyticsService.storeSessionReplayChunk(
+      project,
+      replayDTO.pid,
+      replayDTO.replayId,
+      replayDTO.privacy,
+      replayDTO.chunkIndex,
+      replayDTO.events,
+      userAgent,
+      ip,
+    )
+  }
+
+  @Get('session-replays')
+  @Auth(true, true)
+  async getSessionReplays(
+    @Query() data: GetSessionReplaysDto,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ) {
+    const { pid, period, from, to, filters, timezone = DEFAULT_TIMEZONE } = data
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    const take = this.analyticsService.getSafeNumber(data.take, 30)
+    const skip = this.analyticsService.getSafeNumber(data.skip, 0)
+
+    if (take > 150) {
+      throw new BadRequestException(
+        'The maximum number of session replays to return is 150',
+      )
+    }
+
+    this.logger.log(
+      `pid: ${pid}, period: ${period}, take: ${take}, skip: ${skip}`,
+      'GET /analytics/session-replays',
+    )
+
+    const [filtersQuery, filtersParams, appliedFilters, customEVFilterApplied] =
+      this.analyticsService.getFiltersQuery(
+        normalizeFiltersToV1Json(filters, 'traffic'),
+        DataType.ANALYTICS,
+      )
+
+    let timeBucket
+    let diff
+
+    if (period === 'all') {
+      const res = await this.analyticsService.calculateTimeBucketForAllTime(
+        pid,
+        ['pageview', 'custom_event', 'error'] as const,
+      )
+
+      timeBucket = res.timeBucket[0]
+      diff = res.diff
+    } else {
+      timeBucket = getLowestPossibleTimeBucket(period, from, to)
+    }
+
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
+    const { groupFromUTC, groupToUTC } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      timeBucket,
+      period,
+      safeTimezone,
+      diff,
+    )
+
+    const paramsData = {
+      params: {
+        pid,
+        groupFrom: groupFromUTC,
+        groupTo: groupToUTC,
+        ...filtersParams,
+      },
+    }
+
+    const replays = await this.analyticsService.getSessionReplaysList(
+      filtersQuery,
+      paramsData,
+      safeTimezone,
+      take,
+      skip,
+      customEVFilterApplied,
+    )
+
+    return { replays, appliedFilters, take, skip }
+  }
+
+  @Get('session-replay')
+  @Auth(true, true)
+  async getSessionReplay(
+    @Query() data: GetSessionReplayDto,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ) {
+    const { pid, psid, replayId } = data
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    this.logger.log(
+      `pid: ${pid}, psid: ${psid}, replayId: ${replayId || 'latest'}`,
+      'GET /analytics/session-replay',
+    )
+
+    return this.analyticsService.getSessionReplay(pid, psid, replayId)
+  }
+
+  @Delete('session-replay')
+  @Auth(true, true)
+  async deleteSessionReplay(
+    @Query() data: GetSessionReplayDto,
+    @CurrentUserId() uid: string,
+  ) {
+    const { pid, psid, replayId } = data
+
+    await this.analyticsService.checkManageAccess(pid, uid)
+
+    this.logger.log(
+      `pid: ${pid}, psid: ${psid}, replayId: ${replayId || 'latest'}`,
+      'DELETE /analytics/session-replay',
+    )
+
+    return this.analyticsService.deleteSessionReplay(pid, psid, replayId)
+  }
+
+  @Post('session-replay/export')
+  @Auth(true, true)
+  async startSessionReplayExport(
+    @Body() data: SessionReplayExportStartDto,
+    @CurrentUserId() uid: string | null,
+    @Headers() headers: { 'x-password'?: string; 'user-agent'?: string },
+    @Ip() requestIp: string,
+  ) {
+    const { pid, psid, replayId } = data
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    const ip = getIPFromHeaders(headers) || requestIp || ''
+    await checkRateLimit(uid || ip || pid, 'session-replay-export-user', 5, 60)
+    await checkRateLimit(pid, 'session-replay-export-project', 20, 60)
+
+    this.logger.log(
+      `pid: ${pid}, psid: ${psid}, replayId: ${replayId || 'latest'}`,
+      'POST /analytics/session-replay/export',
+    )
+
+    return this.sessionReplayExportService.startExport(pid, psid, replayId)
+  }
+
+  @Get('session-replay/export/:exportId')
+  @Auth(true, true)
+  async getSessionReplayExport(
+    @Param('exportId') exportId: string,
+    @CurrentUserId() uid: string | null,
+    @Headers() headers: { 'x-password'?: string },
+  ) {
+    const exportState =
+      await this.sessionReplayExportService.assertExportAccess(exportId)
+
+    await this.analyticsService.checkProjectAccess(
+      exportState.pid,
+      uid,
+      headers['x-password'],
+    )
+
+    return this.sessionReplayExportService.getExport(exportId)
+  }
+
+  @Get('session-replay/export/:exportId/download')
+  @Auth(true, true)
+  async downloadSessionReplayExport(
+    @Param('exportId') exportId: string,
+    @CurrentUserId() uid: string | null,
+    @Headers() headers: { 'x-password'?: string },
+    @Response({ passthrough: true }) response: ExpressResponse,
+  ): Promise<StreamableFile> {
+    const exportState =
+      await this.sessionReplayExportService.assertExportAccess(exportId)
+
+    await this.analyticsService.checkProjectAccess(
+      exportState.pid,
+      uid,
+      headers['x-password'],
+    )
+
+    return this.sessionReplayExportService.downloadExport(exportId, response)
   }
 }

@@ -67,8 +67,6 @@ const OIDC_ONLY_AUTH = process.env.OIDC_ONLY_AUTH === 'true'
 
 const ORIGINS_REGEX =
   /^(?=.{1,255}$)([0-9A-Za-z*:](?:(?:[0-9A-Za-z*:]|-){0,61}[0-9A-Za-z*:])?(?:\.[0-9A-Za-z*:](?:(?:[0-9A-Za-z*-]|-){0,61}[0-9A-Za-z*:])?)*)?$/
-const IP_REGEX =
-  /^(([12]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])(\.|\/)){4}([1-2]?[0-9]|3[0-2])$/
 const PID_REGEX = /^(?!.*--)[a-zA-Z0-9-]{12}$/
 const isValidPID = (pid: string) => PID_REGEX.test(pid)
 
@@ -82,6 +80,8 @@ const redisProjectCacheTimeout = 3600
 
 // 30 minues -> the amount of time analytics requests within one session are counted as non-unique
 const UNIQUE_SESSION_LIFE_TIME = 1800
+
+const ONLINE_VISITORS_WINDOW_MINUTES = 5
 
 // Funnels
 const MIN_PAGES_IN_FUNNEL = 2
@@ -97,6 +97,7 @@ const TRAFFIC_COLUMNS = [
   'ctp',
   'host',
   'pg',
+  'title',
   'lc',
   'br',
   'brv',
@@ -138,6 +139,7 @@ const V2_VIEW_FILTER_DIMENSIONS = [
   'region',
   'city',
   'page',
+  'title',
   'host',
   'locale',
   'browser',
@@ -190,8 +192,8 @@ export {
   getRedisProjectKey,
   redisProjectCacheTimeout,
   UNIQUE_SESSION_LIFE_TIME,
+  ONLINE_VISITORS_WINDOW_MINUTES,
   TRAFFIC_METAKEY_COLUMNS,
-  IP_REGEX,
   ORIGINS_REGEX,
   isDevelopment,
   NUMBER_JWT_REFRESH_TOKEN_LIFETIME as JWT_REFRESH_TOKEN_LIFETIME,

@@ -14,6 +14,7 @@ export class Project {
   // IPs (or CIDR ranges) that bot detection (Shields) never flags
   ipWhitelist: string[]
   countryBlacklist: string[]
+  sessionReplayRetentionDays: number
   active: boolean
   public: boolean
   isPasswordProtected: boolean

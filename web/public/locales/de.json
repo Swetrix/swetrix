@@ -587,6 +587,8 @@
     "description": "Swetrix ist eine datenschutzfreundliche Google Analytics-Alternative, die Ihnen hilft, Besucher, Traffic-Quellen und die Website-Performance mit einfachen, cookiefreien und DSGVO-konformen Insights zu verstehen - ohne Cookie-Banner oder invasives Tracking.",
     "understandTheirUsers": "<0>{{amount}}</0> Leute verstehen ihre Benutzer",
     "startAXDayFreeTrial": "Kostenlose {{amount}} Testtage",
+    "addMyWebsite": "Meine Website hinzufügen",
+    "yourWebsite": "Deine Website",
     "metric": "Metrisch",
     "heroBenefits": {
       "trial": "Kostenlose Testversion für {{days}} Tage",
@@ -745,6 +747,7 @@
       "create": "Erstellen Sie ihr Konto",
       "trial": "Starten Sie Ihre kostenlose {{amount}}-Tage Testversion",
       "trialSubtitle": "Testen Sie alle Funktionen kostenlos. Kündigen Sie jederzeit, bevor Ihre Testphase endet.",
+      "siteSubtitle": "Erstelle dein Konto und beginne in wenigen Minuten mit dem Tracking von <site>{{site}}</site>.",
       "changePlanLater": "Sie können Ihren Plan später oder jederzeit ändern.",
       "alreadyAMember": "Bereits Mitglied? <url>Anmelden</url>",
       "createAnAccount": "Konto erstellen",
@@ -1776,6 +1779,8 @@
     "percentage": "Prozentsatz",
     "stackTraceXFrames": "Aufrufliste ({{x}} Frames)",
     "metadata": "Metadaten",
+    "pageProperties": "Seiteneigenschaften",
+    "searchMetadata": "Eigenschaften und Events durchsuchen…",
     "aiDetailsDesc": "Mit den Schaltflächen oben können Sie eine Schätzung des Verkehrsaufkommens anzeigen, das Sie in den nächsten X Stunden innerhalb einer Stunde erwarten können.",
     "search": "Suche",
     "segments": "Segmente",
@@ -1919,6 +1924,8 @@
       "deleteConfirmMessage": "Dadurch wird die Session-Replay-Aufzeichnung dauerhaft gelöscht. Die Analytics-Sitzungsdaten bleiben erhalten.",
       "playerError": "Replay-Player konnte nicht initialisiert werden",
       "empty": "Es wurden keine Replay-Ereignisse gefunden.",
+      "incompleteTitle": "Dieses Replay ist unvollständig",
+      "incompleteDescription": "Der Aufzeichnung fehlt der anfängliche Seiten-Snapshot, daher kann sie nicht abgespielt werden. Dies bedeutet normalerweise, dass einige Aufzeichnungsdaten nicht aus dem Browser des Besuchers hochgeladen werden konnten.",
       "back10": "10 Sekunden zurück",
       "forward10": "10 Sekunden vorwärts",
       "play": "Abspielen",
@@ -1965,6 +1972,7 @@
     },
     "pageflow": "Seitenfluss",
     "userSessions": "Sitzungen",
+    "userTraits": "Benutzereigenschaften",
     "noSessions": "Für diesen Benutzer wurden keine Sitzungen gefunden.",
     "unknown": "Unbekannt",
     "backToErrors": "Zurück zur Fehlerliste",
@@ -2019,8 +2027,8 @@
       "desc": "Es wurden noch keine Events erfasst. Befolge die unten stehenden Installationsschritte, um mit der Datenerfassung zu beginnen. Funktioniert immer noch nicht? Versuche die <turl>Fehlerbehebung</turl> für deine Integration oder <curl>kontaktiere uns</curl> für Hilfe bei der Einrichtung."
     },
     "waitingCaptcha": {
-      "title": "Noch keine CAPTCHA-Ereignisse",
-      "desc": "Es wurden noch keine CAPTCHA-Events erfasst.\nSieh dir den <guideurl>Integrationsleitfaden</guideurl> an, um CAPTCHA zu deiner App hinzuzufügen.\n\nFunktioniert immer noch nicht? Versuche die <turl>Fehlerbehebung</turl> für deine Integration oder <curl>kontaktiere uns</curl> für Hilfe bei der Einrichtung.",
+      "title": "CAPTCHA-Schutz ist noch nicht eingerichtet",
+      "desc": "Diese Website ist noch nicht durch das Swetrix CAPTCHA vor Bots geschützt.\nBefolge die unten stehenden Schritte oder den <guideurl>Integrationsleitfaden</guideurl>, um es zu deinen Formularen hinzuzufügen. Sobald das CAPTCHA beginnt, deine Besucher zu verifizieren, werden die Aktivitäten hier angezeigt.\n\nBereits eingerichtet? Versuche <turl>Fehlerbehebung</turl> bei deiner Integration oder <curl>kontaktiere uns</curl> für Hilfe bei der Einrichtung.",
       "setup": {
         "tabs": {
           "script": "Skript",
@@ -2068,11 +2076,40 @@
     "noReplaysFiltersTitle": "Keine Replays gefunden",
     "noReplaysFiltersDesc": "Für diesen Zeitraum und diese Filter wurden keine Replays gefunden. Versuchen Sie, den Datumsbereich oder die Filter zu ändern.",
     "noCaptchaEv": "Für diesen Zeitraum wurden keine CAPTCHA-Ereignisse aufgezeichnet.\nWenn Sie CAPTCHA noch nicht eingerichtet haben, lesen Sie die <url>Dokumentation</url>, um es zu Ihrer App hinzuzufügen.",
+    "panelTabs": {
+      "country": "Länder",
+      "region": "Regionen",
+      "city": "Städte",
+      "locale": "Sprachen",
+      "page": "Seiten",
+      "entry_page": "Einstiegsseiten",
+      "exit_page": "Ausstiegsseiten",
+      "host": "Hosts",
+      "browser": "Browser",
+      "os": "Betriebssysteme",
+      "device": "Gerätetypen",
+      "referrer": "Referrer",
+      "isp": "ISPs",
+      "organization": "Organisationen",
+      "user_type": "Nutzungstypen",
+      "connection_type": "Verbindungstypen",
+      "utm_source": "UTM-Quellen",
+      "utm_medium": "UTM-Medien",
+      "utm_campaign": "UTM-Kampagnen",
+      "utm_term": "UTM-Terms",
+      "utm_content": "UTM-Content",
+      "query": "Abfragen",
+      "captcha_event": "Challenge-Status",
+      "captcha_difficulty": "Schwierigkeitsgrade",
+      "solve_time": "Lösungszeiten",
+      "captcha_reason": "Gründe für automatische Schwierigkeit"
+    },
     "mapping": {
       "cc": "Land",
       "rg": "Region",
       "ct": "Stadt",
       "pg": "Seite",
+      "title": "Titel",
       "host": "Host",
       "lc": "Sprache",
       "map": "Karte",
@@ -2102,7 +2139,7 @@
       "aiReferral": "KI-Verweis",
       "captcha_event": "Challenge-Status",
       "captcha_difficulty": "Schwierigkeit",
-      "captcha_reason": "Gründe für Auto-Schwierigkeit",
+      "captcha_reason": "Grund für automatische Schwierigkeit",
       "solve_time": "Lösungszeit"
     },
     "usageTypeMapping": {
@@ -2539,6 +2576,7 @@
         "brandKeywords": "Marken-Keywords aktualisiert",
         "origins": "Erlaubte Ursprünge aktualisiert",
         "ipBlacklist": "IP-Blacklist aktualisiert",
+        "ipWhitelist": "Vertrauenswürdige IP-Adressen aktualisiert",
         "countryBlacklist": "Länder-Blacklist aktualisiert",
         "botsProtectionLevel": "Bot-Traffic-Filterung aktualisiert",
         "public": "Einstellung für öffentliches Dashboard aktualisiert",
@@ -2614,6 +2652,9 @@
       "ipBlacklist": "Blockierte IP-Adressen",
       "ipBlacklistHint": "Datenverkehr von diesen IP-Adressen wird für dieses Projekt ignoriert. Trenne mehrere IP-Adressen oder CIDR-Bereiche mit Kommas. Nützlich, um eigene Besuche von den Analysen auszuschließen. Beispiel: 172.126.10.16, 192.168.0.1/32, ::1.",
       "ipBlacklistPlaceholder": "Standardmäßig keine IP-Adressen blockiert",
+      "ipWhitelist": "Vertrauenswürdige IP-Adressen",
+      "ipWhitelistHint": "Traffic von diesen IP-Adressen wird niemals vom Bot-Schutz markiert. Trennen Sie mehrere IP-Adressen oder CIDR-Bereiche mit Kommas. Nützlich für serverseitiges Event-Tracking, da Anfragen von Ihrem Backend andernfalls als Rechenzentrums-Traffic verworfen werden könnten. Beispiel: 172.126.10.16, 192.168.0.1/32, ::1.",
+      "ipWhitelistPlaceholder": "Standardmäßig keine vertrauenswürdigen IP-Adressen",
       "countryBlacklist": "Blockierte Länder",
       "countryBlacklistHint": "Wähle die Länder, die du nicht verfolgen möchtest. Datenverkehr aus diesen Ländern wird in deinen Analysen ignoriert.",
       "countryBlacklistPlaceholder": "Standardmäßig werden keine Länder blockiert",
@@ -2681,7 +2722,7 @@
     },
     "page": "Seite",
     "journeys": {
-      "noData": "Journeys sind aufgrund fehlender Daten noch nicht verfügbar, oder Sie haben diese Funktion in den Parametern des Tracking-Skripts deaktiviert.",
+      "noData": "Keine Journeys für den ausgewählten Zeitraum und die Filter gefunden. Journeys werden angezeigt, wenn Besucher mindestens zwei verschiedene Seiten in einer Sitzung aufrufen.",
       "learnMore": "<url>Erfahren Sie mehr über Journeys</url> in unserer Dokumentation.",
       "learnMoreAriaLabel": "Journeys-Dokumentation öffnen",
       "stepX": "Schritt {{x}}",
@@ -3080,7 +3121,20 @@
     "sessionReplayAddonNextRenewal": "die nächste Verlängerung",
     "sessionReplayAddonPendingChange": "Eine geplante Änderung des Session-Replay-Add-ons wird am {{date}} wirksam. Wählen Sie eine neue Menge oder aktualisieren Sie die aktuellen Einstellungen, um sie zu ersetzen.",
     "sessionReplayAddonSave": "Add-on aktualisieren",
-    "sessionReplayAddonComingSoon": "Self-Service Session-Replay-Add-ons sind bald verfügbar."
+    "sessionReplayAddonComingSoon": "Self-Service Session-Replay-Add-ons sind bald verfügbar.",
+    "invoicesTitle": "Rechnungen",
+    "invoicesDesc": "Belege für jede Zahlung auf deinem Konto.",
+    "invoicesTableDate": "Datum",
+    "invoicesTableDescription": "Beschreibung",
+    "invoicesTableAmount": "Betrag",
+    "invoicesSubscriptionPayment": "Abonnementzahlung",
+    "invoicesOneOffCharge": "Einmalige Gebühr",
+    "invoicesViewReceipt": "Beleg ansehen",
+    "invoicesEmpty": "Noch keine Rechnungen",
+    "invoicesEmptyDesc": "Sobald dein Abonnement in Rechnung gestellt wird, werden die Belege hier angezeigt.",
+    "invoicesLoadError": "Wir konnten deine Rechnungen nicht laden. Bitte versuche es später noch einmal.",
+    "invoicesRetry": "Erneut versuchen",
+    "invoicesPaddleNote": "Zahlungen werden von Paddle, unserem Vertragshändler, abgewickelt. Belege werden auf paddle.com geöffnet."
   },
   "modals": {
     "paidFeature": {
@@ -3113,7 +3167,7 @@
   "pricing": {
     "title": "Preise",
     "comparison": {
-      "metaDescription": "Vergleichen Sie Swetrix-Tarife Funktion für Funktion. Jeder Tarif beinhaltet die komplette datenschutzfreundliche Analytics-Suite — höhere Stufen fügen Session-Replays, Experimente und Enterprise-Funktionen hinzu.",
+      "metaDescription": "Vergleiche Swetrix-Pläne, Analytics-Funktionen, Nutzungslimits, Sitzungsaufzeichnungen, Experimente und Enterprise-Optionen, um einen Plan für deine Website auszuwählen.",
       "title": "Tarife & Funktionen vergleichen",
       "fromPerMonth": "Ab {{price}} / Monat",
       "included": "Inbegriffen",
@@ -3129,6 +3183,7 @@
       },
       "features": {
         "websites": "Websites",
+        "teamMembers": "Teammitglieder",
         "realtimeDashboard": "Echtzeit-Dashboard",
         "cookieless": "Cookieless Tracking",
         "noDataSampling": "Kein Data-Sampling",
@@ -3149,6 +3204,8 @@
         "unlimited": "Unbegrenzt",
         "websitesStandard": "10",
         "websitesPlus": "100",
+        "teamMembersStandard": "10",
+        "teamMembersPlus": "25",
         "eventsUpTo": "Bis zu 50 Mio.",
         "apiRateStandard": "300 / Stunde",
         "apiRatePlus": "6.000 / Stunde"
@@ -3332,29 +3389,142 @@
       "tooManyImages": "Du kannst bis zu {{count}} Bilder anhängen"
     }
   },
-  "open": {
-    "desc": "Swetrix ist ein Open Startup, wir teilen unsere Metriken wie Einnahmen, Verlust, Menge der Benutzer usw. mit der Öffentlichkeit.",
-    "updated": "Diese Seite wird regelmäßig aktualisiert.",
-    "finance": {
-      "title": "Finanzmetriken",
-      "desc": "Unsere finanziellen Kennzahlen wie Einnahmen, Verluste usw."
-    },
-    "usage": {
-      "title": "Verwendungsmetriken",
-      "desc": "Unsere Benutzermetriken, wie die Anzahl der aktiven Benutzer, verbundene Webseiten.",
-      "live": "Sie können unsere Live-Metriken auf unserem <livedemo>öffentlichen Dashboard</livedemo>sehen. Sie können auch Ihre eigenen Swetrix Dashboards öffentlich machen und sie an Ihre Bedürfnisse anpassen."
-    }
-  },
   "checkout": {
     "title": "Starten Sie Ihre kostenlose Testversion",
     "subtitle": "Testen Sie Swetrix {{days}} Tage lang kostenlos. Jederzeit kündbar.",
     "successRedirect": "Ihre Kaufabwicklung ist abgeschlossen. Wir aktualisieren Ihr Abonnement und leiten Sie in Kürze zu Ihrem Dashboard weiter.",
+    "rating": {
+      "ariaLabel": "4,8 von 5 Sternen",
+      "score": "4,8/5",
+      "websites": "von {{count}} Websites, die Swetrix nutzen",
+      "websitesFallback": "von Tausenden Websites, die Swetrix nutzen"
+    },
     "trial": {
       "today": "Heute",
       "step1Label": "Ihre kostenlose Testphase beginnt mit vollem Zugriff",
       "step2Label": "Wir senden Ihnen eine Erinnerung per E-Mail",
       "step3Label": "Ihre erste Zahlung wird eingezogen, es sei denn, Sie kündigen",
       "footer": "Kündigen Sie jederzeit, bevor die Testphase endet. Wir berechnen Ihnen vorher nichts."
+    },
+    "features": {
+      "title": "Das erwartet Sie bei Swetrix",
+      "subtitle": "Verstehen Sie, woher Ihre Besucher kommen, was sie verlangsamt, was nicht funktioniert und wie sie sich auf Ihrer Website bewegen — alles in einem Dashboard.",
+      "cards": {
+        "traffic": {
+          "title": "Verstehen Sie Ihren Traffic",
+          "description": "Sehen Sie, woher Besucher kommen, welche Seiten sie nutzen, welche Kampagnen funktionieren und ob sie konvertieren — ohne sich durch unzählige Berichte zu graben.",
+          "alt": "Swetrix Traffic-Dashboard mit Besucher-, Sitzungs- und Seitenaufruf-Trends"
+        },
+        "performance": {
+          "title": "Finden Sie heraus, was Ihre Website verlangsamt",
+          "description": "Messen Sie Frontend-, Backend- und Netzwerk-Ladezeiten bei echten Nutzern und finden Sie die genauen Seiten, Browser und Regionen, die optimiert werden müssen.",
+          "alt": "Swetrix Performance-Dashboard mit Frontend-, Backend- und Netzwerk-Ladezeiten"
+        },
+        "errors": {
+          "title": "Fangen Sie Fehler ab, bevor sie sich häufen",
+          "description": "Sehen Sie Browserausnahmen, Stack-Traces, betroffene Besucher und Sitzungskontext direkt neben den Analytics, die Sie ohnehin prüfen.",
+          "alt": "Swetrix Fehler-Dashboard mit Fehlertrends und aktuellen Ausnahmen"
+        },
+        "sessions": {
+          "title": "Beobachten Sie echte Besucher-Journeys",
+          "description": "Verfolgen Sie einzelne Sitzungen, um Absprünge, Sackgassen und unerwartetes Verhalten zu verstehen. Plus-Tarife können aufgezeichnete Sitzungen abspielen, wenn die Aufzeichnung aktiviert ist.",
+          "alt": "Swetrix Session-Replay-Timeline"
+        }
+      }
+    },
+    "included": {
+      "title": "Was enthalten ist",
+      "subtitle": "Das untenstehende Event-Kontingent richtet sich nach dem oben ausgewählten Volumen. Standard beinhaltet das komplette Analytics-Toolkit; Plus erhöht die Workspace-Limits und fügt Replays und Experimente hinzu.",
+      "cards": {
+        "events": {
+          "title": "Events pro Monat",
+          "description": "Seitenaufrufe, benutzerdefinierte Events, CAPTCHA-Abschlüsse und Fehlerereignisse zählen alle zu diesem gemeinsamen Kontingent."
+        },
+        "websites": {
+          "title": "Websites auf Standard / Plus",
+          "description": "Behalten Sie 10 Websites auf Standard oder 100 auf Plus, mit verfügbaren Add-ons, falls Ihr Portfolio wächst."
+        },
+        "members": {
+          "title": "Teammitglieder auf Standard / Plus",
+          "description": "Laden Sie Mitarbeiter ein, weisen Sie Zugriffsrechte zu und behalten Sie alle im selben Workspace, ohne Pro-Nutzer-Preise."
+        },
+        "replays": {
+          "title": "Session-Replays pro Monat auf Plus",
+          "description": "Das Replay-Kontingent skaliert mit dem ausgewählten Event-Volumen. Die Aufzeichnung beginnt erst, wenn Sie sie aktivieren."
+        }
+      },
+      "moreTitle": "Außerdem enthalten",
+      "more": {
+        "privacy": "Cookieless Analytics und erweiterte Bot-Filterung",
+        "imports": "Importe von Google Analytics und anderen Plattformen",
+        "reports": "E-Mail-Berichte, Alarme und Benachrichtigungskanäle",
+        "api": "REST API, Events API und SDKs",
+        "sharing": "Öffentliche und passwortgeschützte Dashboards",
+        "ownership": "In der EU gehostete Daten mit vollem Eigentumsrecht",
+        "funnels": "Funnels, Ziele und vollständige User Journeys",
+        "seo": "Einblicke in Such- und KI-Referrals",
+        "revenue": "Umsatzzuordnung über Stripe, Paddle oder die API",
+        "experiments": "Feature-Flags und A/B-Testing auf Plus"
+      }
+    },
+    "testimonials": {
+      "title": "Verlassen Sie sich nicht nur auf unser Wort",
+      "subtitle": "Teams nutzen Swetrix, um nützliche Antworten zu erhalten, ohne ihre Besucher an eine Werbeplattform zu übergeben.",
+      "items": {
+        "alex": {
+          "company": "Casterlabs",
+          "quote": "Swetrix war ein echter Gamechanger für unsere Analytics. Sie haben immer sofort auf Feature-Anfragen und Fehlerberichte reagiert und waren stets freundlich. Ich kann sie nur wärmstens empfehlen.",
+          "name": "Alex Bowles",
+          "role": "Mitgründer von Casterlabs"
+        },
+        "alper": {
+          "company": "Phalcode",
+          "quote": "Ich war von Google Analytics so verwirrt, dass ich null verwertbare Erkenntnisse daraus ziehen konnte. Swetrix hat alles verändert – ein aufgeräumtes Dashboard, sofortiges Verständnis des Nutzerverhaltens und Funktionen, die wirklich wichtig sind. Endlich Analytics, die mir helfen, bessere Entscheidungen zu treffen, anstatt mich zu irritieren.",
+          "name": "Alper Alkan",
+          "role": "Mitgründer von Phalcode"
+        }
+      },
+      "communityProof": "{{count}} Websites verstehen ihre Besucher mit Swetrix",
+      "communityProofFallback": "Tausende von Websites verstehen ihre Besucher mit Swetrix"
+    },
+    "faq": {
+      "title": "Fragen, bevor Sie starten",
+      "subtitle": "Die praktischen Details, die zählen, wenn Sie echten Traffic über Swetrix leiten.",
+      "items": [
+        {
+          "q": "Was passiert während meiner {{days}}-tägigen Testversion?",
+          "a": "Ihre Testversion beginnt, sobald der Bestellvorgang abgeschlossen ist. Sie können Ihre echte Website verbinden und das Swetrix-Dashboard sofort nutzen. Wir werden Sie zwei Tage vor der ersten Zahlung per E-Mail benachrichtigen; kündigen Sie vor Ende der Testphase und es wird Ihnen nichts berechnet."
+        },
+        {
+          "q": "Was wird auf mein monatliches Event-Limit angerechnet?",
+          "a": "Seitenaufrufe, benutzerdefinierte Events, CAPTCHA-Abschlüsse und Fehler-Events werden auf das gemeinsame monatliche Kontingent angerechnet. Sitzungsaufzeichnungen haben in Plus-Tarifen eine separate Quote."
+        },
+        {
+          "q": "Sollte ich Standard oder Plus wählen?",
+          "a": "Wählen Sie Standard für die Kern-Analytics-Suite, einschließlich Traffic, Funnels, Performance-Monitoring, Fehler-Tracking, Berichte und API-Zugriff. Wählen Sie Plus, wenn Sie zusätzlich Sitzungsaufzeichnungen, Feature-Flags, A/B-Tests, höhere Workspace-Limits oder Priority-Support benötigen."
+        },
+        {
+          "q": "Was passiert, wenn ich mein Event-Limit überschreite?",
+          "a": "Swetrix sammelt Ihre Daten weiterhin. Wir benachrichtigen Sie, sobald Sie sich dem Limit nähern, und Sie können in eine höhere Event-Stufe wechseln, um weiterhin vollen Zugriff auf Ihre Statistiken zu haben. Gelegentliche kleine Traffic-Spitzen sperren Ihr Dashboard nicht sofort."
+        },
+        {
+          "q": "Kann ich meinen Tarif ändern oder kündigen?",
+          "a": "Ja. Sie können Ihren Tarif in den Kontoeinstellungen ändern oder kündigen. Änderungen bei kostenpflichtigen Tarifen werden anteilig berechnet, und eine Kündigung vor Ende der Testversion verhindert die erste Abbuchung."
+        },
+        {
+          "q": "Kann ich meine bestehenden Analytics-Daten mitbringen?",
+          "a": "Ja. Swetrix kann historische Daten aus Google Analytics, Plausible, Fathom, Umami, Simple Analytics und anderen unterstützten Plattformen importieren."
+        },
+        {
+          "q": "Benötige ich ein Cookie-Banner?",
+          "a": "Swetrix ist standardmäßig cookielos und verwendet keine dauerhaften seitenübergreifenden Kennungen. Viele Websites können es daher ohne Analytics-Einwilligungsbanner verwenden, aber Ihre genauen Verpflichtungen hängen weiterhin von Ihrer Konfiguration und den lokalen Vorschriften ab."
+        }
+      ]
+    },
+    "finalCta": {
+      "title": "Sind Sie bereit zu verstehen, was Ihre Besucher tun?",
+      "subtitle": "Wählen Sie einen Tarif und nutzen Sie Swetrix {{days}} Tage lang mit Ihrem echten Traffic. Ihnen wird heute nichts berechnet, und Sie können vor Ende der Testversion kündigen.",
+      "button": "Wählen Sie Ihren Tarif"
     },
     "faqTrial": {
       "q": "Was passiert, wenn meine Testphase endet?",
@@ -3446,10 +3616,9 @@
     "contact": "Haben Sie etwas zu fragen?",
     "main": "Swetrix - Cookielose Google-Analytics-Alternative",
     "socialisation": "Social-Login",
-    "open": "Open startup",
     "passwordProtected": "Passwort erforderlich",
-    "performance": "Endbenutzer Leistungsüberwachung um schnelle Webseiten zu liefern",
-    "errors": "Endbenutzer Fehler bei der Verfolgung von Werkzeug, um fehlerfreie Erfahrungen zu liefern",
+    "performance": "Überwachung der Website-Performance für echte Nutzer",
+    "errors": "JavaScript-Fehlerverfolgung und -Monitoring",
     "pricing": "Preise",
     "gaAlternative": "Cookie-freie Alternative zu Google Analytics",
     "agencies": "Datenschutzfreundliche Analytics für Agenturen",
@@ -3461,15 +3630,14 @@
     "blog": "Bleiben Sie auf dem Laufenden mit den neuesten Erkenntnissen, Produktupdates, Fallstudien und Anwendungsfällen von Swetrix.",
     "captcha": "Swetrix Captcha ist eine datenschutzorientierte Alternative zu traditionellen CAPTCHAs. Schützen Sie Ihre Website vor Bots und Spam, ohne Ihre Nutzer mit Rätseln zu nerven.",
     "contact": "Kontaktieren Sie Swetrix (cookielose & datenschutzorientierte Google-Analytics-Alternative) für Support, Feedback oder Fragen und Vorschläge.",
-    "bookACall": "Buchen Sie ein Gespräch mit Swetrix, um Lücken zu überprüfen, die durch Zustimmungsaufforderungen, Datenschutzfunktionen von Browsern und Werbeblocker verursacht werden, und sehen Sie, wie Cookieless Analytics Ihnen klarere Traffic-Daten liefert.",
-    "errorTracking": "Datenschutzorientiertes Endnutzer-Fehlertracking von Swetrix. In einer Zeile eingerichtet, Fehler nach Browser/Gerät/Standort sehen und Probleme schneller beheben. 14 Tage kostenlos testen – keine Karte erforderlich.",
+    "bookACall": "Buche eine Swetrix-Demo, um cookielose Analytics zu entdecken und Tracking-Lücken zu überprüfen, die durch Zustimmungsentscheidungen, Browser-Datenschutzkontrollen und Werbeblocker verursacht werden.",
+    "errorTracking": "Finde mit Swetrix JavaScript-Fehler nach Browser, Gerät und Standort. Richte das Error-Tracking mit einer Zeile ein und untersuche Probleme, die deine Besucher betreffen.",
     "login": "Melden Sie sich bei Swetrix an, um Ihre cookielosen, datenschutzfreundlichen Analysen zu sehen – Echtzeit-Einblicke, keine Tracking-Cookies, kein GA-Ballast.",
     "signup": "Erstellen Sie Ihr Swetrix-Konto und beginnen Sie, Website-Traffic mit cookielosen, datenschutzfreundlichen Analysen zu tracken – einfache Einrichtung, Echtzeit-Statistiken.",
     "checkout": "Wählen Sie einen Swetrix-Plan und schließen Sie Ihr Abonnement ab — cookiefreie, datenschutzorientierte Analysen mit Echtzeit-Einblicken.",
     "onboarding": "Starten Sie mit Swetrix (cookielose & datenschutzorientierte Google-Analytics-Alternative) in nur wenigen Schritten.",
-    "open": "Offene Startup-Kennzahlen: Erfahren Sie mehr über unsere wichtigsten finanziellen und operativen Kennzahlen.",
     "recovery": "Passwort vergessen? Nutzen Sie unsere Passwort-Wiederherstellung, um wieder Zugriff auf Ihr Konto zu erhalten.",
-    "performance": "Überwachen Sie die Website-Geschwindigkeit echter Nutzer mit Swetrix – Seitenladezeit, TTFB, DNS/TLS-Zeiten und Perzentile. Datenschutzorientiert und cookielos. 14 Tage kostenlos testen, keine Karte erforderlich.",
+    "performance": "Überwache die Ladegeschwindigkeit für echte Nutzer, TTFB, DNS- und TLS-Timings sowie Performance-Perzentile mit den cookielosen Website-Analytics von Swetrix.",
     "project": "Öffentliche Web-Analysen für {{name}} ansehen. Datenschutzfreundliches Tracking powered by Swetrix – keine Cookies oder invasives Nutzer-Tracking.",
     "projectWithPassword": "Dieses Analyseprojekt ist passwortgeschützt. Geben Sie das Passwort ein, um datenschutzfreundliche Web-Analysen powered by Swetrix zu sehen – keine Cookies oder invasives Nutzer-Tracking."
   },
@@ -3515,6 +3683,13 @@
       }
     }
   },
+  "blogPage": {
+    "title": "Der Swetrix Blog",
+    "description": "Praktische Leitfäden zu Webanalyse, Datenschutz und dem Wachstum Ihrer Website. Erfahren Sie, was Menschen auf Ihre Website bringt, was sie als Nächstes tun und wie Sie diese Erkenntnisse in bessere Entscheidungen umsetzen können.",
+    "home": "Startseite",
+    "breadcrumbLabel": "Breadcrumb",
+    "empty": "Keine Beiträge gefunden"
+  },
   "exitIntentPopup": {
     "freeTrial": "Kostenlose Testversion",
     "title": "Webanalyse ohne Cookies",
@@ -3555,7 +3730,6 @@
     "status": "Status",
     "supportUs": "Unterstützen Sie uns",
     "captcha": "CAPTCHA",
-    "open": "Open startup",
     "about": "Über uns",
     "features": "Funktionen",
     "imprint": "Impressum",

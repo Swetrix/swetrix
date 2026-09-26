@@ -587,6 +587,8 @@
     "description": "Swetrix to zorientowana na prywatność alternatywa dla Google Analytics, która pomaga zrozumieć odwiedzających, źródła ruchu i wydajność strony dzięki prostym statystykom bez użycia plików cookie i zgodnym z RODO - bez banerów cookie i inwazyjnego śledzenia.",
     "understandTheirUsers": "<0>{{amount}}</0> osób rozumie swoich użytkowników",
     "startAXDayFreeTrial": "{{amount}} dni za darmo",
+    "addMyWebsite": "Dodaj moją witrynę",
+    "yourWebsite": "Twoja witryna",
     "metric": "Metryka",
     "heroBenefits": {
       "trial": "Bezpłatny okres próbny przez {{days}} dni",
@@ -745,6 +747,7 @@
       "create": "Utwórz konto",
       "trial": "Rozpocznij {{amount}} dniowy, bezpłatny okres próbny",
       "trialSubtitle": "Wypróbuj wszystkie funkcje za darmo. Anuluj w dowolnym momencie przed zakończeniem okresu próbnego.",
+      "siteSubtitle": "Utwórz konto i zacznij śledzić <site>{{site}}</site> w kilka minut.",
       "changePlanLater": "Możesz zmienić swój plan później lub w dowolnym momencie.",
       "alreadyAMember": "Już jesteś członkiem? <url>Zaloguj się</url>",
       "createAnAccount": "Utwórz konto",
@@ -1776,6 +1779,8 @@
     "percentage": "Procent",
     "stackTraceXFrames": "Stos wywołań ({{x}} ramek)",
     "metadata": "Metadane",
+    "pageProperties": "Właściwości strony",
+    "searchMetadata": "Szukaj właściwości i zdarzeń…",
     "aiDetailsDesc": "Przyciski powyżej pozwalają zobaczyć szacunkową liczbę ruchu, jakiego można się spodziewać w ciągu godziny w kolejnych X godzinach.",
     "search": "Szukaj",
     "segments": "Segmenty",
@@ -1919,6 +1924,8 @@
       "deleteConfirmMessage": "To trwale usunie nagranie sesji. Dane analityczne sesji pozostaną dostępne.",
       "playerError": "Nie udało się zainicjować odtwarzacza",
       "empty": "Nie znaleziono żadnych zdarzeń nagrania.",
+      "incompleteTitle": "To nagranie jest niekompletne",
+      "incompleteDescription": "Nagraniu brakuje początkowej migawki strony, więc nie może zostać odtworzone. Zazwyczaj oznacza to, że nie udało się przesłać niektórych danych nagrania z przeglądarki odwiedzającego.",
       "back10": "Cofnij o 10 sekund",
       "forward10": "Do przodu o 10 sekund",
       "play": "Odtwórz",
@@ -1965,6 +1972,7 @@
     },
     "pageflow": "Przepływ stron",
     "userSessions": "Sesje",
+    "userTraits": "Cechy użytkownika",
     "noSessions": "Nie znaleziono sesji dla tego użytkownika.",
     "unknown": "Nieznany",
     "backToErrors": "Powrót do listy błędów",
@@ -2019,8 +2027,8 @@
       "desc": "Nie zarejestrowano jeszcze żadnych zdarzeń. Postępuj zgodnie z poniższymi krokami instalacji, aby rozpocząć zbieranie danych. Nadal nie działa? Spróbuj <turl>rozwiązać problemy</turl> z integracją lub <curl>skontaktuj się z nami</curl>, aby uzyskać pomoc w konfiguracji."
     },
     "waitingCaptcha": {
-      "title": "Brak zdarzeń CAPTCHA",
-      "desc": "Nie zarejestrowano jeszcze żadnych zdarzeń CAPTCHA.\nZapoznaj się z <guideurl>poradnikiem integracji</guideurl>, aby dodać CAPTCHA do swojej aplikacji.\n\nNadal nie działa? Spróbuj <turl>rozwiązać problemy</turl> z integracją lub <curl>skontaktuj się z nami</curl>, aby uzyskać pomoc w konfiguracji.",
+      "title": "Ochrona CAPTCHA nie jest jeszcze skonfigurowana",
+      "desc": "Ta witryna nie jest jeszcze chroniona przed botami przez Swetrix CAPTCHA.\\nPostępuj zgodnie z poniższymi krokami lub <guideurl>przewodnikiem po integracji</guideurl>, aby dodać ją do swoich formularzy. Kiedy CAPTCHA zacznie weryfikować odwiedzających, jej aktywność pojawi się tutaj.\\n\\nJuż ją skonfigurowałeś? Spróbuj <turl>rozwiązać problemy</turl> z integracją lub <curl>skontaktuj się z nami</curl>, aby uzyskać pomoc w konfiguracji.",
       "setup": {
         "tabs": {
           "script": "Skrypt",
@@ -2068,11 +2076,40 @@
     "noReplaysFiltersTitle": "Nie znaleziono powtórek",
     "noReplaysFiltersDesc": "Żadne powtórki nie pasują do tego okresu i zestawu filtrów. Spróbuj zmienić zakres dat lub filtry.",
     "noCaptchaEv": "Nie zarejestrowano żadnych zdarzeń CAPTCHA w tym okresie.\nJeśli jeszcze nie skonfigurowałeś CAPTCHA, zobacz <url>dokumentację</url>, aby dodać ją do swojej aplikacji.",
+    "panelTabs": {
+      "country": "Kraje",
+      "region": "Regiony",
+      "city": "Miasta",
+      "locale": "Języki",
+      "page": "Strony",
+      "entry_page": "Strony wejścia",
+      "exit_page": "Strony wyjścia",
+      "host": "Hosty",
+      "browser": "Przeglądarki",
+      "os": "Systemy operacyjne",
+      "device": "Typy urządzeń",
+      "referrer": "Źródła odsyłające",
+      "isp": "Dostawcy internetu",
+      "organization": "Organizacje",
+      "user_type": "Typy użytkowania",
+      "connection_type": "Typy połączeń",
+      "utm_source": "Źródła UTM",
+      "utm_medium": "Media UTM",
+      "utm_campaign": "Kampanie UTM",
+      "utm_term": "Słowa kluczowe UTM",
+      "utm_content": "Treści UTM",
+      "query": "Zapytania",
+      "captcha_event": "Statusy weryfikacji",
+      "captcha_difficulty": "Poziomy trudności",
+      "solve_time": "Czasy rozwiązywania",
+      "captcha_reason": "Powody automatycznej trudności"
+    },
     "mapping": {
       "cc": "Kraj",
       "rg": "Region",
       "ct": "Miasto",
       "pg": "Strona",
+      "title": "Tytuły",
       "host": "Host",
       "lc": "Język",
       "map": "Mapa",
@@ -2102,7 +2139,7 @@
       "aiReferral": "Odesłanie z AI",
       "captcha_event": "Status wyzwania",
       "captcha_difficulty": "Trudność",
-      "captcha_reason": "Powody automatycznej trudności",
+      "captcha_reason": "Powód automatycznej trudności",
       "solve_time": "Czas rozwiązania"
     },
     "usageTypeMapping": {
@@ -2539,6 +2576,7 @@
         "brandKeywords": "Zaktualizowano słowa kluczowe marki",
         "origins": "Zaktualizowano dozwolone źródła",
         "ipBlacklist": "Zaktualizowano czarną listę IP",
+        "ipWhitelist": "Zaktualizowano zaufane adresy IP",
         "countryBlacklist": "Zaktualizowano czarną listę krajów",
         "botsProtectionLevel": "Zaktualizowano filtrowanie ruchu botów",
         "public": "Zaktualizowano ustawienie publicznego panelu",
@@ -2614,6 +2652,9 @@
       "ipBlacklist": "Zablokowane adresy IP",
       "ipBlacklistHint": "Ruch z tych adresów IP będzie ignorowany dla tego projektu. Oddziel wiele adresów IP lub zakresy CIDR przecinkami. Przydatne do wykluczenia własnych odwiedzin z analityki. Przykład: 172.126.10.16, 192.168.0.1/32, ::1.",
       "ipBlacklistPlaceholder": "Domyślnie brak zablokowanych adresów IP",
+      "ipWhitelist": "Zaufane adresy IP",
+      "ipWhitelistHint": "Ruch z tych adresów IP nigdy nie zostanie oznaczony przez ochronę przed botami. Oddziel wiele adresów IP lub zakresów CIDR przecinkami. Przydatne do śledzenia zdarzeń po stronie serwera, ponieważ żądania z Twojego backendu mogą w przeciwnym razie zostać odrzucone jako ruch z centrum danych. Przykład: 172.126.10.16, 192.168.0.1/32, ::1.",
+      "ipWhitelistPlaceholder": "Domyślnie brak zaufanych adresów IP",
       "countryBlacklist": "Zablokowane kraje",
       "countryBlacklistHint": "Wybierz kraje, których nie chcesz śledzić. Ruch z tych krajów będzie ignorowany w Twojej analityce.",
       "countryBlacklistPlaceholder": "Domyślnie nie blokuje żadnych krajów",
@@ -2681,7 +2722,7 @@
     },
     "page": "Strona",
     "journeys": {
-      "noData": "Ścieżki nie są jeszcze dostępne z powodu braku danych lub ta funkcja została wyłączona w parametrach skryptu śledzącego.",
+      "noData": "Nie znaleziono ścieżek dla wybranego okresu i filtrów. Ścieżki pojawiają się, gdy odwiedzający wyświetlą co najmniej dwie różne strony w trakcie sesji.",
       "learnMore": "<url>Dowiedz się więcej o ścieżkach</url> w naszej dokumentacji.",
       "learnMoreAriaLabel": "Otwórz dokumentację ścieżek",
       "stepX": "Krok {{x}}",
@@ -3080,7 +3121,20 @@
     "sessionReplayAddonNextRenewal": "następnego odnowienia",
     "sessionReplayAddonPendingChange": "Zaplanowana zmiana dodatku nagrywania sesji wejdzie w życie z dniem {{date}}. Wybierz nową ilość lub zaktualizuj bieżące ustawienia, aby ją zastąpić.",
     "sessionReplayAddonSave": "Aktualizuj dodatek",
-    "sessionReplayAddonComingSoon": "Samodzielne zarządzanie dodatkami nagrywania sesji będzie wkrótce dostępne."
+    "sessionReplayAddonComingSoon": "Samodzielne zarządzanie dodatkami nagrywania sesji będzie wkrótce dostępne.",
+    "invoicesTitle": "Faktury",
+    "invoicesDesc": "Rachunki za każdą płatność dokonaną na Twoim koncie.",
+    "invoicesTableDate": "Data",
+    "invoicesTableDescription": "Opis",
+    "invoicesTableAmount": "Kwota",
+    "invoicesSubscriptionPayment": "Płatność za subskrypcję",
+    "invoicesOneOffCharge": "Jednorazowa opłata",
+    "invoicesViewReceipt": "Wyświetl rachunek",
+    "invoicesEmpty": "Brak faktur",
+    "invoicesEmptyDesc": "Gdy zostanie pobrana opłata za subskrypcję, rachunki pojawią się tutaj.",
+    "invoicesLoadError": "Nie udało się załadować faktur. Spróbuj ponownie później.",
+    "invoicesRetry": "Spróbuj ponownie",
+    "invoicesPaddleNote": "Płatności są przetwarzane przez Paddle, naszego autoryzowanego sprzedawcę. Rachunki otwierają się na stronie paddle.com."
   },
   "modals": {
     "paidFeature": {
@@ -3113,7 +3167,7 @@
   "pricing": {
     "title": "Cennik",
     "comparison": {
-      "metaDescription": "Porównaj plany Swetrix funkcja po funkcji. Każdy plan obejmuje pełny pakiet analityczny stawiający na prywatność — wyższe poziomy dodają nagrywanie sesji, eksperymenty i funkcje dla przedsiębiorstw.",
+      "metaDescription": "Porównaj plany Swetrix, funkcje analityczne, limity użycia, nagrania sesji, eksperymenty i opcje korporacyjne, aby wybrać plan dla swojej strony internetowej.",
       "title": "Porównaj plany i funkcje",
       "fromPerMonth": "Od {{price}} / miesiąc",
       "included": "Zawarte",
@@ -3129,6 +3183,7 @@
       },
       "features": {
         "websites": "Strony internetowe",
+        "teamMembers": "Członkowie zespołu",
         "realtimeDashboard": "Dashboard w czasie rzeczywistym",
         "cookieless": "Śledzenie bez plików cookie",
         "noDataSampling": "Brak próbkowania danych",
@@ -3149,6 +3204,8 @@
         "unlimited": "Bez limitu",
         "websitesStandard": "10",
         "websitesPlus": "100",
+        "teamMembersStandard": "10",
+        "teamMembersPlus": "25",
         "eventsUpTo": "Do 50 mln",
         "apiRateStandard": "300 / godzinę",
         "apiRatePlus": "6000 / godzinę"
@@ -3332,29 +3389,142 @@
       "tooManyImages": "Możesz dołączyć do {{count}} obrazów"
     }
   },
-  "open": {
-    "desc": "Swetrix to otwarty startup; udostępniamy nasze metryki, takie jak przychody, straty, liczba użytkowników itp. publicznie.",
-    "updated": "Ta strona jest regularnie aktualizowana.",
-    "finance": {
-      "title": "Metryki finansowe",
-      "desc": "Nasze wskaźniki finansowe, takie jak przychody, straty itp."
-    },
-    "usage": {
-      "title": "Metryki użycia",
-      "desc": "Nasze wskaźniki użytkowników, takie jak liczba aktywnych użytkowników, połączone witryny.",
-      "live": "Możesz zobaczyć nasze bieżące metryki na <livedemo>publicznym pulpicie nawigacyjnym</livedemo>. Możesz również udostępnić własne pulpity Swetrix publicznie i dostosować je do swoich potrzeb."
-    }
-  },
   "checkout": {
     "title": "Rozpocznij bezpłatny okres próbny",
     "subtitle": "Wypróbuj Swetrix za darmo przez {{days}} dni. Anuluj w dowolnym momencie.",
     "successRedirect": "Twój proces zakupu został zakończony. Aktualizujemy Twoją subskrypcję i wkrótce przeniesiemy Cię do panelu.",
+    "rating": {
+      "ariaLabel": "4,8 na 5 gwiazdek",
+      "score": "4,8/5",
+      "websites": "od {{count}} stron internetowych korzystających z Swetrix",
+      "websitesFallback": "z tysięcy stron internetowych korzystających z Swetrix"
+    },
     "trial": {
       "today": "Dzisiaj",
       "step1Label": "Twój bezpłatny okres próbny rozpoczyna się od pełnego dostępu",
       "step2Label": "Wyślemy Ci przypomnienie e-mailem",
       "step3Label": "Twoja pierwsza płatność zostanie pobrana, chyba że anulujesz",
       "footer": "Anuluj w dowolnym momencie przed zakończeniem okresu próbnego. Nie obciążymy Cię opłatą wcześniej."
+    },
+    "features": {
+      "title": "Oto, co zobaczysz w Swetrix",
+      "subtitle": "Zrozum skąd pochodzą odwiedzający, co ich spowalnia, co się psuje i jak poruszają się po Twojej witrynie — wszystko z jednego pulpitu nawigacyjnego.",
+      "cards": {
+        "traffic": {
+          "title": "Zrozum swój ruch",
+          "description": "Zobacz, skąd pochodzą odwiedzający, z jakich stron korzystają, jakie kampanie działają i czy konwertują — bez konieczności przebijania się przez warstwy raportów.",
+          "alt": "Pulpit nawigacyjny ruchu Swetrix z trendami odwiedzających, sesji i odsłon"
+        },
+        "performance": {
+          "title": "Dowiedz się, co spowalnia Twoją witrynę",
+          "description": "Zmierz czas interakcji na frontendzie, backendzie i sieci rzeczywistego użytkownika, a następnie znajdź dokładne strony, przeglądarki i regiony, które wymagają uwagi.",
+          "alt": "Pulpit nawigacyjny wydajności Swetrix z czasem po stronie frontendu, backendu i sieci"
+        },
+        "errors": {
+          "title": "Wychwytuj błędy zanim się nagromadzą",
+          "description": "Zobacz wyjątki przeglądarki, ślady stosu, dotkniętych odwiedzających i kontekst sesji tuż obok statystyk, które już sprawdzasz.",
+          "alt": "Pulpit nawigacyjny błędów Swetrix z trendami i najnowszymi wyjątkami"
+        },
+        "sessions": {
+          "title": "Obserwuj rzeczywiste podróże odwiedzających",
+          "description": "Śledź poszczególne sesje, aby zrozumieć porzucenia, ślepe zaułki i nieoczekiwane zachowania. Plany Plus umożliwiają odtwarzanie nagranych sesji, jeśli włączono nagrywanie.",
+          "alt": "Oś czasu powtórek sesji Swetrix"
+        }
+      }
+    },
+    "included": {
+      "title": "Co jest wliczone",
+      "subtitle": "Poniższy limit zdarzeń zależy od objętości wybranej powyżej. Plan Standard obejmuje kompletny zestaw narzędzi analitycznych; Plus zwiększa limity obszarów roboczych oraz dodaje powtórki i eksperymenty.",
+      "cards": {
+        "events": {
+          "title": "zdarzeń na miesiąc",
+          "description": "Odsłony, zdarzenia niestandardowe, wypełnienia CAPTCHA i zdarzenia błędów wliczają się do tego wspólnego limitu."
+        },
+        "websites": {
+          "title": "strony internetowe w planie Standard / Plus",
+          "description": "Utrzymaj 10 stron w planie Standard lub 100 w planie Plus, z dostępnymi dodatkami, jeśli Twoje portfolio się rozrośnie."
+        },
+        "members": {
+          "title": "członkowie zespołu w planie Standard / Plus",
+          "description": "Zaproś współpracowników, przydziel dostępy i trzymaj wszystkich w tym samym obszarze roboczym bez opłat za stanowisko."
+        },
+        "replays": {
+          "title": "nagrania sesji miesięcznie w planie Plus",
+          "description": "Limit nagrań skaluje się z wybranym wolumenem zdarzeń. Nagrywanie rozpoczyna się dopiero, gdy je włączysz."
+        }
+      },
+      "moreTitle": "Również w zestawie",
+      "more": {
+        "privacy": "Analityka bez plików cookie i zaawansowane filtrowanie botów",
+        "imports": "Importy z Google Analytics i innych platform",
+        "reports": "Raporty e-mail, powiadomienia i kanały alertów",
+        "api": "REST API, Events API i pakiety SDK",
+        "sharing": "Publiczne i chronione hasłem dashboardy",
+        "ownership": "Dane hostowane w UE z pełną własnością",
+        "funnels": "Lejki, cele i kompletne ścieżki użytkowników",
+        "seo": "Wyszukiwania i dane z poleceń AI",
+        "revenue": "Atrybucja przychodów przez Stripe, Paddle lub API",
+        "experiments": "Flagi funkcji i testy A/B w planie Plus"
+      }
+    },
+    "testimonials": {
+      "title": "Nie wierz nam na słowo",
+      "subtitle": "Zespoły używają Swetrix, aby uzyskać przydatne odpowiedzi bez przekazywania swoich odwiedzających platformom reklamowym.",
+      "items": {
+        "alex": {
+          "company": "Casterlabs",
+          "quote": "Swetrix okazał się przełomem w naszej analityce. Zawsze byli na bieżąco z prośbami o nowe funkcje i raportami o błędach, a także zawsze byli przyjaźni na każdym kroku. Zdecydowanie ich polecam.",
+          "name": "Alex Bowles",
+          "role": "Współzałożyciel Casterlabs"
+        },
+        "alper": {
+          "company": "Phalcode",
+          "quote": "Google Analytics tak mnie zdezorientowało, że nie otrzymywałem żadnych wniosków gotowych do wdrożenia. Swetrix zmienił wszystko — przejrzysty dashboard, natychmiastowe zrozumienie zachowań użytkowników i funkcje, które faktycznie mają znaczenie. W końcu analityka, która pomaga mi podejmować lepsze decyzje, zamiast mnie irytować.",
+          "name": "Alper Alkan",
+          "role": "Współzałożyciel Phalcode"
+        }
+      },
+      "communityProof": "{{count}} stron internetowych rozumie swoich odwiedzających dzięki Swetrix",
+      "communityProofFallback": "Tysiące stron internetowych rozumie swoich odwiedzających dzięki Swetrix"
+    },
+    "faq": {
+      "title": "Pytania przed rozpoczęciem",
+      "subtitle": "Praktyczne szczegóły, które mają znaczenie, gdy przyprowadzasz rzeczywisty ruch przez Swetrix.",
+      "items": [
+        {
+          "q": "Co się dzieje podczas mojego {{days}}-dniowego okresu próbnego?",
+          "a": "Twój okres próbny rozpoczyna się natychmiast po zakończeniu transakcji. Możesz podłączyć swoją prawdziwą stronę internetową i od razu zacząć korzystać z panelu Swetrix. Wyślemy Ci e-mail na dwa dni przed pierwszą płatnością; anuluj przed zakończeniem okresu próbnego, a nie poniesiesz żadnych opłat."
+        },
+        {
+          "q": "Co wlicza się do mojego miesięcznego limitu zdarzeń?",
+          "a": "Odsłony, zdarzenia niestandardowe, rozwiązania CAPTCHA oraz zdarzenia błędów wliczają się do wspólnego miesięcznego limitu. Powtórki sesji mają osobną pulę w planach Plus."
+        },
+        {
+          "q": "Czy powinienem wybrać plan Standard czy Plus?",
+          "a": "Wybierz plan Standard dla podstawowego pakietu analitycznego, w tym ruchu, lejków, monitorowania wydajności, śledzenia błędów, raportów i dostępu do API. Wybierz plan Plus, jeśli potrzebujesz również powtórek sesji, flag funkcji, testów A/B, wyższych limitów w przestrzeni roboczej lub priorytetowego wsparcia."
+        },
+        {
+          "q": "Co się stanie, jeśli przekroczę mój limit zdarzeń?",
+          "a": "Swetrix nadal zbiera Twoje dane. Powiadomimy Cię, gdy będziesz zbliżać się do limitu, a Ty będziesz mógł przejść na wyższy próg zdarzeń, aby zachować pełny dostęp do swoich statystyk. Sporadyczne małe skoki ruchu nie powodują natychmiastowego zablokowania panelu."
+        },
+        {
+          "q": "Czy mogę zmienić mój plan lub go anulować?",
+          "a": "Tak. Możesz zmienić lub anulować swój plan w ustawieniach konta. Zmiany w płatnych planach są rozliczane proporcjonalnie, a anulowanie przed zakończeniem okresu próbnego zapobiega pobraniu pierwszej opłaty."
+        },
+        {
+          "q": "Czy mogę zaimportować moje obecne dane analityczne?",
+          "a": "Tak. Swetrix może importować dane historyczne z Google Analytics, Plausible, Fathom, Umami, Simple Analytics i innych obsługiwanych platform."
+        },
+        {
+          "q": "Czy będę potrzebować banera cookies?",
+          "a": "Swetrix z założenia nie korzysta z plików cookie i nie używa trwałych identyfikatorów śledzących między witrynami. Wiele stron może z niego korzystać bez banerów zgody na analitykę, jednak Twoje dokładne obowiązki nadal zależą od Twojej konfiguracji i lokalnych przepisów."
+        }
+      ]
+    },
+    "finalCta": {
+      "title": "Gotowy, by zrozumieć, co robią Twoi odwiedzający?",
+      "subtitle": "Wybierz plan i używaj Swetrix z rzeczywistym ruchem przez {{days}} dni. Dziś nie poniesiesz żadnych opłat i możesz anulować w każdej chwili przed zakończeniem okresu próbnego.",
+      "button": "Wybierz swój plan"
     },
     "faqTrial": {
       "q": "Co się stanie po zakończeniu okresu próbnego?",
@@ -3446,10 +3616,9 @@
     "contact": "Masz pytanie?",
     "main": "Swetrix - bezciasteczkowa alternatywa dla Google Analytics",
     "socialisation": "Socjalizacja",
-    "open": "Otwórz startup",
     "passwordProtected": "Wymagane hasło",
-    "performance": "Monitorowanie wydajności końcowego użytkownika, aby dostarczać szybkie strony internetowe",
-    "errors": "Narzędzie do śledzenia błędów użytkownika końcowego, aby dostarczać doświadczenia wolne od błędów",
+    "performance": "Monitorowanie wydajności witryny u prawdziwych użytkowników",
+    "errors": "Śledzenie i monitorowanie błędów JavaScript",
     "pricing": "Cennik",
     "gaAlternative": "Alternatywa dla Google Analytics bez plików cookie",
     "agencies": "Analityka chroniąca prywatność dla agencji",
@@ -3461,15 +3630,14 @@
     "blog": "Bądź na bieżąco z najnowszymi analizami, aktualizacjami produktu, studiami przypadków i przykładami zastosowań Swetrix.",
     "captcha": "Swetrix Captcha to alternatywa dla tradycyjnych CAPTCHA, stawiająca prywatność na pierwszym miejscu. Chroń swoją stronę przed botami i spamem bez irytowania użytkowników zagadkami.",
     "contact": "Skontaktuj się ze Swetrix (alternatywą dla Google Analytics bez plików cookie i z naciskiem na prywatność), aby uzyskać wsparcie, przekazać opinię lub zadać pytania i zgłosić sugestie.",
-    "bookACall": "Umów się na rozmowę ze Swetrix, aby omówić luki spowodowane przez prośby o wyrażenie zgody, ustawienia prywatności przeglądarki i blokery reklam, a następnie zobacz, jak analityka bez plików cookie zapewnia dokładniejsze dane o ruchu.",
-    "errorTracking": "Śledzenie błędów użytkowników końcowych z naciskiem na prywatność od Swetrix. Konfiguracja w jednej linijce, podgląd błędów według przeglądarki/urządzenia/lokalizacji i szybsze naprawianie problemów. 14-dniowy darmowy okres próbny – bez karty.",
+    "bookACall": "Zarezerwuj demo Swetrix, aby poznać analitykę bez plików cookie i przeanalizować luki w śledzeniu spowodowane wyborami dotyczącymi zgody, kontrolą prywatności w przeglądarce i blokerami reklam.",
+    "errorTracking": "Znajdź błędy JavaScript według przeglądarki, urządzenia i lokalizacji dzięki Swetrix. Skonfiguruj śledzenie błędów w jednej linijce i zbadaj problemy dotykające Twoich odwiedzających.",
     "login": "Zaloguj się do Swetrix, aby zobaczyć analitykę bez plików cookie i przyjazną prywatności – dane w czasie rzeczywistym, brak śledzących cookie, bez bałaganu GA.",
     "signup": "Utwórz konto Swetrix i zacznij śledzić ruch na stronie dzięki analityce bez plików cookie i przyjaznej prywatności – prosta konfiguracja, statystyki w czasie rzeczywistym.",
     "checkout": "Wybierz plan Swetrix i sfinalizuj subskrypcję — analityka bez plików cookie, stawiająca na prywatność, z wnioskami w czasie rzeczywistym.",
     "onboarding": "Zacznij korzystać ze Swetrix (alternatywy dla Google Analytics bez plików cookie i z naciskiem na prywatność) w kilku krokach.",
-    "open": "Otwarte metryki startupu: dowiedz się więcej o naszych kluczowych metrykach finansowych i operacyjnych.",
     "recovery": "Nie pamiętasz hasła? Skorzystaj z funkcji odzyskiwania hasła, aby przywrócić dostęp do konta.",
-    "performance": "Monitoruj szybkość strony dla prawdziwych użytkowników ze Swetrix – czas ładowania strony, TTFB, czasy DNS/TLS i percentyle. Z naciskiem na prywatność i bez plików cookie. Darmowy 14-dniowy okres próbny, bez karty.",
+    "performance": "Monitoruj szybkość strony u prawdziwych użytkowników, TTFB, czasy DNS i TLS oraz percentyle wydajności za pomocą analityki internetowej bez plików cookie od Swetrix.",
     "project": "Zobacz publiczną analitykę WWW dla {{name}}. Śledzenie przyjazne prywatności dzięki Swetrix – bez plików cookie i inwazyjnego śledzenia użytkowników.",
     "projectWithPassword": "Ten projekt analityczny jest chroniony hasłem. Wpisz hasło, aby zobaczyć analitykę WWW przyjazną prywatności dzięki Swetrix — bez plików cookie i inwazyjnego śledzenia użytkowników."
   },
@@ -3515,6 +3683,13 @@
       }
     }
   },
+  "blogPage": {
+    "title": "Blog Swetrix",
+    "description": "Praktyczne przewodniki po analityce internetowej, prywatności i rozwoju Twojej strony. Dowiedz się, co przyciąga ludzi na Twoją stronę, co robią później i jak przekształcić te informacje w lepsze decyzje.",
+    "home": "Strona główna",
+    "breadcrumbLabel": "Ścieżka nawigacji",
+    "empty": "Nie znaleziono wpisów"
+  },
   "exitIntentPopup": {
     "freeTrial": "Darmowy okres próbny",
     "title": "Analityka internetowa bez plików cookie",
@@ -3555,7 +3730,6 @@
     "status": "Status",
     "supportUs": "Wesprzyj nas",
     "captcha": "CAPTCHA",
-    "open": "Otwórz startup",
     "about": "O nas",
     "features": "Funkcjonalności",
     "imprint": "Nota prawna",

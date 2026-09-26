@@ -22,11 +22,14 @@ export class MultiAuthGuard extends AuthGuard(['jwt-access-token', 'api-key']) {
     )
 
     if (isOptionalAuth) {
-      if (err) {
-        return super.handleRequest(err, user, info, context, status)
-      }
+      const request = context.switchToHttp().getRequest()
+      const hasCredentials = Boolean(
+        request.headers?.authorization ||
+        request.headers?.['x-api-key'] ||
+        request.cookies?.token,
+      )
 
-      return user
+      if (!hasCredentials) return user
     }
 
     return super.handleRequest(err, user, info, context, status)

@@ -5,12 +5,22 @@ import type {
   LoaderFunctionArgs,
   MetaFunction,
 } from 'react-router'
-import { redirect, data } from 'react-router'
+import { redirect, data, useLoaderData } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 
 import { getAuthenticatedUser, registerUser } from '~/api/api.server'
-import { getOgImageUrl, isSelfhosted } from '~/lib/constants'
+import {
+  getOgImageUrl,
+  isSelfhosted,
+  localisedLanguages,
+} from '~/lib/constants'
 import Signup from '~/pages/Auth/Signup'
+import {
+  createOnboardingSiteCookie,
+  onboardingDomainFrom,
+  readOnboardingSite,
+} from '~/utils/onboardingSite.server'
+import routes from '~/utils/routes'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 import {
   createHeadersWithCookies,
@@ -41,19 +51,48 @@ export const sitemap: SitemapFunction = () => ({
   exclude: isSelfhosted,
 })
 
+/**
+ * `/signup` when the visitor is already here, keeping the language prefix.
+ * Rebuilt rather than taken from `request.url` - during a client navigation
+ * that's the single-fetch `.data` URL, not something we can redirect to.
+ */
+const selfPath = (url: URL) => {
+  const [, maybeLang] = url.pathname.split('/')
+  const prefix = localisedLanguages.includes(maybeLang) ? `/${maybeLang}` : ''
+
+  const params = new URLSearchParams(url.searchParams)
+  params.delete('site')
+  const query = params.toString()
+
+  return `${prefix}${routes.signup}${query ? `?${query}` : ''}`
+}
+
 export async function loader({ request }: LoaderFunctionArgs) {
+  const url = new URL(request.url)
+  // Landing-hero handoff: the domain typed in the hero arrives as `?site=`.
+  // Move it into a cookie so it survives the SSO popup and the signup POST,
+  // and strip it from the URL so the address bar stays clean.
+  const site = onboardingDomainFrom(url.searchParams.get('site'))
+  const headers = site
+    ? { headers: createHeadersWithCookies([createOnboardingSiteCookie(site)]) }
+    : undefined
+
   const authResult = await getAuthenticatedUser(request)
 
   if (authResult) {
     const user = authResult.user.user
 
     if (!user.hasCompletedOnboarding) {
-      return redirect('/onboarding')
+      return redirect('/onboarding', headers)
     }
-    return redirect('/dashboard')
+    return redirect('/dashboard', headers)
   }
 
-  return null
+  if (url.searchParams.has('site')) {
+    return redirect(selfPath(url), headers)
+  }
+
+  return { site: readOnboardingSite(request) }
 }
 
 export interface SignupActionData {
@@ -115,5 +154,7 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function SignupPage() {
-  return <Signup />
+  const loaderData = useLoaderData<typeof loader>()
+
+  return <Signup site={loaderData?.site ?? null} />
 }

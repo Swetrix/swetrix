@@ -13,9 +13,9 @@ import { Text } from '~/ui/Text'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 
 export const meta: MetaFunction = () => {
-  const title = 'Free Open Graph Preview Tool - Preview Social Media Cards'
+  const title = 'Free Open Graph Preview Tool'
   const description =
-    'Preview how your website looks when shared on Twitter/X, Facebook, and LinkedIn. Test your Open Graph meta tags and Twitter Cards instantly. Free OG preview tool with live rendering.'
+    'Preview how your page appears on Twitter/X, Facebook, and LinkedIn. Check Open Graph tags and Twitter Cards with a live preview.'
   return [
     ...getTitle(title),
     ...getDescription(description),

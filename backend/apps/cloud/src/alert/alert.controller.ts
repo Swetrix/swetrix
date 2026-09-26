@@ -164,18 +164,11 @@ export class AlertController {
       throw new ForbiddenException('User not found')
     }
 
-    const maxAlerts = ACCOUNT_PLANS[user.planCode]?.maxAlerts ?? ALERTS_MAXIMUM
-
     if (!user.isActive) {
       throw new ForbiddenException('Please, verify your email address first')
     }
 
-    const project = await this.projectService.findOne({
-      where: {
-        id: alertDTO.pid,
-      },
-      relations: ['alerts', 'admin'],
-    })
+    const project = await this.projectService.getFullProject(alertDTO.pid)
 
     if (_isEmpty(project)) {
       throw new NotFoundException('Project not found')
@@ -187,19 +180,23 @@ export class AlertController {
       'You are not allowed to add alerts to this project',
     )
 
-    const pids = await this.projectService.getProjectIdsByAdminId(uid)
+    const maxAlerts =
+      ACCOUNT_PLANS[project.admin.planCode]?.maxAlerts ?? ALERTS_MAXIMUM
+    const pids = await this.projectService.getProjectIdsByAdminId(
+      project.admin.id,
+    )
     const alertsCount = await this.alertService.count({
       where: { project: { id: In(pids) } },
     })
 
-    if (user.planCode === PlanCode.none) {
+    if (project.admin.planCode === PlanCode.none) {
       throw new HttpException(
         'You cannot create new alerts due to no active subscription. Please upgrade your account plan to continue.',
         HttpStatus.PAYMENT_REQUIRED,
       )
     }
 
-    if (user.isAccountBillingSuspended) {
+    if (project.admin.isAccountBillingSuspended) {
       throw new HttpException(
         'The account that owns this site is currently suspended, this is because of a billing issue. Please resolve the issue to continue.',
         HttpStatus.PAYMENT_REQUIRED,

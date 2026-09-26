@@ -588,6 +588,8 @@
     "description": "Swetrix is a privacy-first Google Analytics alternative that helps you understand visitors, traffic sources and website performance with simple, cookieless, GDPR-compliant insights - no cookie banners or invasive tracking.",
     "understandTheirUsers": "<0>{{amount}}</0> people understand their users",
     "startAXDayFreeTrial": "Start a {{amount}}-day free trial",
+    "addMyWebsite": "Add my website",
+    "yourWebsite": "Your website",
     "metric": "Metric",
     "heroBenefits": {
       "trial": "Free trial {{days}} days",
@@ -746,6 +748,7 @@
       "create": "Create your account",
       "trial": "Start your free {{amount}} day trial",
       "trialSubtitle": "Try all features free. Cancel anytime before your trial ends.",
+      "siteSubtitle": "Create your account and start tracking <site>{{site}}</site> in minutes.",
       "changePlanLater": "You can change your plan later or at any time.",
       "alreadyAMember": "Already a member? <url>Sign in</url>",
       "createAnAccount": "Create an account",
@@ -1779,6 +1782,8 @@
     "percentage": "Percentage",
     "stackTraceXFrames": "Stack trace ({{x}} frames)",
     "metadata": "Metadata",
+    "pageProperties": "Page properties",
+    "searchMetadata": "Search properties and events…",
     "aiDetailsDesc": "The buttons above allow you to see an estimate of what kind of traffic you can expect within an hour in the next X hours.",
     "search": "Search",
     "segments": "Segments",
@@ -1922,6 +1927,8 @@
       "deleteConfirmMessage": "This permanently deletes the session replay recording. The analytics session data stays available.",
       "playerError": "Could not initialise replay player",
       "empty": "No replay events were found.",
+      "incompleteTitle": "This replay is incomplete",
+      "incompleteDescription": "The recording is missing its initial page snapshot, so it can't be played back. This usually means some recording data failed to upload from the visitor's browser.",
       "back10": "Back 10 seconds",
       "forward10": "Forward 10 seconds",
       "play": "Play",
@@ -1968,6 +1975,7 @@
     },
     "pageflow": "Page flow",
     "userSessions": "Sessions",
+    "userTraits": "User traits",
     "noSessions": "No sessions found for this user.",
     "unknown": "Unknown",
     "backToErrors": "Back to errors list",
@@ -2022,8 +2030,8 @@
       "desc": "No events have been tracked yet. Follow the installation steps below to start collecting data. Still not working? Try <turl>troubleshooting</turl> your integration or <curl>contact us</curl> for setup help."
     },
     "waitingCaptcha": {
-      "title": "No CAPTCHA events yet",
-      "desc": "No CAPTCHA events have been tracked yet.\nSee the <guideurl>integration guide</guideurl> to add CAPTCHA to your app.\n\nStill not working? Try <turl>troubleshooting</turl> your integration or <curl>contact us</curl> for setup help.",
+      "title": "CAPTCHA protection is not set up yet",
+      "desc": "This website is not protected from bots by Swetrix CAPTCHA yet.\nFollow the steps below or the <guideurl>integration guide</guideurl> to add it to your forms. Once CAPTCHA starts verifying your visitors, its activity will show up here.\n\nAlready set it up? Try <turl>troubleshooting</turl> your integration or <curl>contact us</curl> for setup help.",
       "setup": {
         "tabs": {
           "script": "Script",
@@ -2071,11 +2079,40 @@
     "noReplaysFiltersTitle": "No replays found",
     "noReplaysFiltersDesc": "No replays match this period and filter set. Try changing the date range or filters.",
     "noCaptchaEv": "No CAPTCHA events were recorded for this period.\nIf you have not set up CAPTCHA yet, see the <url>docs</url> to add it to your app.",
+    "panelTabs": {
+      "country": "Countries",
+      "region": "Regions",
+      "city": "Cities",
+      "locale": "Locales",
+      "page": "Pages",
+      "entry_page": "Entry pages",
+      "exit_page": "Exit pages",
+      "host": "Hosts",
+      "browser": "Browsers",
+      "os": "Operating systems",
+      "device": "Device types",
+      "referrer": "Referrers",
+      "isp": "ISPs",
+      "organization": "Organisations",
+      "user_type": "Usage types",
+      "connection_type": "Connection types",
+      "utm_source": "UTM Sources",
+      "utm_medium": "UTM Mediums",
+      "utm_campaign": "UTM Campaigns",
+      "utm_term": "UTM Terms",
+      "utm_content": "UTM Content",
+      "query": "Queries",
+      "captcha_event": "Challenge statuses",
+      "captcha_difficulty": "Difficulty levels",
+      "solve_time": "Solve times",
+      "captcha_reason": "Auto difficulty reasons"
+    },
     "mapping": {
       "cc": "Country",
       "rg": "Region",
       "ct": "City",
       "pg": "Page",
+      "title": "Titles",
       "host": "Host",
       "lc": "Locale",
       "map": "Map",
@@ -2105,7 +2142,7 @@
       "aiReferral": "AI referral",
       "captcha_event": "Challenge status",
       "captcha_difficulty": "Difficulty",
-      "captcha_reason": "Auto difficulty reasons",
+      "captcha_reason": "Auto difficulty reason",
       "solve_time": "Solve time"
     },
     "usageTypeMapping": {
@@ -2701,7 +2738,7 @@
     },
     "page": "Page",
     "journeys": {
-      "noData": "Journeys are not available yet due to lack of data, or you've disabled this feature in the tracking script parameters.",
+      "noData": "No journeys found for the selected period and filters. Journeys appear when visitors view at least two different pages in a session.",
       "learnMore": "<url>Learn more about journeys</url> in our docs.",
       "learnMoreAriaLabel": "Open the journeys documentation",
       "stepX": "Step {{x}}",
@@ -3119,7 +3156,20 @@
     "sessionReplayAddonNextRenewal": "the next renewal",
     "sessionReplayAddonPendingChange": "A scheduled session replay add-on change will take effect on {{date}}. Select a new quantity or update the current settings to replace it.",
     "sessionReplayAddonSave": "Update add-on",
-    "sessionReplayAddonComingSoon": "Self-serve session replay add-ons are coming soon."
+    "sessionReplayAddonComingSoon": "Self-serve session replay add-ons are coming soon.",
+    "invoicesTitle": "Invoices",
+    "invoicesDesc": "Receipts for every payment made on your account.",
+    "invoicesTableDate": "Date",
+    "invoicesTableDescription": "Description",
+    "invoicesTableAmount": "Amount",
+    "invoicesSubscriptionPayment": "Subscription payment",
+    "invoicesOneOffCharge": "One-off charge",
+    "invoicesViewReceipt": "View receipt",
+    "invoicesEmpty": "No invoices yet",
+    "invoicesEmptyDesc": "Once you are charged for your subscription, receipts will show up here.",
+    "invoicesLoadError": "We could not load your invoices. Please try again later.",
+    "invoicesRetry": "Try again",
+    "invoicesPaddleNote": "Payments are processed by Paddle, our merchant of record. Receipts open on paddle.com."
   },
   "modals": {
     "paidFeature": {
@@ -3152,7 +3202,7 @@
   "pricing": {
     "title": "Pricing",
     "comparison": {
-      "metaDescription": "Compare Swetrix plans feature by feature. Every plan includes the full privacy-first analytics suite — higher tiers add session replays, experiments, and enterprise controls.",
+      "metaDescription": "Compare Swetrix plans, analytics features, usage limits, session replays, experiments, and enterprise options to choose a plan for your website.",
       "title": "Compare plans & features",
       "fromPerMonth": "From {{price}} / month",
       "included": "Included",
@@ -3168,6 +3218,7 @@
       },
       "features": {
         "websites": "Websites",
+        "teamMembers": "Team members",
         "realtimeDashboard": "Real-time dashboard",
         "cookieless": "Cookieless tracking",
         "noDataSampling": "No data sampling",
@@ -3188,6 +3239,8 @@
         "unlimited": "Unlimited",
         "websitesStandard": "10",
         "websitesPlus": "100",
+        "teamMembersStandard": "10",
+        "teamMembersPlus": "25",
         "eventsUpTo": "Up to 50M",
         "apiRateStandard": "300 / hour",
         "apiRatePlus": "6,000 / hour"
@@ -3371,29 +3424,142 @@
       "tooManyImages": "You can attach up to {{count}} images"
     }
   },
-  "open": {
-    "desc": "Swetrix is an Open Startup, we share our metrics, such as revenue, losses, amount of users, etc. with the public.",
-    "updated": "This page is updated regularly.",
-    "finance": {
-      "title": "Finance metrics",
-      "desc": "Our financial metrics, such as revenue, losses, etc."
-    },
-    "usage": {
-      "title": "Usage metrics",
-      "desc": "Our user metrics, such as amount of active users, connected websites.",
-      "live": "You can see our live metrics on our <livedemo>public dashboard</livedemo>. You can also make your own Swetrix Dashboards public and adjust them to your needs."
-    }
-  },
   "checkout": {
     "title": "Start your free trial",
     "subtitle": "Try Swetrix free for {{days}} days. Cancel anytime.",
     "successRedirect": "Your checkout is complete. We're updating your subscription and will take you to your dashboard shortly.",
+    "rating": {
+      "ariaLabel": "4.8 out of 5 stars",
+      "score": "4.8/5",
+      "websites": "from {{count}} websites using Swetrix",
+      "websitesFallback": "from thousands of websites using Swetrix"
+    },
     "trial": {
       "today": "Today",
       "step1Label": "Your free trial starts with full access",
       "step2Label": "We'll email you a reminder",
       "step3Label": "Your first payment is taken unless you cancel",
       "footer": "Cancel anytime before the trial ends. We won't charge you before then."
+    },
+    "features": {
+      "title": "Here's what you'll see in Swetrix",
+      "subtitle": "Understand where visitors come from, what slows them down, what breaks and how they move through your website — all from one dashboard.",
+      "cards": {
+        "traffic": {
+          "title": "Understand your traffic",
+          "description": "See where visitors come from, which pages they use, what campaigns work and whether they convert — without digging through layers of reports.",
+          "alt": "Swetrix traffic dashboard with visitor, session and pageview trends"
+        },
+        "performance": {
+          "title": "Find what makes your site slow",
+          "description": "Measure real-user frontend, backend and network timing, then find the exact pages, browsers and regions that need attention.",
+          "alt": "Swetrix performance dashboard with frontend, backend and network timing"
+        },
+        "errors": {
+          "title": "Catch errors before they pile up",
+          "description": "See browser exceptions, stack traces, affected visitors and session context next to the analytics you already check.",
+          "alt": "Swetrix error dashboard with error trends and recent exceptions"
+        },
+        "sessions": {
+          "title": "Watch real visitor journeys",
+          "description": "Follow individual sessions to understand drop-offs, dead ends and unexpected behaviour. Plus plans can play back recorded sessions when recording is enabled.",
+          "alt": "Swetrix session replay timeline"
+        }
+      }
+    },
+    "included": {
+      "title": "What's included",
+      "subtitle": "The event allowance below follows the volume selected above. Standard includes the complete analytics toolkit; Plus raises workspace limits and adds replays and experiments.",
+      "cards": {
+        "events": {
+          "title": "events per month",
+          "description": "Pageviews, custom events, CAPTCHA completions and error events all count toward this shared allowance."
+        },
+        "websites": {
+          "title": "websites on Standard / Plus",
+          "description": "Keep 10 websites on Standard or 100 on Plus, with add-ons available if your portfolio grows."
+        },
+        "members": {
+          "title": "team members on Standard / Plus",
+          "description": "Invite collaborators, assign access and keep everyone in the same workspace without per-seat pricing."
+        },
+        "replays": {
+          "title": "session replays per month on Plus",
+          "description": "The replay allowance scales with your selected event volume. Recording starts only when you enable it."
+        }
+      },
+      "moreTitle": "Also included",
+      "more": {
+        "privacy": "Cookieless analytics and advanced bot filtering",
+        "imports": "Imports from Google Analytics and other platforms",
+        "reports": "Email reports, alerts and notification channels",
+        "api": "REST API, Events API and SDKs",
+        "sharing": "Public and password-protected dashboards",
+        "ownership": "EU-hosted data with full ownership",
+        "funnels": "Funnels, goals and complete user journeys",
+        "seo": "Search and AI referral insights",
+        "revenue": "Revenue attribution through Stripe, Paddle or the API",
+        "experiments": "Feature flags and A/B testing on Plus"
+      }
+    },
+    "testimonials": {
+      "title": "Don't take our word for it",
+      "subtitle": "Teams use Swetrix to get useful answers without handing their visitors over to an advertising platform.",
+      "items": {
+        "alex": {
+          "company": "Casterlabs",
+          "quote": "Swetrix has been a game changer for our analytics. They've always been on top of feature requests and bug reports and have been friendly every step of the way. I can't recommend them enough.",
+          "name": "Alex Bowles",
+          "role": "Co-founder of Casterlabs"
+        },
+        "alper": {
+          "company": "Phalcode",
+          "quote": "I was confused by Google Analytics so much that I was getting zero actionable insights. Swetrix changed everything — clean dashboard, instant understanding of user behavior, and features that actually matter. Finally, analytics that help me make better decisions instead of irritating me.",
+          "name": "Alper Alkan",
+          "role": "Co-founder of Phalcode"
+        }
+      },
+      "communityProof": "{{count}} websites understand their visitors with Swetrix",
+      "communityProofFallback": "Thousands of websites understand their visitors with Swetrix"
+    },
+    "faq": {
+      "title": "Questions before you start",
+      "subtitle": "The practical details that matter when you put real traffic through Swetrix.",
+      "items": [
+        {
+          "q": "What happens during my {{days}}-day trial?",
+          "a": "Your trial starts as soon as checkout finishes. You can connect your real website and use the Swetrix dashboard immediately. We'll email you two days before the first payment; cancel before the trial ends and you won't be charged."
+        },
+        {
+          "q": "What counts toward my monthly event limit?",
+          "a": "Pageviews, custom events, CAPTCHA completions and error events count toward the shared monthly allowance. Session replays have a separate quota on Plus plans."
+        },
+        {
+          "q": "Should I choose Standard or Plus?",
+          "a": "Choose Standard for the core analytics suite, including traffic, funnels, performance monitoring, error tracking, reports and API access. Choose Plus if you also need session replays, feature flags, A/B testing, higher workspace limits or priority support."
+        },
+        {
+          "q": "What happens if I exceed my event limit?",
+          "a": "Swetrix keeps collecting your data. We'll notify you as you approach the limit, and you can move to a higher event tier to keep full access to your statistics. Occasional small traffic spikes do not immediately lock your dashboard."
+        },
+        {
+          "q": "Can I change my plan or cancel?",
+          "a": "Yes. You can change or cancel your plan from account settings. Paid plan changes are prorated, and cancelling before the trial ends prevents the first charge."
+        },
+        {
+          "q": "Can I bring my existing analytics data?",
+          "a": "Yes. Swetrix can import historical data from Google Analytics, Plausible, Fathom, Umami, Simple Analytics and other supported platforms."
+        },
+        {
+          "q": "Will I need a cookie banner?",
+          "a": "Swetrix is cookieless by default and does not use persistent cross-site identifiers. Many websites can therefore use it without analytics consent banners, but your exact obligations still depend on your configuration and local rules."
+        }
+      ]
+    },
+    "finalCta": {
+      "title": "Ready to understand what your visitors are doing?",
+      "subtitle": "Choose a plan and use Swetrix with your real traffic for {{days}} days. You won't be charged today, and you can cancel before the trial ends.",
+      "button": "Choose your plan"
     },
     "faqTrial": {
       "q": "What happens when my trial ends?",
@@ -3485,10 +3651,9 @@
     "contact": "Have something to ask?",
     "main": "Swetrix - Cookieless Google Analytics Alternative",
     "socialisation": "Socialisation",
-    "open": "Open startup",
     "passwordProtected": "Password required",
-    "performance": "End user performance monitoring to deliver fast websites",
-    "errors": "End user error tracking tool to deliver bug-free experiences",
+    "performance": "Real User Website Performance Monitoring",
+    "errors": "JavaScript Error Tracking and Monitoring",
     "pricing": "Pricing",
     "gaAlternative": "Cookieless Google Analytics alternative",
     "agencies": "Privacy-first analytics for agencies",
@@ -3500,15 +3665,14 @@
     "blog": "Stay updated with the latest insights, product updates, case studies, and use cases from Swetrix.",
     "captcha": "Swetrix Captcha is a privacy-first alternative to traditional CAPTCHAs. Protect your website from bots and spam without annoying your users with puzzles.",
     "contact": "Contact Swetrix (cookieless & privacy-first Google Analytics alternative) for support, feedback, or any questions and suggestions.",
-    "bookACall": "Book a call with Swetrix to review gaps caused by consent prompts, browser privacy controls, and ad blockers, then see how cookieless analytics gives you clearer traffic data.",
-    "errorTracking": "Privacy-first end-user error tracking by Swetrix. Set up in one line, see errors by browser/device/location, and fix issues faster. 14-day free trial - no card required.",
+    "bookACall": "Book a Swetrix demo to explore cookieless analytics and review tracking gaps caused by consent choices, browser privacy controls, and ad blockers.",
+    "errorTracking": "Find JavaScript errors by browser, device, and location with Swetrix. Set up error tracking in one line and investigate issues affecting your visitors.",
     "login": "Log in to Swetrix to view your cookieless, privacy-friendly analytics - real-time insights, no tracking cookies, no GA clutter.",
     "signup": "Create your Swetrix account and start tracking website traffic with cookieless, privacy-friendly analytics - simple setup, real-time stats.",
     "checkout": "Choose a Swetrix plan and complete your subscription — cookieless, privacy-first analytics with real-time insights.",
     "onboarding": "Get started with Swetrix (cookieless & privacy-first Google Analytics alternative) in just a few steps.",
-    "open": "Open startup metrics: learn more about our key financial & operational metrics.",
     "recovery": "Forgot your password? Use our password recovery functionality to restore access to your account.",
-    "performance": "Monitor real-user website speed with Swetrix - page load, TTFB, DNS/TLS timings and percentiles. Privacy-first and cookieless. Free 14-day trial, no card required.",
+    "performance": "Monitor real-user page speed, TTFB, DNS and TLS timings, and performance percentiles with Swetrix’s cookieless website analytics.",
     "project": "View public web analytics for {{name}}. Privacy-friendly tracking powered by Swetrix - no cookies or invasive user tracking.",
     "projectWithPassword": "This analytics project is password-protected. Enter the password to view privacy-friendly web analytics powered by Swetrix — no cookies or invasive user tracking."
   },
@@ -3554,6 +3718,13 @@
       }
     }
   },
+  "blogPage": {
+    "title": "The Swetrix Blog",
+    "description": "Practical guides to web analytics, privacy, and growing your website. Learn what brings people to your site, what they do next, and how to turn those insights into better decisions.",
+    "home": "Home",
+    "breadcrumbLabel": "Breadcrumb",
+    "empty": "No posts found"
+  },
   "exitIntentPopup": {
     "freeTrial": "Free Trial",
     "title": "Web Analytics without cookies",
@@ -3594,7 +3765,6 @@
     "status": "Status",
     "supportUs": "Support us",
     "captcha": "CAPTCHA",
-    "open": "Open startup",
     "about": "About us",
     "features": "Features",
     "imprint": "Legal notice",

@@ -34,7 +34,7 @@ import {
 } from '@phosphor-icons/react'
 import NumberFlow, { NumberFlowGroup } from '@number-flow/react'
 import type { TFunction } from 'i18next'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { FLOW_VALUE_CLASS } from '~/hooks/useFlowValue'
@@ -66,6 +66,7 @@ import SessionReplayPricingTooltip from './SessionReplayPricingTooltip'
 interface MarketingPricingProps {
   metainfo?: Metainfo
   onSelectPlan?: (selection: MarketingPricingSelection) => void
+  onSelectionChange?: (selection: MarketingPricingContext) => void
   getActionLabel?: (selection: MarketingPricingSelection) => string
   loadingPlanType?: PlanTypeCode | null
   disabled?: boolean
@@ -75,6 +76,14 @@ interface MarketingPricingProps {
 export interface MarketingPricingSelection {
   planType: PlanTypeCode
   eventTier: EventTierCode
+  billingFrequency: BillingInterval
+  currency: CurrencyCode
+}
+
+export interface MarketingPricingContext {
+  eventTier: EventTierCode
+  monthlyEvents: number
+  isCustomEventTier: boolean
   billingFrequency: BillingInterval
   currency: CurrencyCode
 }
@@ -189,7 +198,10 @@ const getBenefits = (planType: PlanTypeCode, t: TFunction): Benefit[] => {
   if (planType === 'standard') {
     return [
       { icon: GlobeIcon, label: t('pricing.websiteCount', { count: 10 }) },
-      { icon: UsersThreeIcon, label: t('pricing.benefits.unlimitedMembers') },
+      {
+        icon: UsersThreeIcon,
+        label: t('pricing.teamMemberCount', { count: 10 }),
+      },
       benefitWithTooltip(
         DownloadSimpleIcon,
         'pricing.benefits.googleAnalyticsImport',
@@ -282,6 +294,10 @@ const getBenefits = (planType: PlanTypeCode, t: TFunction): Benefit[] => {
             count: 100,
           })}`,
         },
+      },
+      {
+        icon: UsersThreeIcon,
+        label: t('pricing.teamMemberCount', { count: 25 }),
       },
       {
         icon: MonitorPlayIcon,
@@ -459,6 +475,7 @@ const BillingFrequencySwitch = ({ checked }: { checked: boolean }) => (
 export const PricingInternal = ({
   metainfo = DEFAULT_METAINFO,
   onSelectPlan,
+  onSelectionChange,
   getActionLabel,
   loadingPlanType,
   disabled,
@@ -489,6 +506,23 @@ export const PricingInternal = ({
     isCustomEventTier ? '+' : ''
   }`
   const isYearly = billingFrequency === 'yearly'
+
+  useEffect(() => {
+    onSelectionChange?.({
+      eventTier: selectedTier,
+      monthlyEvents: selectedMonthlyEvents,
+      isCustomEventTier,
+      billingFrequency,
+      currency: currencyCode,
+    })
+  }, [
+    billingFrequency,
+    currencyCode,
+    isCustomEventTier,
+    onSelectionChange,
+    selectedMonthlyEvents,
+    selectedTier,
+  ])
 
   const sliderPercent = useMemo(() => {
     if (eventTierOptionLabels.length <= 1) return 0
@@ -892,6 +926,7 @@ export const PricingInternal = ({
 const MarketingPricing = ({
   metainfo = DEFAULT_METAINFO,
   onSelectPlan,
+  onSelectionChange,
   getActionLabel,
   loadingPlanType,
   disabled,
@@ -925,6 +960,7 @@ const MarketingPricing = ({
           <PricingInternal
             metainfo={metainfo}
             onSelectPlan={onSelectPlan}
+            onSelectionChange={onSelectionChange}
             getActionLabel={getActionLabel}
             loadingPlanType={loadingPlanType}
             disabled={disabled}

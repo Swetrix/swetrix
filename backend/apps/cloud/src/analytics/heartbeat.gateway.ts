@@ -17,6 +17,7 @@ const HEARTBEAT_INTERVAL_MS = 60_000
 interface WsSession {
   pid: string
   psid: string
+  sid: string
   profileId: string
   intervalRef: ReturnType<typeof setInterval>
 }
@@ -81,13 +82,13 @@ export class HeartbeatGateway
       }
 
       // Get or validate existing session
-      const { exists, psid } = await this.analyticsService.getSessionId(
+      const { exists, psid, sid } = await this.analyticsService.getSessionId(
         pid,
         userAgent,
         ip,
       )
 
-      if (!exists) {
+      if (!exists || !sid) {
         this.logger.warn(
           `[WS HB] Connection rejected: no session exists for pid ${pid}`,
           'HeartbeatGateway',
@@ -110,13 +111,19 @@ export class HeartbeatGateway
 
       // Initial heartbeat
       await this.analyticsService.extendSessionTTL(psid)
-      await this.analyticsService.recordSessionActivity(psid, pid, profileId)
+      await this.analyticsService.recordSessionActivity(
+        sid,
+        psid,
+        pid,
+        profileId,
+      )
 
       // Set up interval for periodic heartbeat
       const intervalRef = setInterval(async () => {
         try {
           await this.analyticsService.extendSessionTTL(psid)
           await this.analyticsService.recordSessionActivity(
+            sid,
             psid,
             pid,
             profileId,
@@ -134,6 +141,7 @@ export class HeartbeatGateway
       this.sessions.set(client.id, {
         pid,
         psid,
+        sid,
         profileId,
         intervalRef,
       })
@@ -159,6 +167,7 @@ export class HeartbeatGateway
       // Final session activity update
       try {
         await this.analyticsService.recordSessionActivity(
+          session.sid,
           session.psid,
           session.pid,
           session.profileId,

@@ -122,8 +122,8 @@ const CLICK_ID_KEYS = Object.keys(CLICK_ID_MAP)
  * `#hash` fragment stripped. This is a fallback for tracker versions
  * that don't yet send the dedicated `qs` field.
  */
-const extractSearchFromPg = (pg: string | null | undefined): string => {
-  if (!pg) return ''
+const extractSearchFromPg = (pg: unknown): string => {
+  if (typeof pg !== 'string' || !pg) return ''
   const qIdx = pg.indexOf('?')
   if (qIdx === -1) return ''
   let search = pg.slice(qIdx + 1)
@@ -137,8 +137,8 @@ const extractSearchFromPg = (pg: string | null | undefined): string => {
  * accept it with or without a leading `?` and strip a trailing
  * `#hash` defensively.
  */
-const normaliseQs = (qs: string | null | undefined): string => {
-  if (!qs) return ''
+const normaliseQs = (qs: unknown): string => {
+  if (typeof qs !== 'string' || !qs) return ''
   let result = qs.startsWith('?') ? qs.slice(1) : qs
   const hashIdx = result.indexOf('#')
   if (hashIdx !== -1) result = result.slice(0, hashIdx)

@@ -14,6 +14,7 @@ import {
   SessionReplayOptions,
   SessionReplayActions,
   defaultSessionReplayActions,
+  Traits,
 } from './Lib.js'
 
 export let LIB_INSTANCE: Lib | null = null
@@ -279,6 +280,69 @@ export function clearExperimentsCache(): void {
 }
 
 /**
+ * Identify the current visitor with your own user ID (e.g. after they log in).
+ *
+ * The visitor's current anonymous profile gets linked to the identified profile
+ * server-side, so their pre-login activity is attributed to it. All events sent
+ * after this call are associated with the identified profile.
+ *
+ * Swetrix stores nothing in the browser, so call identify() on every page load
+ * while the user is logged in. Call reset() when they log out.
+ *
+ * @param profileId A unique, stable identifier of the user, e.g. an internal
+ * user ID. It's stored as you provide it, so don't pass values you wouldn't
+ * want to see in your dashboard.
+ * @param traits Optional key / value metadata to show on the user's profile,
+ * e.g. their email, plan or signup date. Traits are merged with the ones
+ * already stored; pass `null` to remove one.
+ *
+ * @example
+ * ```typescript
+ * // After the user logs in (or on page load if they're already logged in)
+ * swetrix.identify('user-12345', {
+ *   email: 'john@example.com',
+ *   plan: 'premium',
+ * })
+ *
+ * // On logout
+ * swetrix.reset()
+ * ```
+ */
+export async function identify(profileId: string, traits?: Traits): Promise<void> {
+  if (!LIB_INSTANCE) return
+
+  await LIB_INSTANCE.identify(profileId, traits)
+}
+
+/**
+ * Updates the traits of the already identified visitor without having to
+ * repeat their user ID. Only the keys you pass are touched; pass `null` to
+ * remove a trait.
+ *
+ * @example
+ * ```typescript
+ * swetrix.setTraits({ plan: 'enterprise', trialEndsAt: null })
+ * ```
+ */
+export async function setTraits(traits: Traits): Promise<void> {
+  if (!LIB_INSTANCE) return
+
+  await LIB_INSTANCE.setTraits(traits)
+}
+
+/**
+ * Resets the visitor's identity set via identify() (e.g. after they log out),
+ * so subsequent events are tracked anonymously again. Important on shared
+ * devices - otherwise the next visitor would be tracked under the previous
+ * user's identity.
+ */
+export function reset(): void {
+  if (!LIB_INSTANCE) return
+
+  LIB_INSTANCE.reset()
+}
+
+/**
  * Gets the anonymous profile ID for the current visitor.
  * If profileId was set via init options, returns that.
  * Otherwise, requests server to generate one from IP/UA hash.
@@ -346,4 +410,5 @@ export {
   IPageViewPayload,
   FeatureFlagsOptions,
   ExperimentOptions,
+  Traits,
 }

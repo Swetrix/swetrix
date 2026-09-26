@@ -7,6 +7,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm'
 import {
   EntityManager,
+  Equal,
   FindManyOptions,
   FindOneOptions,
   In,
@@ -29,6 +30,7 @@ import _toNumber from 'lodash/toNumber'
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
 import {
   User,
+  DashboardBlockReason,
   ACCOUNT_PLANS,
   TRIAL_DURATION,
   BillingFrequency,
@@ -61,9 +63,11 @@ import {
   SubscriptionDunning,
   SubscriptionDunningStatus,
 } from './entities/subscription-dunning.entity'
+import { UserSubscription } from './entities/user-subscription.entity'
+import { getPaddleSubscriptionDiscount } from './paddle-subscription-discount'
 import { UserGoogleDTO } from './dto/user-google.dto'
 import { UserGithubDTO } from './dto/user-github.dto'
-import { EMAIL_ACTION_ENCRYPTION_KEY } from '../common/constants'
+import { EMAIL_ACTION_ENCRYPTION_KEY, redis } from '../common/constants'
 import { ReportFrequency } from '../project/enums'
 import { OrganisationService } from '../organisation/organisation.service'
 
@@ -124,6 +128,19 @@ const CURRENCY_BY_COUNTRY = {
 }
 
 const { PADDLE_VENDOR_ID, PADDLE_API_KEY } = process.env
+// Paddle's vendor API is slow and rate limited; receipts do not change once
+// issued, so an hour-long cache is safe
+const PAYMENTS_CACHE_TTL_SECONDS = 3600
+const PAYMENTS_FETCH_TIMEOUT_MS = 15000
+
+export interface UserPayment {
+  id: number
+  date: string
+  amount: number
+  currency: string
+  isOneOff: boolean
+  receiptUrl: string | null
+}
 const DEFAULT_CDN_URL = 'https://cdn.swetrix.com'
 const FEEDBACK_ATTACHMENT_UPLOAD_TIMEOUT_MS = 10_000
 const WEBSITE_ADDON_BUNDLE_SIZE = 50
@@ -287,6 +304,8 @@ export class UserService {
     private readonly userAddonChargeRepository: Repository<UserAddonCharge>,
     @InjectRepository(SubscriptionDunning)
     private readonly subscriptionDunningRepository: Repository<SubscriptionDunning>,
+    @InjectRepository(UserSubscription)
+    private readonly userSubscriptionRepository: Repository<UserSubscription>,
     private readonly organisationService: OrganisationService,
   ) {}
 
@@ -312,6 +331,36 @@ export class UserService {
 
   async update(id: string, update: Record<string, unknown>): Promise<any> {
     return this.usersRepository.update({ id }, update)
+  }
+
+  async updatePlanUsageState(
+    user: User,
+    update: Partial<
+      Pick<User, 'planExceedContactedAt' | 'dashboardBlockReason'>
+    >,
+  ): Promise<boolean> {
+    if (
+      user.dashboardBlockReason &&
+      user.dashboardBlockReason !== DashboardBlockReason.exceeding_plan_limits
+    ) {
+      return false
+    }
+
+    const result = await this.usersRepository.update(
+      {
+        id: user.id,
+        planCode: user.planCode,
+        planExceedContactedAt: user.planExceedContactedAt
+          ? Equal(user.planExceedContactedAt)
+          : IsNull(),
+        dashboardBlockReason: user.dashboardBlockReason || IsNull(),
+        isActive: true,
+        isAccountBillingSuspended: false,
+        cancellationEffectiveDate: IsNull(),
+      },
+      update,
+    )
+    return result.affected === 1
   }
 
   async updateByEmail(
@@ -1049,6 +1098,134 @@ export class UserService {
     }
 
     return data.response || {}
+  }
+
+  private async fetchPaddleSubscriptionPayments(
+    subID: string,
+  ): Promise<UserPayment[]> {
+    const numericSubID = Number(subID)
+    const body = new URLSearchParams()
+    body.set('vendor_id', String(Number(PADDLE_VENDOR_ID)))
+    body.set('vendor_auth_code', PADDLE_API_KEY)
+    body.set(
+      'subscription_id',
+      Number.isFinite(numericSubID) ? String(numericSubID) : subID,
+    )
+    body.set('is_paid', '1')
+
+    const res = await fetch(
+      'https://vendors.paddle.com/api/2.0/subscription/payments',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body,
+        signal: AbortSignal.timeout(PAYMENTS_FETCH_TIMEOUT_MS),
+      },
+    )
+    const data = await res.json()
+
+    if (!res.ok || !data?.success) {
+      throw new Error(
+        `Paddle payments request failed: ${JSON.stringify(data?.error || data)}`,
+      )
+    }
+
+    return (data.response || []).map((payment: Record<string, any>) => ({
+      id: Number(payment.id),
+      date: String(payment.payout_date || ''),
+      amount: Number(payment.amount) || 0,
+      currency: String(payment.currency || 'USD'),
+      isOneOff: Boolean(payment.is_one_off_charge),
+      receiptUrl: payment.receipt_url ? String(payment.receipt_url) : null,
+    }))
+  }
+
+  // Payments (receipts) for the currently authenticated user only: subscription
+  // ids are always read from the user's own DB records and are never accepted
+  // from the client. Receipts are collected across every subscription the user
+  // has ever had, since `user.subID` is cleared on cancellation and a
+  // resubscribe always gets a new subscription id
+  async getPayments(userId: string): Promise<UserPayment[]> {
+    if (!PADDLE_VENDOR_ID || !PADDLE_API_KEY) {
+      return []
+    }
+
+    const user = await this.findOne({
+      where: { id: userId },
+      select: ['id', 'subID'],
+    })
+
+    if (!user) {
+      return []
+    }
+
+    const cacheKey = `user-payments:${user.id}`
+    const cached = await redis.get(cacheKey).catch(() => null)
+
+    if (cached) {
+      try {
+        return JSON.parse(cached)
+      } catch {
+        // fall through to a fresh fetch
+      }
+    }
+
+    const subIDs = await this.getUserSubscriptionIDs(user.id, user.subID)
+
+    if (_isEmpty(subIDs)) {
+      return []
+    }
+
+    const results = await Promise.allSettled(
+      subIDs.map((subID) => this.fetchPaddleSubscriptionPayments(subID)),
+    )
+
+    const payments: UserPayment[] = []
+    const seenPaymentIds = new Set<number>()
+    let failedCount = 0
+
+    results.forEach((result, index) => {
+      if (result.status === 'rejected') {
+        failedCount += 1
+        console.error(
+          `[ERROR] (getPayments) Failed to load payments for subscription ${subIDs[index]}:`,
+          result.reason,
+        )
+        return
+      }
+
+      result.value.forEach((payment) => {
+        if (seenPaymentIds.has(payment.id)) {
+          return
+        }
+
+        seenPaymentIds.add(payment.id)
+        payments.push(payment)
+      })
+    })
+
+    // one unreachable subscription must not hide the receipts that did load;
+    // only a complete failure is worth surfacing to the user
+    if (failedCount === _size(subIDs)) {
+      throw new ServiceUnavailableException('Failed to load payment history')
+    }
+
+    payments.sort((a, b) => b.date.localeCompare(a.date))
+
+    // a partial result is not worth caching for an hour - the next request
+    // should get another chance at the subscriptions that failed
+    if (failedCount === 0) {
+      await redis
+        .set(
+          cacheKey,
+          JSON.stringify(payments),
+          'EX',
+          PAYMENTS_CACHE_TTL_SECONDS,
+        )
+        .catch(() => null)
+    }
+
+    return payments
   }
 
   private buildWebsiteAddonChargeKey(
@@ -2548,6 +2725,12 @@ export class UserService {
     let preview: any = {}
 
     try {
+      const discount = await getPaddleSubscriptionDiscount(
+        String(user.subID),
+        planID,
+        user.tierCurrency,
+        { vendorId: PADDLE_VENDOR_ID, apiKey: PADDLE_API_KEY },
+      )
       const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -2559,7 +2742,8 @@ export class UserService {
           prorate: true,
           bill_immediately: true,
           currency: user.tierCurrency,
-          keep_modifiers: false,
+          keep_modifiers: true,
+          ...discount,
         }),
       })
       preview = { data: await res.json() }
@@ -2680,6 +2864,12 @@ export class UserService {
     let result: any = {}
 
     try {
+      const discount = await getPaddleSubscriptionDiscount(
+        String(user.subID),
+        planID,
+        user.tierCurrency,
+        { vendorId: PADDLE_VENDOR_ID, apiKey: PADDLE_API_KEY },
+      )
       const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -2691,7 +2881,8 @@ export class UserService {
           prorate: true,
           bill_immediately: true,
           currency: user.tierCurrency,
-          keep_modifiers: false,
+          keep_modifiers: true,
+          ...discount,
           passthrough: JSON.stringify({
             uid: id,
             planType,
@@ -2730,6 +2921,11 @@ export class UserService {
     }
 
     await this.update(id, updateParams)
+    await this.recordUserSubscription({
+      userId: id,
+      subID,
+      planId: planID,
+    })
     await this.refreshWebsiteAddonEntitlements(id)
     await this.refreshSessionReplayAddonEntitlements(id)
   }
@@ -2819,6 +3015,144 @@ export class UserService {
 
     const bytes = CryptoJS.Rabbit.decrypt(base64, EMAIL_ACTION_ENCRYPTION_KEY)
     return bytes.toString(CryptoJS.enc.Utf8)
+  }
+
+  // Records a Paddle subscription id against a user so it survives the user's
+  // `subID` being cleared on cancellation. Safe to call repeatedly: Paddle
+  // retries webhooks and `subscription_updated` fires many times per
+  // subscription. Never throws - losing a history row must not fail the
+  // subscription flow that triggered it
+  async recordUserSubscription(params: {
+    userId: string
+    subID: string | number | null | undefined
+    paddleUserId?: string | number | null
+    planId?: string | number | null
+    startedAt?: Date | null
+  }): Promise<void> {
+    const { userId } = params
+    const subID = params.subID ? String(params.subID) : null
+
+    if (!userId || !subID) {
+      return
+    }
+
+    const paddleUserId = params.paddleUserId
+      ? String(params.paddleUserId)
+      : null
+    const planId = params.planId ? String(params.planId) : null
+
+    try {
+      const existing = await this.userSubscriptionRepository.findOne({
+        where: { subID },
+      })
+
+      if (existing) {
+        const update: Partial<UserSubscription> = {}
+
+        // a subscription id belongs to exactly one Paddle checkout, so a
+        // mismatch means the webhook resolved to a different user than we
+        // recorded before - the webhook wins, but it is worth knowing about
+        if (existing.userId !== userId) {
+          console.error(
+            '[ERROR] (recordUserSubscription) Subscription %s moved from user %s to %s',
+            subID,
+            existing.userId,
+            userId,
+          )
+          update.userId = userId
+        }
+
+        if (!existing.paddleUserId && paddleUserId) {
+          update.paddleUserId = paddleUserId
+        }
+
+        if (!existing.planId && planId) {
+          update.planId = planId
+        }
+
+        if (!existing.startedAt && params.startedAt) {
+          update.startedAt = params.startedAt
+        }
+
+        if (!_isEmpty(update)) {
+          await this.userSubscriptionRepository.update(existing.id, update)
+        }
+
+        return
+      }
+
+      await this.userSubscriptionRepository.save(
+        this.userSubscriptionRepository.create({
+          userId,
+          subID,
+          paddleUserId,
+          planId,
+          startedAt: params.startedAt || null,
+          endedAt: null,
+        }),
+      )
+    } catch (reason) {
+      // a concurrent webhook retry may have inserted the same row in between
+      const duplicate = await this.userSubscriptionRepository
+        .findOne({ where: { subID } })
+        .catch(() => null)
+
+      if (duplicate) {
+        return
+      }
+
+      console.error(
+        '[ERROR] (recordUserSubscription) Failed to record subscription %s for user %s:',
+        subID,
+        userId,
+        reason,
+      )
+    }
+  }
+
+  async markUserSubscriptionEnded(
+    subID: string,
+    endedAt: Date | null,
+  ): Promise<void> {
+    if (!subID) {
+      return
+    }
+
+    try {
+      await this.userSubscriptionRepository.update(
+        { subID },
+        { endedAt: endedAt || new Date() },
+      )
+    } catch (reason) {
+      console.error(
+        '[ERROR] (markUserSubscriptionEnded) Failed to mark subscription %s as ended:',
+        subID,
+        reason,
+      )
+    }
+  }
+
+  // Every Paddle subscription id known for a user, current one first
+  async getUserSubscriptionIDs(
+    userId: string,
+    currentSubID?: string | null,
+  ): Promise<string[]> {
+    const subscriptions = await this.userSubscriptionRepository.find({
+      where: { userId },
+      select: ['subID', 'startedAt', 'createdAt'],
+      order: {
+        startedAt: 'DESC',
+        createdAt: 'DESC',
+      },
+    })
+
+    return Array.from(
+      new Set(
+        [currentSubID, ...subscriptions.map(({ subID }) => subID)].filter(
+          (subID): subID is string => !!subID,
+        ),
+      ),
+    )
   }
 
   getOpenSubscriptionDunning(
@@ -3019,40 +3353,32 @@ export class UserService {
   }
 
   async getUsersForLockDashboards() {
-    const sevenDaysAgo = dayjs
-      .utc()
-      .subtract(7, 'days')
-      .format('YYYY-MM-DD HH:mm:ss')
-
-    // First get the user IDs that have at least one project
-    const userIds = await this.usersRepository
-      .createQueryBuilder('user')
-      .leftJoin('user.projects', 'p')
-      .select('user.id')
-      .where({
-        isActive: true,
-        planCode: Not(In([PlanCode.none, PlanCode.trial])),
-        planExceedContactedAt: LessThan(sevenDaysAgo),
-        dashboardBlockReason: IsNull(),
-        isAccountBillingSuspended: false,
-        cancellationEffectiveDate: IsNull(),
-      })
-      .groupBy('user.id')
-      .having('COUNT(p.id) > 0')
-      .getMany()
-
-    if (_isEmpty(userIds)) {
-      return []
-    }
-
-    // Then fetch those users with their projects
     return this.usersRepository
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.projects', 'projects')
-      .select(['user.id', 'user.email', 'user.planCode', 'projects.id'])
-      .where('user.id IN (:...userIds)', {
-        userIds: userIds.map((u) => u.id),
+      .select([
+        'user.id',
+        'user.email',
+        'user.planCode',
+        'user.planExceedContactedAt',
+        'user.dashboardBlockReason',
+        'projects.id',
+      ])
+      .where({
+        isActive: true,
+        planCode: Not(In([PlanCode.none, PlanCode.trial])),
+        isAccountBillingSuspended: false,
+        cancellationEffectiveDate: IsNull(),
       })
+      .andWhere(
+        '(user.dashboardBlockReason IS NULL OR user.dashboardBlockReason = :usageBlock)',
+        {
+          usageBlock: DashboardBlockReason.exceeding_plan_limits,
+        },
+      )
+      .andWhere(
+        '(user.planExceedContactedAt IS NOT NULL OR user.dashboardBlockReason = :usageBlock)',
+      )
       .getMany()
   }
 

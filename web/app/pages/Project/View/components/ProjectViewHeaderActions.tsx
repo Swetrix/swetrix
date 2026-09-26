@@ -24,7 +24,7 @@ import {
   splitProjectViewFiltersByTab,
   supportsProjectViewSegments,
 } from '../utils/projectViewSegments'
-import { useViewProjectContext } from '../ViewProject'
+import { useProjectViewsContext, useViewProjectContext } from '../ViewProject'
 
 import { getFiltersUrlParams } from './SearchFilters'
 
@@ -71,16 +71,14 @@ const ProjectViewHeaderActions = ({
   extraActions,
 }: ProjectViewHeaderActionsProps) => {
   const { allowedToManage } = useCurrentProject()
+  const { activeTab, dataLoading, filters } = useViewProjectContext()
   const {
-    activeTab,
-    dataLoading,
-    filters,
     projectViews,
     projectViewsLoading,
     loadProjectViews,
     setProjectViewToUpdate,
     setIsAddAViewOpened,
-  } = useViewProjectContext()
+  } = useProjectViewsContext()
   const { t } = useTranslation('common')
   const [searchParams, setSearchParams] = useSearchParams()
   const deleteFetcher = useFetcher<ProjectViewActionData>()

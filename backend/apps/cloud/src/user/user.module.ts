@@ -18,6 +18,7 @@ import { OrganisationModule } from '../organisation/organisation.module'
 import { UserAddon } from './entities/user-addon.entity'
 import { UserAddonCharge } from './entities/user-addon-charge.entity'
 import { SubscriptionDunning } from './entities/subscription-dunning.entity'
+import { UserSubscription } from './entities/user-subscription.entity'
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { SubscriptionDunning } from './entities/subscription-dunning.entity'
       UserAddon,
       UserAddonCharge,
       SubscriptionDunning,
+      UserSubscription,
       Message,
     ]),
     ActionTokensModule,

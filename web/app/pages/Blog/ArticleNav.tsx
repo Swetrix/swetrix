@@ -11,11 +11,7 @@ import { Fragment, RefObject, useCallback, useEffect, useState } from 'react'
 import { Text } from '~/ui/Text'
 import { cn } from '~/utils/generic'
 
-interface Heading {
-  id: string
-  text: string
-  level: number
-}
+import type { ArticleHeading } from '~/utils/toc'
 
 const PROGRESS_RADIUS = 15
 const PROGRESS_STROKE = 2
@@ -73,19 +69,12 @@ function HeadingSelector({
   headings,
   activeId,
 }: {
-  headings: Heading[]
+  headings: ArticleHeading[]
   activeId: string | null
 }) {
   const activeHeading = headings.find((h) => h.id === activeId)
   const label = activeHeading?.text ?? headings[0]?.text ?? ''
   const labelKey = activeHeading?.id ?? headings[0]?.id ?? 'toc'
-
-  const scrollToHeading = (id: string) => {
-    const el = document.getElementById(id)
-    if (!el) return
-    const y = el.getBoundingClientRect().top + window.scrollY - 80
-    window.scrollTo({ top: y, behavior: 'smooth' })
-  }
 
   return (
     <Popover className='relative min-w-0 flex-1'>
@@ -123,6 +112,7 @@ function HeadingSelector({
 
           <Transition
             as={Fragment}
+            unmount={false}
             enter='transition ease-out duration-150'
             enterFrom='opacity-0 translate-y-2'
             enterTo='opacity-100 translate-y-0'
@@ -131,8 +121,10 @@ function HeadingSelector({
             leaveTo='opacity-0 translate-y-2'
           >
             <PopoverPanel
-              anchor={{ to: 'top end', gap: 12 }}
-              className='z-50 w-[min(400px,calc(100vw-2rem))] rounded-xl border border-gray-200/90 bg-white/92 p-1.5 shadow-2xl ring-1 ring-gray-300/60 backdrop-blur-xl backdrop-saturate-150 supports-backdrop-filter:bg-white/88 dark:border-white/10 dark:bg-slate-950/92 dark:ring-slate-600/50 dark:supports-backdrop-filter:bg-slate-950/84'
+              unmount={false}
+              as='nav'
+              aria-label='On this page'
+              className='absolute right-0 bottom-full z-50 mb-3 w-[min(400px,calc(100vw-4rem))] rounded-xl border border-gray-200/90 bg-white/92 p-1.5 shadow-2xl ring-1 ring-gray-300/60 backdrop-blur-xl backdrop-saturate-150 supports-backdrop-filter:bg-white/88 dark:border-white/10 dark:bg-slate-950/92 dark:ring-slate-600/50 dark:supports-backdrop-filter:bg-slate-950/84'
             >
               <div className='max-h-[50vh] overflow-y-auto'>
                 {headings.map((heading, index) => {
@@ -140,13 +132,10 @@ function HeadingSelector({
                   const isActive = heading.id === activeId
 
                   return (
-                    <button
+                    <a
                       key={heading.id}
-                      type='button'
-                      onClick={() => {
-                        scrollToHeading(heading.id)
-                        close()
-                      }}
+                      href={`#${heading.id}`}
+                      onClick={() => close()}
                       className={cn(
                         'flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-left transition-colors',
                         isActive
@@ -182,7 +171,7 @@ function HeadingSelector({
                       >
                         {heading.text}
                       </Text>
-                    </button>
+                    </a>
                   )
                 })}
               </div>
@@ -196,26 +185,14 @@ function HeadingSelector({
 
 export default function ArticleNav({
   articleRef,
+  headings,
 }: {
   articleRef: RefObject<HTMLElement | null>
+  headings: ArticleHeading[]
 }) {
-  const [headings, setHeadings] = useState<Heading[]>([])
   const [activeId, setActiveId] = useState<string | null>(null)
   const [progress, setProgress] = useState(0)
   const [visible, setVisible] = useState(false)
-
-  useEffect(() => {
-    const article = articleRef.current
-    if (!article) return
-
-    const els = article.querySelectorAll<HTMLElement>('h2[id], h3[id]')
-    const items: Heading[] = Array.from(els).map((el) => ({
-      id: el.id,
-      text: el.textContent?.trim() ?? '',
-      level: parseInt(el.tagName[1], 10),
-    }))
-    setHeadings(items)
-  }, [articleRef])
 
   const handleScroll = useCallback(() => {
     const article = articleRef.current
@@ -261,26 +238,26 @@ export default function ArticleNav({
       window.removeEventListener('scroll', onScroll)
       cancelAnimationFrame(rafId)
     }
-  }, [handleScroll])
+  }, [handleScroll, headings])
 
   if (headings.length === 0) return null
 
   return (
     <AnimatePresence>
-      {visible && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 20 }}
-          transition={{ duration: 0.2, ease: 'easeOut' }}
-          className='fixed bottom-5 left-1/2 z-50 -translate-x-1/2'
-        >
-          <div className='flex max-w-[min(320px,calc(100vw-2rem))] min-w-0 items-center gap-0.5 rounded-full border border-gray-200/90 bg-white/90 py-0.5 pr-0.5 pl-1 shadow-2xl ring-1 ring-gray-300/60 backdrop-blur-xl backdrop-saturate-150 supports-backdrop-filter:bg-white/82 dark:border-white/10 dark:bg-slate-950/90 dark:ring-slate-600/50 dark:supports-backdrop-filter:bg-slate-950/82'>
-            <ScrollToTopButton progress={progress} />
-            <HeadingSelector headings={headings} activeId={activeId} />
-          </div>
-        </motion.div>
-      )}
+      <motion.div
+        initial={false}
+        animate={{ opacity: visible ? 1 : 0, y: visible ? 0 : 20 }}
+        inert={!visible}
+        aria-hidden={!visible}
+        style={{ visibility: visible ? 'visible' : 'hidden' }}
+        transition={{ duration: 0.2, ease: 'easeOut' }}
+        className='fixed bottom-5 left-1/2 z-50 -translate-x-1/2'
+      >
+        <div className='flex max-w-[min(320px,calc(100vw-2rem))] min-w-0 items-center gap-0.5 rounded-full border border-gray-200/90 bg-white/90 py-0.5 pr-0.5 pl-1 shadow-2xl ring-1 ring-gray-300/60 backdrop-blur-xl backdrop-saturate-150 supports-backdrop-filter:bg-white/82 dark:border-white/10 dark:bg-slate-950/90 dark:ring-slate-600/50 dark:supports-backdrop-filter:bg-slate-950/82'>
+          <ScrollToTopButton progress={progress} />
+          <HeadingSelector headings={headings} activeId={activeId} />
+        </div>
+      </motion.div>
     </AnimatePresence>
   )
 }

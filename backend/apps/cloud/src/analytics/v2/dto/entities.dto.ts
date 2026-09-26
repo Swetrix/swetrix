@@ -9,10 +9,12 @@ import {
   IsOptional,
   IsString,
   Max,
+  MaxLength,
   Min,
 } from 'class-validator'
 
 import { TimeBucketType } from '../../dto/getData.dto'
+import { MAX_STORED_PROFILE_ID_LENGTH } from '../../dto/identify.dto'
 import { V2BaseQueryDto, V2ProjectParamsDto } from './v2-base.dto'
 
 export const V2_MAX_ENTITY_LIMIT = 150
@@ -138,6 +140,7 @@ export class V2ProfileParamsDto extends V2ProjectParamsDto {
   @ApiProperty({ description: 'The profile identifier' })
   @IsNotEmpty()
   @IsString()
+  @MaxLength(MAX_STORED_PROFILE_ID_LENGTH)
   profileId: string
 }
 

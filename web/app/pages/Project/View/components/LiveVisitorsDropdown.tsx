@@ -1,4 +1,3 @@
-import NumberFlow from '@number-flow/react'
 import { CaretDownIcon, XIcon } from '@phosphor-icons/react'
 import _map from 'lodash/map'
 import React, { useState } from 'react'
@@ -8,11 +7,6 @@ import { Link } from '~/ui/Link'
 
 import { getLiveVisitors as getLiveVisitorsV2 } from '~/api/v2/endpoints'
 import type { LiveVisitor } from '~/api/v2/types'
-import {
-  FLOW_TIMING,
-  FLOW_VALUE_CLASS,
-  useFlowValue,
-} from '~/hooks/useFlowValue'
 import { PROJECT_TABS } from '~/lib/constants'
 import Flag from '~/ui/Flag'
 import PulsatingCircle from '~/ui/icons/PulsatingCircle'
@@ -30,7 +24,6 @@ const LiveVisitorsDropdown = () => {
   const [isDropdownVisible, setIsDropdownVisible] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [liveInfo, setLiveInfo] = useState<LiveVisitor[]>([])
-  const flowLiveVisitors = useFlowValue(liveVisitors)
 
   // The translation interpolates the amount into the sentence, so split it
   // around the placeholder to render the number with NumberFlow.
@@ -81,12 +74,7 @@ const LiveVisitorsDropdown = () => {
           <PulsatingCircle className='mr-1.5' type='small' />
           <span>
             {liveVisitorsLabelStart}
-            <NumberFlow
-              className={FLOW_VALUE_CLASS}
-              {...FLOW_TIMING}
-              value={flowLiveVisitors}
-              willChange
-            />
+            {liveVisitors}
             {liveVisitorsLabelEnd}{' '}
           </span>
           <CaretDownIcon
@@ -102,7 +90,7 @@ const LiveVisitorsDropdown = () => {
         <div
           id='live-visitors-dropdown'
           className={cn(
-            'absolute top-full right-0 z-40 mt-1 max-w-[calc(100vw-1rem)] origin-top-right transform cursor-auto scrollbar-thin overflow-hidden rounded-md border border-black/10 bg-white text-xs text-gray-900 shadow-md transition duration-150 ease-out outline-none max-sm:fixed max-sm:top-20 max-sm:right-2 max-sm:left-2 max-sm:w-auto max-sm:max-w-none sm:w-[250px] dark:border-slate-700/50 dark:bg-slate-950 dark:text-gray-50',
+            'absolute top-full right-0 z-40 mt-1 max-w-[calc(100vw-1rem)] origin-top-right transform cursor-auto scrollbar-thin overflow-hidden rounded-md border border-black/10 bg-white text-xs text-gray-900 shadow-md transition-[opacity,transform] duration-150 ease-out-quint outline-none motion-reduce:transition-none max-sm:fixed max-sm:top-20 max-sm:right-2 max-sm:left-2 max-sm:w-auto max-sm:max-w-none sm:w-[250px] dark:border-slate-700/50 dark:bg-slate-950 dark:text-gray-50',
             liveInfo.length === 0 || isLoading ? 'min-w-[200px]' : 'min-w-0',
             isDropdownVisible
               ? 'pointer-events-auto translate-y-0 scale-100 opacity-100'
