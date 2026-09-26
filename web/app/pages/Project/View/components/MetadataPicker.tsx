@@ -14,7 +14,7 @@ import {
   MagnifyingGlassIcon,
   TagIcon,
 } from '@phosphor-icons/react'
-import { useId, useMemo, useState } from 'react'
+import { useCallback, useId, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { panelControlClasses } from './PanelHeader'
@@ -44,6 +44,19 @@ export const MetadataPicker = ({
   const { t } = useTranslation('common')
   const [query, setQuery] = useState('')
   const id = useId()
+  const focusFrame = useRef<number | null>(null)
+  const focusSearchInput = useCallback((input: HTMLInputElement | null) => {
+    if (focusFrame.current !== null) {
+      cancelAnimationFrame(focusFrame.current)
+      focusFrame.current = null
+    }
+    if (input) {
+      focusFrame.current = requestAnimationFrame(() => {
+        focusFrame.current = null
+        input.focus({ preventScroll: true })
+      })
+    }
+  }, [])
   const groups = useMemo(() => {
     const search = query.trim().toLocaleLowerCase()
     return [
@@ -94,7 +107,6 @@ export const MetadataPicker = ({
           <PopoverPanel
             anchor={{ to: 'bottom start', gap: 6, padding: 12 }}
             modal={false}
-            focus
             transition
             className='z-50 w-80 max-w-[calc(100vw-1.5rem)] origin-top-left rounded-lg bg-white p-1 shadow-lg ring-1 ring-gray-200/80 transition-[opacity,transform] duration-150 ease-out-quint focus:outline-hidden data-closed:scale-95 data-closed:opacity-0 data-leave:duration-100 motion-reduce:transition-none dark:bg-slate-900 dark:ring-slate-700/60'
           >
@@ -117,7 +129,7 @@ export const MetadataPicker = ({
                   aria-hidden
                 />
                 <ComboboxInput
-                  data-autofocus
+                  ref={focusSearchInput}
                   aria-label={t('project.searchMetadata')}
                   placeholder={t('project.searchMetadata')}
                   displayValue={() => query}
