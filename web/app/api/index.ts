@@ -47,56 +47,52 @@ export const askAI = async (
     const decoder = new TextDecoder()
     let buffer = ''
 
-    while (true) {
-      const { done, value } = await reader.read()
+    try {
+      while (true) {
+        const { done, value } = await reader.read()
+        if (signal?.aborted) return
+        if (done) {
+          throw new Error('The response was interrupted. Please try again.')
+        }
 
-      if (done) {
-        callbacks.onComplete()
-        break
-      }
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n')
+        buffer = lines.pop() || ''
 
-      buffer += decoder.decode(value, { stream: true })
-
-      // Process SSE events
-      const lines = buffer.split('\n')
-      buffer = lines.pop() || ''
-
-      for (const line of lines) {
-        if (line.startsWith('data: ')) {
-          const data = line.slice(6)
-          try {
-            const parsed = JSON.parse(data)
-            if (parsed.type === 'text') {
-              callbacks.onText(parsed.content)
-            } else if (parsed.type === 'tool-call') {
-              callbacks.onToolCall?.(parsed.toolName, parsed.args)
-            } else if (parsed.type === 'tool-result') {
-              callbacks.onToolResult?.(parsed.toolName, parsed.result)
-            } else if (parsed.type === 'reasoning') {
-              callbacks.onReasoning?.(parsed.content)
-            } else if (parsed.type === 'followUps') {
-              if (Array.isArray(parsed.data)) {
-                callbacks.onFollowUps?.(
-                  parsed.data.filter(
-                    (item: unknown): item is string => typeof item === 'string',
-                  ),
-                )
-              }
-            } else if (parsed.type === 'error') {
-              callbacks.onError(new Error(parsed.content))
-            } else if (parsed.type === 'done') {
-              callbacks.onComplete()
-              return
-            }
-          } catch {
-            // Ignore parsing errors for incomplete JSON
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue
+          const parsed = JSON.parse(line.slice(6))
+          if (parsed.type === 'text') {
+            callbacks.onText(parsed.content)
+          } else if (parsed.type === 'tool-call') {
+            callbacks.onToolCall?.(parsed.toolName, parsed.args)
+          } else if (parsed.type === 'tool-result') {
+            callbacks.onToolResult?.(parsed.toolName, parsed.result)
+          } else if (parsed.type === 'reasoning') {
+            callbacks.onReasoning?.(parsed.content)
+          } else if (
+            parsed.type === 'followUps' &&
+            Array.isArray(parsed.data)
+          ) {
+            callbacks.onFollowUps?.(
+              parsed.data.filter(
+                (item: unknown): item is string => typeof item === 'string',
+              ),
+            )
+          } else if (parsed.type === 'error') {
+            throw new Error(parsed.content)
+          } else if (parsed.type === 'done') {
+            callbacks.onComplete()
+            return
           }
         }
       }
+    } finally {
+      await reader.cancel().catch(() => {})
+      reader.releaseLock()
     }
   } catch (error) {
-    if ((error as Error).name === 'AbortError') {
-      callbacks.onComplete()
+    if (signal?.aborted || (error as Error).name === 'AbortError') {
       return
     }
     callbacks.onError(error as Error)

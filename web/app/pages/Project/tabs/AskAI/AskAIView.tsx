@@ -4,7 +4,7 @@ import {
   CaretDownIcon,
   CaretRightIcon,
   SpinnerGapIcon,
-  StopCircleIcon,
+  StopIcon,
   WarningCircleIcon,
   ArrowDownIcon,
   ArrowLeftIcon,
@@ -401,7 +401,7 @@ const ToolCallBadge = ({
   const { label, icon: Icon } = getToolInfo(toolName, t)
 
   return (
-    <span className='inline-flex items-center gap-1.5 rounded-md bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700 dark:bg-slate-900 dark:text-gray-300'>
+    <span className='inline-flex items-center gap-1.5 py-1 text-xs text-gray-500 dark:text-gray-400'>
       <Icon className='h-3.5 w-3.5' />
       <span>{label}</span>
       {isLoading ? (
@@ -561,15 +561,7 @@ const ToolCallSummaryDrawer = ({
                           </span>
                         ) : null}
                       </div>
-                      {summary.params.length === 0 ? (
-                        <Text
-                          as='p'
-                          size='xs'
-                          className='mt-1 text-gray-400 italic dark:text-gray-500'
-                        >
-                          {t('project.askAi.noParameters')}
-                        </Text>
-                      ) : (
+                      {summary.params.length > 0 ? (
                         <dl className='mt-1.5 grid grid-cols-[max-content_minmax(0,1fr)] gap-x-3 gap-y-1 text-xs'>
                           {_map(summary.params, (param, pIdx) => (
                             <React.Fragment key={pIdx}>
@@ -603,7 +595,7 @@ const ToolCallSummaryDrawer = ({
                             </React.Fragment>
                           ))}
                         </dl>
-                      )}
+                      ) : null}
                     </div>
                   </div>
                 </li>
@@ -708,7 +700,7 @@ const AssistantMessage = ({
                 </div>
               )
             }
-            if (part.type === 'toolCall' && part.toolName) {
+            if (isStreaming && part.type === 'toolCall' && part.toolName) {
               return (
                 <div key={idx} className='mb-3'>
                   <ToolCallBadge
@@ -723,7 +715,7 @@ const AssistantMessage = ({
         </>
       ) : (
         <>
-          {message.toolCalls && message.toolCalls.length > 0 ? (
+          {isStreaming && message.toolCalls && message.toolCalls.length > 0 ? (
             <div className='mb-3 flex flex-wrap gap-2'>
               {_map(message.toolCalls, (call, idx) => (
                 <ToolCallBadge
@@ -940,8 +932,12 @@ const UserMessage = ({
 
   return (
     <div className='group flex flex-col items-end'>
-      <div className='max-w-[85%] rounded-2xl bg-gray-100 px-4 py-2.5 text-gray-900 dark:bg-slate-800 dark:text-gray-50'>
-        <Text as='p' size='sm' className='whitespace-pre-wrap'>
+      <div className='max-w-[90%] rounded-3xl bg-gray-100 px-5 py-3 text-gray-900 sm:max-w-[85%] dark:bg-slate-800 dark:text-gray-50'>
+        <Text
+          as='p'
+          size='sm'
+          className='leading-relaxed break-words whitespace-pre-wrap'
+        >
           {content}
         </Text>
       </div>
@@ -1005,7 +1001,7 @@ const ScrollToBottomButton = ({
     <button
       type='button'
       onClick={scrollToBottom}
-      className='absolute bottom-32 left-1/2 z-30 flex h-10 w-10 -translate-x-1/2 items-center justify-center rounded-full bg-white text-gray-800 ring-1 ring-gray-200/80 transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-slate-900 focus:outline-hidden dark:bg-slate-900 dark:text-gray-100 dark:ring-slate-700/80 dark:hover:bg-slate-800 dark:focus:ring-slate-300'
+      className='absolute bottom-3 left-1/2 z-30 flex h-10 w-10 -translate-x-1/2 items-center justify-center rounded-full bg-white text-gray-800 ring-1 ring-gray-200/80 transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-slate-900 focus:outline-hidden dark:bg-slate-900 dark:text-gray-100 dark:ring-slate-700/80 dark:hover:bg-slate-800 dark:focus:ring-slate-300'
       aria-label={t('project.askAi.scrollToBottom')}
     >
       <ArrowDownIcon className='h-5 w-5' />
@@ -1485,19 +1481,19 @@ const ChatRow = ({
   }
 
   const iconButtonCls =
-    'flex h-7 w-7 items-center justify-center rounded-md text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-slate-800 dark:hover:text-gray-100'
+    'flex h-7 w-7 items-center justify-center rounded-md text-gray-500 transition-colors hover:bg-gray-200/60 hover:text-gray-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-500 dark:text-gray-400 dark:hover:bg-slate-800 dark:hover:text-gray-100'
 
   return (
-    <div className='group rounded-md border border-gray-200 bg-white px-3 py-2 ring-1 ring-transparent transition-colors ring-inset hover:border-gray-300 hover:ring-gray-200/60 dark:border-slate-800/80 dark:bg-slate-900/40 hover:dark:border-slate-700 hover:dark:ring-slate-700/40'>
-      <div className='flex items-start gap-2'>
+    <div className='group rounded-lg border border-gray-200 bg-white px-3 py-3 transition-colors hover:bg-gray-50 dark:border-slate-800 dark:bg-slate-900/40 dark:hover:bg-slate-900'>
+      <div className='flex items-center gap-3'>
         <button
           type='button'
           onClick={() => actions.onTogglePin(chat)}
           className={cn(
-            'mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors',
+            'flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-500',
             chat.pinned
               ? 'text-amber-500 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-900/20'
-              : 'text-gray-400 opacity-0 group-hover:opacity-100 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-slate-800 dark:hover:text-gray-200',
+              : 'text-gray-400 group-focus-within:opacity-100 group-hover:opacity-100 hover:bg-gray-200/60 hover:text-gray-700 dark:hover:bg-slate-800 dark:hover:text-gray-200 [@media(hover:hover)]:opacity-0',
           )}
           title={
             chat.pinned ? t('project.askAi.unpin') : t('project.askAi.pin')
@@ -1552,9 +1548,27 @@ const ChatRow = ({
           <Text size='xxs' colour='muted'>
             {actions.formatRelative(chat.updated)}
           </Text>
+          {isEditingTags ? (
+            <div className='mt-2 w-full'>
+              <TagEditor
+                tags={tags}
+                onSave={(next) => {
+                  actions.onSaveTags(chat.id, next)
+                  setIsEditingTags(false)
+                }}
+                onCancel={() => setIsEditingTags(false)}
+              />
+            </div>
+          ) : tags.length > 0 ? (
+            <div className='mt-1.5 flex flex-wrap gap-1'>
+              {_map(tags, (tag) => (
+                <TagChip key={tag} label={tag} />
+              ))}
+            </div>
+          ) : null}
         </div>
 
-        <div className='flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100'>
+        <div className='flex shrink-0 items-center gap-0.5 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 [@media(hover:hover)]:opacity-0'>
           <button
             type='button'
             onClick={(e) => {
@@ -1597,25 +1611,6 @@ const ChatRow = ({
           </button>
         </div>
       </div>
-
-      {isEditingTags ? (
-        <div className='mt-2 ml-9'>
-          <TagEditor
-            tags={tags}
-            onSave={(next) => {
-              actions.onSaveTags(chat.id, next)
-              setIsEditingTags(false)
-            }}
-            onCancel={() => setIsEditingTags(false)}
-          />
-        </div>
-      ) : tags.length > 0 ? (
-        <div className='mt-1.5 ml-9 flex flex-wrap gap-1'>
-          {_map(tags, (tag) => (
-            <TagChip key={tag} label={tag} />
-          ))}
-        </div>
-      ) : null}
     </div>
   )
 }
@@ -2445,6 +2440,44 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
 
       abortControllerRef.current = new AbortController()
 
+      const finishResponse = () => {
+        const finalContent = streamingContentRef.current
+
+        if (currentTextPartRef.current.trim()) {
+          streamingPartsRef.current.push({
+            type: 'text',
+            text: currentTextPartRef.current,
+          })
+        }
+
+        if (finalContent.trim() || streamingToolCallsRef.current.length > 0) {
+          const followUps = streamingFollowUpsRef.current
+          const assistantMessage: Message = {
+            id: generateMessageId(),
+            role: 'assistant',
+            content: finalContent,
+            reasoning: streamingReasoningRef.current,
+            toolCalls: streamingToolCallsRef.current,
+            parts: streamingPartsRef.current,
+            followUps:
+              followUps && followUps.length > 0 ? followUps : undefined,
+          }
+          setMessages((prev) => {
+            const updatedMessages = [...prev, assistantMessage]
+            const chatId = currentChatIdRef.current
+            if (chatId) {
+              updateChatMessages(chatId, updatedMessages)
+            } else {
+              pendingMessagesToSaveRef.current = updatedMessages
+            }
+            return updatedMessages
+          })
+        }
+        setStreamingMessage(null)
+        setIsLoading(false)
+        setIsWaitingForResponse(false)
+      }
+
       try {
         const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
 
@@ -2534,52 +2567,11 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
             onFollowUps: (suggestions) => {
               streamingFollowUpsRef.current = suggestions
             },
-            onComplete: () => {
-              const finalContent = streamingContentRef.current
-
-              if (currentTextPartRef.current.trim()) {
-                streamingPartsRef.current.push({
-                  type: 'text',
-                  text: currentTextPartRef.current,
-                })
-              }
-
-              if (
-                finalContent.trim() ||
-                streamingToolCallsRef.current.length > 0
-              ) {
-                const followUps = streamingFollowUpsRef.current
-                const assistantMessage: Message = {
-                  id: generateMessageId(),
-                  role: 'assistant',
-                  content: finalContent,
-                  reasoning: streamingReasoningRef.current,
-                  toolCalls: streamingToolCallsRef.current,
-                  parts: streamingPartsRef.current,
-                  followUps:
-                    followUps && followUps.length > 0 ? followUps : undefined,
-                }
-                setMessages((prev) => {
-                  const updatedMessages = [...prev, assistantMessage]
-                  const chatId = currentChatIdRef.current
-                  if (chatId) {
-                    updateChatMessages(chatId, updatedMessages)
-                  } else {
-                    pendingMessagesToSaveRef.current = updatedMessages
-                  }
-                  return updatedMessages
-                })
-              }
-              setStreamingMessage(null)
-              setIsLoading(false)
-              setIsWaitingForResponse(false)
-            },
+            onComplete: finishResponse,
             onError: (err) => {
               console.error('AI chat error:', err)
               setError(err.message || t('project.askAi.error'))
-              setStreamingMessage(null)
-              setIsLoading(false)
-              setIsWaitingForResponse(false)
+              finishResponse()
             },
           },
           abortControllerRef.current.signal,
@@ -2791,7 +2783,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
       e.preventDefault()
       handleSubmit()
     }
@@ -2975,11 +2967,90 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
     [handleTogglePin, handleSaveTags, handleRenameChat, formatRelativeTime],
   )
 
+  const composer = (
+    <>
+      <form
+        onSubmit={handleSubmit}
+        className='rounded-xl border border-gray-200 bg-white p-2 transition-colors focus-within:border-gray-300 focus-within:ring-2 focus-within:ring-gray-200/60 dark:border-slate-700 dark:bg-slate-900 dark:focus-within:border-slate-600 dark:focus-within:ring-slate-700/50'
+      >
+        <Textarea
+          ref={inputRef}
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder={t(
+            isEmpty
+              ? 'project.askAi.placeholder'
+              : 'project.askAi.followUpPlaceholder',
+          )}
+          aria-label={t('project.askAi.placeholder')}
+          rows={2}
+          classes={{
+            textarea:
+              'w-full max-h-48 min-h-16 resize-none rounded-none border-0 bg-transparent px-3 pt-2 pb-1 text-base leading-relaxed text-gray-900 ring-0 placeholder:text-gray-400 focus:ring-0 focus:outline-none dark:bg-transparent dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:ring-0',
+          }}
+        />
+        <div className='flex items-center justify-between px-1 pt-1'>
+          <Tooltip
+            text={<AICapabilitiesTooltip />}
+            tooltipNode={
+              <button
+                type='button'
+                aria-label={t('project.askAi.capabilities.title')}
+                className='flex h-9 w-9 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 focus-visible:outline-2 focus-visible:outline-slate-500 dark:hover:bg-slate-800 dark:hover:text-gray-200'
+              >
+                <InfoIcon className='h-4 w-4' />
+              </button>
+            }
+          />
+          <div className='flex items-center gap-2'>
+            {showVoice && !isLoading ? (
+              <VoiceInputButton
+                isListening={isListening}
+                isLoading={isLoading}
+                onStart={handleStartVoice}
+                onStop={handleStopVoice}
+              />
+            ) : null}
+            <button
+              type={isLoading ? 'button' : 'submit'}
+              onClick={isLoading ? handleStop : undefined}
+              disabled={!isLoading && !input.trim()}
+              aria-label={t(
+                isLoading ? 'project.askAi.stop' : 'project.askAi.send',
+              )}
+              title={t(isLoading ? 'project.askAi.stop' : 'project.askAi.send')}
+              className='flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-900 text-white transition-colors hover:bg-gray-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-500 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-white dark:disabled:bg-slate-800 dark:disabled:text-slate-500'
+            >
+              {isLoading ? (
+                <StopIcon weight='fill' className='h-4 w-4' />
+              ) : (
+                <ArrowUpIcon weight='bold' className='h-4 w-4' />
+              )}
+            </button>
+          </div>
+        </div>
+      </form>
+      <p
+        className={cn(
+          'mt-3 px-3 text-center text-xs leading-relaxed',
+          isListening
+            ? 'text-red-500 dark:text-red-400'
+            : 'text-gray-400 dark:text-gray-500',
+        )}
+      >
+        {isListening
+          ? t('project.askAi.listening')
+          : t('project.askAi.disclaimer')}
+      </p>
+    </>
+  )
+
   return (
-    <div className='relative flex h-[calc(100vh-140px)] min-h-[600px] flex-col bg-gray-50 dark:bg-slate-950'>
+    <div className='relative flex h-[calc(100dvh-140px)] min-h-[480px] flex-col bg-gray-50 dark:bg-slate-950'>
       {isChatActive ? (
         <>
-          <div className='mx-auto flex w-full max-w-3xl items-center justify-between gap-3'>
+          <div className='mx-auto flex w-full max-w-3xl items-center justify-between gap-3 px-4 py-2'>
             <div className='flex min-w-0 items-center gap-2'>
               <button
                 type='button'
@@ -3026,10 +3097,13 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
               <button
                 type='button'
                 onClick={handleCopyLink}
+                aria-label={t('project.askAi.copyLink')}
                 className='flex shrink-0 items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-200 dark:hover:bg-slate-800'
               >
                 <LinkIcon className='h-4 w-4' />
-                <span>{t('project.askAi.copyLink')}</span>
+                <span className='hidden sm:inline'>
+                  {t('project.askAi.copyLink')}
+                </span>
               </button>
               <Menu as='div' className='relative'>
                 <MenuButton
@@ -3038,7 +3112,9 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                   aria-label={t('project.askAi.export')}
                 >
                   <ExportIcon className='h-4 w-4' />
-                  <span>{t('project.askAi.export')}</span>
+                  <span className='hidden sm:inline'>
+                    {t('project.askAi.export')}
+                  </span>
                   <CaretDownIcon className='h-3.5 w-3.5' />
                 </MenuButton>
                 <MenuItems
@@ -3071,13 +3147,15 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
               </Menu>
             </div>
           </div>
-          <hr className='mt-3 border-gray-200 dark:border-slate-800' />
         </>
       ) : null}
 
       {error ? (
         <div className='mx-auto w-full max-w-3xl px-4 pt-4'>
-          <div className='flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 dark:border-red-800 dark:bg-red-900/20'>
+          <div
+            role='alert'
+            className='flex flex-wrap items-center gap-3 rounded-2xl border border-red-200/70 bg-red-50/60 px-4 py-3 dark:border-red-900/50 dark:bg-red-950/20'
+          >
             <WarningCircleIcon className='h-5 w-5 shrink-0 text-red-500' />
             <Text
               as='p'
@@ -3086,6 +3164,29 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
             >
               {error}
             </Text>
+            {!isLoading &&
+            messages.some((message) => message.role === 'user') ? (
+              <button
+                type='button'
+                onClick={() => {
+                  let lastUserIndex = messages.length - 1
+                  while (
+                    lastUserIndex >= 0 &&
+                    messages[lastUserIndex].role !== 'user'
+                  )
+                    lastUserIndex--
+                  const retryMessages = messages.slice(0, lastUserIndex + 1)
+                  setMessages(retryMessages)
+                  const chatId = currentChatIdRef.current
+                  if (chatId) updateChatMessages(chatId, retryMessages)
+                  void runChatTurn(retryMessages)
+                }}
+                className='inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm font-medium text-red-700 hover:bg-red-100 dark:text-red-300 dark:hover:bg-red-900/30'
+              >
+                <ArrowCounterClockwiseIcon className='h-4 w-4' />
+                {t('project.askAi.retry')}
+              </button>
+            ) : null}
             <button
               type='button'
               onClick={() => setError(null)}
@@ -3097,16 +3198,19 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
         </div>
       ) : null}
 
-      <div className='relative flex-1 overflow-hidden'>
+      <div className='relative min-h-0 flex-1 overflow-hidden'>
         <div
           ref={scrollRef}
           className={cn('h-full overflow-y-auto', {
-            'flex justify-center': isEmpty,
+            'flex flex-col': isEmpty,
           })}
         >
-          <div ref={contentRef}>
+          <div
+            ref={contentRef}
+            className={isEmpty ? 'flex flex-1 flex-col' : undefined}
+          >
             {isEmpty ? (
-              <div className='flex min-h-full flex-col px-4 py-8'>
+              <div className='flex flex-1 flex-col px-4 py-10 sm:py-16'>
                 <div className='flex flex-1 flex-col items-center justify-center'>
                   <div className='mb-6'>
                     <SwetrixLogo />
@@ -3117,91 +3221,37 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                     size='2xl'
                     weight='semibold'
                     colour='primary'
-                    className='mb-2'
+                    className='mb-3 max-w-lg text-center text-2xl tracking-tight text-balance sm:text-3xl'
                   >
                     {t('project.askAi.welcomeTitle')}
                   </Text>
-                  <Text as='p' size='base' colour='muted' className='mb-10'>
+                  <Text
+                    as='p'
+                    size='base'
+                    colour='muted'
+                    className='mb-8 text-center'
+                  >
                     {t('project.askAi.welcomeSubtitle')}
                   </Text>
 
-                  <div className='mb-6 grid w-full max-w-2xl grid-cols-1 gap-3 sm:grid-cols-2'>
+                  <div className='w-full max-w-2xl'>{composer}</div>
+                  <div className='mt-6 grid w-full max-w-2xl grid-cols-1 gap-1 sm:grid-cols-2'>
                     {_map(getSuggestionPrompts(t), (prompt, idx) => (
                       <button
                         key={idx}
                         type='button'
                         onClick={() => handleQuickAction(prompt)}
-                        className='relative rounded-md border border-gray-200 bg-gray-50 p-2 transition-colors ring-inset hover:bg-white focus:z-10 focus:ring-1 focus:ring-slate-900 focus:outline-hidden dark:border-slate-700/80 dark:bg-slate-950 dark:hover:bg-slate-900 dark:focus:ring-slate-300'
+                        className='group flex items-center justify-between gap-3 rounded-xl px-4 py-3 text-left text-sm leading-relaxed text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-500 dark:text-gray-400 dark:hover:bg-slate-900 dark:hover:text-gray-100'
                       >
-                        <Text as='span' size='sm'>
-                          {prompt}
-                        </Text>
+                        <span>{prompt}</span>
+                        <ArrowUpRightIcon className='h-4 w-4 shrink-0 text-gray-400 transition-colors group-hover:text-gray-700 dark:group-hover:text-gray-200' />
                       </button>
                     ))}
-                  </div>
-
-                  <div className='w-full max-w-2xl'>
-                    <div className='rounded-lg border border-gray-200 bg-white dark:border-slate-800/60 dark:bg-slate-900/25'>
-                      <form onSubmit={handleSubmit} className='relative'>
-                        <Textarea
-                          ref={inputRef}
-                          value={input}
-                          onChange={(e) => setInput(e.target.value)}
-                          onKeyDown={handleKeyDown}
-                          placeholder={t('project.askAi.placeholder')}
-                          disabled={isLoading}
-                          rows={1}
-                          classes={{
-                            textarea:
-                              'w-full resize-none border-0 bg-transparent px-4 py-3 text-sm text-gray-900 placeholder-gray-500 ring-0 focus:ring-0 focus:outline-none rounded-none dark:bg-transparent dark:text-white dark:placeholder-gray-400 dark:focus:ring-0',
-                          }}
-                        />
-                        <div className='flex items-center justify-between border-t border-gray-100 px-3 py-2 dark:border-slate-800'>
-                          <div className='flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400'>
-                            <Tooltip
-                              text={<AICapabilitiesTooltip />}
-                              tooltipNode={
-                                <InfoIcon className='h-4 w-4 cursor-help text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300' />
-                              }
-                            />
-                          </div>
-                          <div className='flex items-center gap-1.5'>
-                            {showVoice ? (
-                              <VoiceInputButton
-                                isListening={isListening}
-                                isLoading={isLoading}
-                                onStart={handleStartVoice}
-                                onStop={handleStopVoice}
-                              />
-                            ) : null}
-                            <button
-                              type='submit'
-                              disabled={!input.trim() || isLoading}
-                              className='flex h-7 w-7 items-center justify-center rounded-lg bg-gray-900 text-white transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-gray-50 dark:text-gray-900'
-                            >
-                              <ArrowUpIcon className='h-3.5 w-3.5' />
-                            </button>
-                          </div>
-                        </div>
-                      </form>
-                    </div>
-                    <p
-                      className={cn(
-                        'mt-2 text-center text-xs',
-                        isListening
-                          ? 'text-red-500 dark:text-red-400'
-                          : 'text-gray-400 dark:text-gray-500',
-                      )}
-                    >
-                      {isListening
-                        ? t('project.askAi.listening')
-                        : t('project.askAi.disclaimer')}
-                    </p>
                   </div>
                 </div>
               </div>
             ) : (
-              <div className='mx-auto max-w-3xl space-y-6 px-4 py-6 pb-40'>
+              <div className='mx-auto max-w-3xl space-y-8 px-4 pt-8 pb-6'>
                 {(() => {
                   let lastAssistantIdx = -1
                   for (let i = messages.length - 1; i >= 0; i--) {
@@ -3277,77 +3327,8 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
       </div>
 
       {!isEmpty ? (
-        <div className='pointer-events-none absolute right-0 bottom-0 left-0 z-20 bg-linear-to-t from-gray-50 via-gray-50/95 to-transparent px-4 pt-10 pb-4 dark:from-slate-950 dark:via-slate-950/95'>
-          <div className='pointer-events-auto mx-auto max-w-3xl'>
-            <div className='rounded-xl border border-gray-200 bg-white dark:border-slate-800/60 dark:bg-slate-900'>
-              <form onSubmit={handleSubmit} className='relative'>
-                <Textarea
-                  ref={inputRef}
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder={t('project.askAi.followUpPlaceholder')}
-                  disabled={isLoading}
-                  rows={1}
-                  classes={{
-                    textarea:
-                      'w-full resize-none border-0 bg-transparent px-4 py-3 text-sm text-gray-900 placeholder-gray-500 ring-0 focus:ring-0 focus:outline-none rounded-none dark:bg-transparent dark:text-white dark:placeholder-gray-400 dark:focus:ring-0',
-                  }}
-                />
-                <div className='flex items-center justify-between border-t border-gray-100 px-3 py-2 dark:border-slate-800'>
-                  <div className='flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400'>
-                    <Tooltip
-                      text={<AICapabilitiesTooltip />}
-                      tooltipNode={
-                        <InfoIcon className='h-4 w-4 cursor-help text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300' />
-                      }
-                    />
-                  </div>
-                  <div className='flex items-center gap-1.5'>
-                    {showVoice && !isLoading ? (
-                      <VoiceInputButton
-                        isListening={isListening}
-                        isLoading={isLoading}
-                        onStart={handleStartVoice}
-                        onStop={handleStopVoice}
-                      />
-                    ) : null}
-                    {isLoading ? (
-                      <button
-                        type='button'
-                        onClick={handleStop}
-                        className='flex h-7 w-7 items-center justify-center rounded-lg bg-red-500 text-white transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-red-500 dark:text-white'
-                        aria-label={t('project.askAi.stop')}
-                        title={t('project.askAi.stop')}
-                      >
-                        <StopCircleIcon className='h-3.5 w-3.5' />
-                      </button>
-                    ) : (
-                      <button
-                        type='submit'
-                        disabled={!input.trim()}
-                        className='flex h-7 w-7 items-center justify-center rounded-lg bg-gray-900 text-white transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-gray-50 dark:text-gray-900'
-                      >
-                        <ArrowUpIcon className='h-3.5 w-3.5' />
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </form>
-            </div>
-            <p
-              className={cn(
-                'mt-2 text-center text-xs',
-                isListening
-                  ? 'text-red-500 dark:text-red-400'
-                  : 'text-gray-400 dark:text-gray-500',
-              )}
-            >
-              {isListening
-                ? t('project.askAi.listening')
-                : t('project.askAi.disclaimer')}
-            </p>
-          </div>
+        <div className='shrink-0 px-4 pt-3 pb-4'>
+          <div className='mx-auto max-w-3xl'>{composer}</div>
         </div>
       ) : null}
 

@@ -261,6 +261,7 @@ export async function streamingServerFetch(
       method,
       headers: fetchHeaders,
       body: serializedBody,
+      signal: request.signal,
     },
     timeoutMs,
   )
@@ -279,6 +280,7 @@ export async function streamingServerFetch(
           method,
           headers: fetchHeaders,
           body: serializedBody,
+          signal: request.signal,
         },
         timeoutMs,
       )
