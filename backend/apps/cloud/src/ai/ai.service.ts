@@ -26,6 +26,7 @@ import { clickhouse } from '../common/integrations/clickhouse'
 import { Project } from '../project/entity/project.entity'
 import { TimeBucketType } from '../analytics/dto/getData.dto'
 import { PlanFeatureCode } from '../user/entities/user.entity'
+import { toJsonToolOutput } from './tool-output'
 
 const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1'
 
@@ -354,6 +355,7 @@ export class AiService {
     project: Project,
     messages: ModelMessage[],
     timezone: string = 'UTC',
+    abortSignal?: AbortSignal,
   ): Promise<
     StreamTextResult<
       typeof this.buildTools extends (...args: any[]) => infer R ? R : never,
@@ -381,6 +383,7 @@ export class AiService {
       model: this.openrouter.chat(PRIMARY_MODEL),
       system: systemPrompt,
       messages,
+      abortSignal,
       tools: this.buildTools(project, timezone),
       stopWhen: stepCountIs(15),
       // Kept low deliberately: reasoning tokens bill at the output rate and
@@ -670,6 +673,7 @@ Chart "link" field (REQUIRED whenever the chart corresponds to data the user can
 
     return {
       getProjectInfo: tool({
+        toModelOutput: toJsonToolOutput,
         description:
           'Get basic information about the current project: name, created date, whether CAPTCHA is enabled, plus the available funnels, goals, feature flags and experiments. Call this early in a conversation to discover what entities exist before asking for stats on them.',
         inputSchema: z.object({}),
@@ -701,6 +705,7 @@ Chart "link" field (REQUIRED whenever the chart corresponds to data the user can
       }),
 
       getData: tool({
+        toModelOutput: toJsonToolOutput,
         description: `Query analytics-style data for the project. Returns overall counts plus chart data and panel breakdowns (top pages, countries, browsers, etc.).
 
 Use dataType to choose the dataset:
@@ -814,6 +819,7 @@ Filter modifiers:
       }),
 
       getGoalStats: tool({
+        toModelOutput: toJsonToolOutput,
         description:
           'Get goal conversion statistics including conversions, unique sessions, and per-goal totals. Call without goalId to get totals for every active goal.',
         inputSchema: z.object({
@@ -851,6 +857,7 @@ Filter modifiers:
       }),
 
       getFunnelData: tool({
+        toModelOutput: toJsonToolOutput,
         description:
           'Get funnel analysis data showing step-by-step conversions and drop-off for a specific funnel.',
         inputSchema: z.object({
@@ -900,6 +907,7 @@ Filter modifiers:
       }),
 
       getFeatureFlagStats: tool({
+        toModelOutput: toJsonToolOutput,
         description:
           'Get evaluation stats for feature flags: total evaluations, unique profiles exposed, true vs false counts and percentages. Pass a flagId for a specific flag, or omit to get a summary of all flags in the project.',
         inputSchema: z.object({
@@ -935,6 +943,7 @@ Filter modifiers:
       }),
 
       getExperimentResults: tool({
+        toModelOutput: toJsonToolOutput,
         description:
           'Get exposures and conversion counts per variant for an A/B experiment. Returns variant exposures, conversions, and conversion rate so you can advise on which variant is winning. Omit experimentId to list all experiments with their basic config.',
         inputSchema: z.object({
@@ -972,6 +981,7 @@ Filter modifiers:
       }),
 
       getSessionsList: tool({
+        toModelOutput: toJsonToolOutput,
         description:
           'Get a list of recent user sessions (psid, country, OS, browser, started/ended timestamps, page count) for inspection. Useful for finding examples of user behaviour or debugging. Capped at 25 sessions per call.',
         inputSchema: z.object({
@@ -1012,6 +1022,7 @@ Filter modifiers:
       }),
 
       getProfilesOverview: tool({
+        toModelOutput: toJsonToolOutput,
         description:
           'Get a high-level overview of profiles (returning visitors): unique profile count, sessions per profile, and top page paths. Useful for understanding audience composition and stickiness.',
         inputSchema: z.object({

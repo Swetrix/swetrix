@@ -146,9 +146,11 @@ export class AiController {
       res.setHeader('X-Accel-Buffering', 'no')
       res.flushHeaders()
 
+      const abortController = new AbortController()
       let clientClosed = false
       res.on('close', () => {
         clientClosed = true
+        abortController.abort()
       })
 
       const messages = chatDto.messages
@@ -174,6 +176,7 @@ export class AiController {
         project,
         messages,
         chatDto.timezone || 'UTC',
+        abortController.signal,
       )
 
       let hasContent = false
@@ -258,9 +261,6 @@ export class AiController {
             this.logger.error(
               { error: part.error, pid, uid },
               'Error event during AI stream',
-            )
-            res.write(
-              `data: ${JSON.stringify({ type: 'error', content: 'A temporary error occurred, continuing...' })}\n\n`,
             )
           } else if (part.type === 'finish') {
             const totalUsage = (part as any)?.totalUsage ?? {}
@@ -388,16 +388,21 @@ export class AiController {
           { error: streamError, pid, uid },
           'Exception during AI stream iteration',
         )
+      }
 
-        if (hasContent) {
-          res.write(
-            `data: ${JSON.stringify({ type: 'error', content: 'The response was interrupted due to a provider error.' })}\n\n`,
-          )
-        } else {
-          res.write(
-            `data: ${JSON.stringify({ type: 'error', content: 'Failed to get a response from the AI provider. Please try again.' })}\n\n`,
-          )
-        }
+      if (clientClosed) return
+
+      if (streamErrored || !assistantText.trim()) {
+        res.write(
+          `data: ${JSON.stringify({
+            type: 'error',
+            content: assistantText.trim()
+              ? 'The response was interrupted. Please try again.'
+              : 'Could not complete the response. Please try again.',
+          })}\n\n`,
+        )
+        res.end()
+        return
       }
 
       // Generate follow-up suggestions only when the assistant produced a real
