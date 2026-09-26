@@ -206,14 +206,9 @@ const convertToCSV = (array: any[]) => {
   let str = 'name,value,percentage\r\n'
 
   for (let i = 0; i < _size(array); ++i) {
-    let lines = ''
+    const [title, value, percentage] = array[i]
 
-    _forEach(array[i], (index) => {
-      if (lines !== '') lines += ','
-      lines += index
-    })
-
-    str += `${lines}\r\n`
+    str += `"${title.replace(/"/g, '""')}",${value},${percentage}\r\n`
   }
 
   return str
@@ -241,12 +236,17 @@ const onCSVExportClick = (
     const csvData = _map(rowData[item], (entry: Entry) => {
       const perc = _round((entry.count / total) * 100 || 0, 2)
 
-      if (item === 'cc') {
-        const name = countries.getName(entry.name || '', language)
-        return [`"${name}"`, entry.count, `${perc}%`]
-      }
+      const title = _toString(
+        item === 'cc' || item === 'country'
+          ? countries.getName(entry.name || '', language)
+          : entry.name,
+      )
 
-      return [`"${entry.name}"`, entry.count, `${perc}%`]
+      return [
+        /^[=+\-@]/.test(title) ? `'${title}` : title,
+        entry.count,
+        `${perc}%`,
+      ]
     })
 
     zip.file(`${tnMapping[item]}.csv`, convertToCSV(csvData))
