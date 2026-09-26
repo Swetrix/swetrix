@@ -296,6 +296,10 @@ export class Swetrix {
       ...pageview,
     }
 
+    if (typeof data.title === 'string') {
+      data.title = data.title.slice(0, 2048)
+    }
+
     await this.sendRequest('', ip, userAgent, data)
   }
 

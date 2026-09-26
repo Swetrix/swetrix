@@ -3,7 +3,6 @@ import path from 'path'
 import _toNumber from 'lodash/toNumber'
 import 'dotenv/config'
 import { deriveKey, hash } from './utils'
-import { TRAFFIC_SPIKE_ALLOWED_PERCENTAGE } from '../user/plan-usage'
 
 const { EMAIL_ACTION_ENCRYPTION_KEY } = process.env
 
@@ -273,6 +272,5 @@ export {
   MAX_PAGES_IN_FUNNEL,
   MAX_FUNNELS,
   ALL_COLUMNS,
-  TRAFFIC_SPIKE_ALLOWED_PERCENTAGE,
   PID_REGEX,
 }
