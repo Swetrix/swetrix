@@ -2,18 +2,20 @@ Hi, thanks for {{#ifEquals user.planCode "trial"}}trying
 Swetrix{{/ifEquals}}{{#ifNotEquals user.planCode "trial"}}being a Swetrix
 subscriber{{/ifNotEquals}}. <br /><br />
 Your traffic has exceeded your subscription plan{{#if hitPercentageLimit}} by
-more than {{percentageLimit}}% this month{{else}} by more than {{repeatedPercentageLimit}}% for two months in a
-row{{/if}}.
+more than {{percentageLimit}}% this month{{else}} by more than
+{{repeatedPercentageLimit}}% for two months in a row{{/if}}.
 <br /><br />
 Please upgrade within {{upgradePeriodDays}} days to keep dashboard access. If
-your usage still exceeds the allowance rules then, your dashboard will be temporarily locked. We'll keep
-collecting data and won't delete your existing data.
+your usage still exceeds the allowance rules then, your dashboard will be
+temporarily locked. We'll keep collecting data and won't delete your existing
+data.
 <br /><br />
 {{#if hitPercentageLimit}} This month, you have used {{thisMonthUsage}} billable
 events, more than {{percentageLimit}}% over your plan limit. {{else}} This
 month, you have used {{thisMonthUsage}} billable events. Last month, you used
 {{lastMonthUsage}} events. {{/if}} Billable events include pageviews, custom
-events, errors, and successful CAPTCHA verifications. You can see the full usage report on the
+events, errors, and successful CAPTCHA verifications. You can see the full usage
+report on the
 <a href="{{billingUrl}}" target="_blank">billing page</a>. <br /><br />
 {{#ifEquals user.planCode "10m"}} Your usage is above our standard plans. Reply
 to this email and we'll help you choose a plan for your traffic.
@@ -22,6 +24,7 @@ to this email and we'll help you choose a plan for your traffic.
 {{suggestedPlanLimit}} events per month plan. Your upgrade will be prorated
 based on what you've already paid for your current plan.
 <br /><br />
-{{/ifNotEquals}} If unwanted traffic caused the overage, you can delete it in your
-project settings. We will recheck your usage and clear the warning if it no longer
-exceeds the allowance rules. Reply to this email if you have questions or need help.
+{{/ifNotEquals}} If unwanted traffic caused the overage, you can delete it in
+your project settings. We will recheck your usage and clear the warning if it no
+longer exceeds the allowance rules. Reply to this email if you have questions or
+need help.
