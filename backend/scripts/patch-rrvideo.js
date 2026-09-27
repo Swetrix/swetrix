@@ -119,11 +119,9 @@ if (blockStart === -1 || blockEnd === -1) {
 const blockReplacement = [
   '      const userConfig = ${JSON.stringify((config === null || config === void 0 ? void 0 : config.rrwebPlayer) || {})};',
   '      try {',
-  '        const insertStyleRules = Array.isArray(userConfig.insertStyleRules) ? userConfig.insertStyleRules : [];',
   '        window.replayer = new rrwebReplay.Replayer(events, {',
   '          ...userConfig,',
   '          root: document.body,',
-  '          insertStyleRules: [...insertStyleRules, \'html, body { background-color: #fff; }\'],',
   '        });',
   '        const resizeWrapper = () => {',
   "          const wrapper = document.querySelector('.replayer-wrapper');",

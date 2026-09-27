@@ -1328,7 +1328,6 @@ const SessionReplayModal = ({
         speed: speedRef.current,
         skipInactive: skipInactiveRef.current,
         inactivePeriodThreshold: INACTIVE_SKIP_THRESHOLD_MS,
-        insertStyleRules: ['html, body { background-color: #fff; }'],
       })
       instance.on(FULLSNAPSHOT_REBUILDED_EVENT, markPlayerReady)
       replayer.current = instance
@@ -1376,7 +1375,6 @@ const SessionReplayModal = ({
         root,
         speed: 1,
         mouseTail: false,
-        insertStyleRules: ['html, body { background-color: #fff; }'],
         showWarning: false,
       })
     } catch {
