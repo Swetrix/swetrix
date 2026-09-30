@@ -1057,6 +1057,12 @@ const ProjectSettings = () => {
                     beenSubmitted={beenSubmitted}
                     handleInput={handleInput}
                     handleBlur={handleInputBlur}
+                    onIpListChange={(name, value) =>
+                      handleFieldAutosave(
+                        { [name]: value },
+                        PROJECT_TEXT_AUTOSAVE_TOASTS[name],
+                      )
+                    }
                     botsProtectionLevels={botsProtectionLevels}
                     setBotsLevel={(name) =>
                       handleFieldAutosave(

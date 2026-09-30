@@ -8,6 +8,7 @@ import Flag from '~/ui/Flag'
 import Input from '~/ui/Input'
 import MultiSelect from '~/ui/MultiSelect'
 import Select from '~/ui/Select'
+import TagInput from '~/ui/TagInput'
 import { Text } from '~/ui/Text'
 import countries from '~/utils/isoCountries'
 
@@ -33,6 +34,7 @@ interface ShieldsProps {
   beenSubmitted: boolean
   handleInput: (e: React.ChangeEvent<HTMLInputElement>) => void
   handleBlur: (e: React.FocusEvent<HTMLInputElement>) => void
+  onIpListChange: (name: 'ipBlacklist' | 'ipWhitelist', value: string) => void
   botsProtectionLevels: readonly BotsProtectionLevelOption[]
   setBotsLevel: (name: string) => void
   countryBlacklist: string[]
@@ -45,6 +47,7 @@ const Shields = ({
   beenSubmitted,
   handleInput,
   handleBlur,
+  onIpListChange,
   botsProtectionLevels,
   setBotsLevel,
   countryBlacklist,
@@ -126,15 +129,15 @@ const Shields = ({
         onBlur={handleBlur}
         error={beenSubmitted ? errors.origins : null}
       />
-      <Input
+      <TagInput
         name='ipBlacklist'
         label={t('project.settings.ipBlacklist')}
         hint={t('project.settings.ipBlacklistHint')}
         placeholder={t('project.settings.ipBlacklistPlaceholder')}
         value={form.ipBlacklist || ''}
         className='mt-4'
-        onChange={handleInput}
-        onBlur={handleBlur}
+        onChange={(value) => onIpListChange('ipBlacklist', value)}
+        instructions={t('project.settings.ipListInstructions')}
         error={beenSubmitted ? errors.ipBlacklist : null}
       />
       <div className='mt-4'>
@@ -187,15 +190,15 @@ const Shields = ({
           )}
         />
       </div>
-      <Input
+      <TagInput
         name='ipWhitelist'
         label={t('project.settings.ipWhitelist')}
         hint={t('project.settings.ipWhitelistHint')}
         placeholder={t('project.settings.ipWhitelistPlaceholder')}
         value={form.ipWhitelist || ''}
         className='mt-4'
-        onChange={handleInput}
-        onBlur={handleBlur}
+        onChange={(value) => onIpListChange('ipWhitelist', value)}
+        instructions={t('project.settings.ipListInstructions')}
         error={beenSubmitted ? errors.ipWhitelist : null}
       />
     </>

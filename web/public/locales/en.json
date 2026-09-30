@@ -2655,6 +2655,7 @@
       "ipWhitelist": "Trusted IP addresses",
       "ipWhitelistHint": "Traffic from these IP addresses will never be flagged by bot protection. Separate multiple IP addresses or CIDR ranges with commas. Useful for server-side event tracking, as requests from your backend may otherwise be dropped as datacenter traffic. Example: 172.126.10.16, 192.168.0.1/32, ::1.",
       "ipWhitelistPlaceholder": "No trusted IP addresses by default",
+      "ipListInstructions": "Press comma or Enter to add. Click an address to edit, or × to remove.",
       "countryBlacklist": "Blocked countries",
       "countryBlacklistHint": "Choose the countries you don't want to track. Traffic from these countries will be ignored in your analytics.",
       "countryBlacklistPlaceholder": "Not blocking any countries by default",
