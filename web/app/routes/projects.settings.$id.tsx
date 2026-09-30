@@ -100,6 +100,8 @@ export interface ProjectSettingsActionData {
   proxyDomains?: ProxyDomain[]
   proxyDomain?: ProxyDomain
   proxyDomainKeywordWarning?: boolean
+  cloudflareSetupAvailable?: boolean
+  cloudflareSetupUrl?: string
   shareId?: string
   role?: string
   revenueCurrencyRequestId?: string
@@ -958,10 +960,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
     }
 
     case 'list-proxy-domains': {
-      const result = await serverFetch<{ domains: ProxyDomain[] }>(
-        request,
-        `project/${id}/proxy-domains`,
-      )
+      const result = await serverFetch<{
+        domains: ProxyDomain[]
+        cloudflareSetupAvailable?: boolean
+      }>(request, `project/${id}/proxy-domains`)
 
       if (result.error) {
         return data<ProjectSettingsActionData>(
@@ -975,8 +977,40 @@ export async function action({ request, params }: ActionFunctionArgs) {
           intent,
           success: true,
           proxyDomains: (result.data?.domains as ProxyDomain[]) || [],
+          cloudflareSetupAvailable: !!result.data?.cloudflareSetupAvailable,
         },
         { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'configure-proxy-cloudflare': {
+      const proxyDomainId = formData.get('id')?.toString()
+      if (!proxyDomainId) {
+        return data<ProjectSettingsActionData>(
+          { intent, error: 'Proxy domain ID is required' },
+          { status: 400 },
+        )
+      }
+
+      const result = await serverFetch<{ url: string }>(
+        request,
+        `project/${id}/proxy-domains/${encodeURIComponent(proxyDomainId)}/cloudflare`,
+        { method: 'POST' },
+      )
+
+      const headers = createHeadersWithCookies(result.cookies)
+      headers.set('Cache-Control', 'no-store')
+
+      return data<ProjectSettingsActionData>(
+        {
+          intent,
+          error: result.error as string | undefined,
+          cloudflareSetupUrl: result.data?.url,
+        },
+        {
+          status: result.error ? result.status || 400 : 200,
+          headers,
+        },
       )
     }
 

@@ -21,6 +21,7 @@ import { ProjectService } from './project.service'
 import { ProxyDomainService, PROXY_BASE_DOMAIN } from './proxy-domain.service'
 import { ProxyDomainCreateDTO } from './dto'
 import { ProxyDomainEdgeGuard } from './proxy-domain-edge.guard'
+import { ProxyDomainConnectService } from './proxy-domain-connect.service'
 
 @ApiTags('Project - Managed Reverse Proxy')
 @Controller(['project', 'v1/project'])
@@ -28,6 +29,7 @@ export class ProxyDomainController {
   constructor(
     private readonly proxyDomainService: ProxyDomainService,
     private readonly projectService: ProjectService,
+    private readonly domainConnectService: ProxyDomainConnectService,
   ) {}
 
   @ApiBearerAuth()
@@ -46,7 +48,44 @@ export class ProxyDomainController {
     this.projectService.allowedToManage(project, uid)
 
     const domains = await this.proxyDomainService.listForProject(pid)
-    return { domains, proxyBaseDomain: PROXY_BASE_DOMAIN }
+    return {
+      domains,
+      proxyBaseDomain: PROXY_BASE_DOMAIN,
+      cloudflareSetupAvailable: this.domainConnectService.enabled,
+    }
+  }
+
+  @ApiBearerAuth()
+  @Post(':pid/proxy-domains/:id/cloudflare')
+  @Auth()
+  @HttpCode(200)
+  @Header('Cache-Control', 'no-store')
+  @ApiOperation({
+    summary: 'Authorize managed proxy DNS setup with Cloudflare',
+  })
+  async configureCloudflare(
+    @Param('pid') pid: string,
+    @Param('id') id: string,
+    @CurrentUserId() uid: string,
+  ) {
+    if (!isValidPID(pid)) {
+      throw new BadRequestException('The provided project ID is incorrect')
+    }
+
+    const project = await this.projectService.getFullProject(pid)
+    if (!project) {
+      throw new NotFoundException('Project not found')
+    }
+    this.projectService.allowedToManage(project, uid)
+
+    const domain = await this.proxyDomainService.findById(pid, id)
+    return {
+      url: this.domainConnectService.createUrl(
+        pid,
+        domain.hostname,
+        domain.proxyTargetId,
+      ),
+    }
   }
 
   @ApiBearerAuth()
