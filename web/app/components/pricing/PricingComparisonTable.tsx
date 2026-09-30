@@ -19,6 +19,8 @@ import Tooltip from '~/ui/Tooltip'
 import { cn } from '~/utils/generic'
 import routes from '~/utils/routes'
 
+import TeamMembersPricingTooltip from './TeamMembersPricingTooltip'
+
 const STARTER_TIER: EventTierCode = '100k'
 
 type CellValue = boolean | { key: string; tooltip?: string }
@@ -27,6 +29,7 @@ interface FeatureRow {
   label: string
   tooltip?: string
   tooltipHref?: string
+  tooltipType?: 'teamMembers'
   values: [CellValue, CellValue, CellValue]
 }
 
@@ -80,6 +83,7 @@ const getCategories = (t: TFunction): FeatureCategory[] => [
       },
       {
         label: t('pricing.comparison.features.teamMembers'),
+        tooltipType: 'teamMembers',
         values: [
           { key: 'pricing.comparison.values.teamMembersStandard' },
           { key: 'pricing.comparison.values.teamMembersPlus' },
@@ -549,6 +553,9 @@ const FeatureCategoryRows = ({
                     ariaLabel={`${row.label}: ${row.tooltip}`}
                     className='shrink-0'
                   />
+                ) : null}
+                {row.tooltipType === 'teamMembers' ? (
+                  <TeamMembersPricingTooltip className='shrink-0' />
                 ) : null}
               </span>
             </th>

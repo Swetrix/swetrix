@@ -3333,6 +3333,10 @@
         "featureFlags": "Roll features out gradually, target cohorts or individual users, and turn changes off without another deploy.",
         "abTesting": "Run experiments against goals, split visitors across variants, and compare conversion results before shipping a change to everyone.",
         "twentyXHigherApiRateLimits": "Standard plans include 300 API requests per hour. Plus plans include 6,000 API requests per hour, which is 20x higher.",
+        "teamMembers": {
+          "projects": "Members are people you invite to your projects, such as teammates or clients. Give them admin or viewer access to collaborate on your analytics.",
+          "organisations": "You can also create organisations, group your projects, and invite people to access all projects in an organisation with a shared role."
+        },
         "plusWebsites": "Swetrix has no limit on the number of websites you can add. You can purchase more websites via add-ons. Bulk discounts are available if you contact support.",
         "customEventLimits": "Enterprise plans are flexible for event limits, API rate limits, and project quantity.",
         "onPremise": "Our team installs Swetrix in your own infrastructure and manages the installation, maintenance, and updates for you.",

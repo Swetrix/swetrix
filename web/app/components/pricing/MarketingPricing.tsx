@@ -62,6 +62,7 @@ import { cn } from '~/utils/generic'
 import routes from '~/utils/routes'
 
 import SessionReplayPricingTooltip from './SessionReplayPricingTooltip'
+import TeamMembersPricingTooltip from './TeamMembersPricingTooltip'
 
 interface MarketingPricingProps {
   metainfo?: Metainfo
@@ -99,7 +100,7 @@ interface Benefit {
   icon: Icon
   label: string
   tooltip?: BenefitTooltip
-  tooltipType?: 'sessionReplays'
+  tooltipType?: 'sessionReplays' | 'teamMembers'
 }
 
 const planCards: PlanTypeCode[] = ['standard', 'plus', 'enterprise']
@@ -201,6 +202,7 @@ const getBenefits = (planType: PlanTypeCode, t: TFunction): Benefit[] => {
       {
         icon: UsersThreeIcon,
         label: t('pricing.teamMemberCount', { count: 10 }),
+        tooltipType: 'teamMembers',
       },
       benefitWithTooltip(
         DownloadSimpleIcon,
@@ -298,6 +300,7 @@ const getBenefits = (planType: PlanTypeCode, t: TFunction): Benefit[] => {
       {
         icon: UsersThreeIcon,
         label: t('pricing.teamMemberCount', { count: 25 }),
+        tooltipType: 'teamMembers',
       },
       {
         icon: MonitorPlayIcon,
@@ -442,6 +445,9 @@ const BenefitRow = ({
         </Text>
         {benefit.tooltipType === 'sessionReplays' ? (
           <SessionReplayPricingTooltip className={isEnterprise ? 'dark' : ''} />
+        ) : null}
+        {benefit.tooltipType === 'teamMembers' ? (
+          <TeamMembersPricingTooltip className={isEnterprise ? 'dark' : ''} />
         ) : null}
         {benefit.tooltip ? (
           <Tooltip
