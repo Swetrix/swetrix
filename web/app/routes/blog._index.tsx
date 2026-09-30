@@ -81,26 +81,29 @@ export default function Posts() {
         <script
           type='application/ld+json'
           dangerouslySetInnerHTML={{
-            __html: serializeBlogSchema([
-              {
-                '@context': 'https://schema.org',
-                '@type': 'CollectionPage',
-                '@id': 'https://swetrix.com/blog#collection',
-                url: 'https://swetrix.com/blog',
-                name: t('blogPage.title'),
-                description: t('blogPage.description'),
-                mainEntity: {
-                  '@type': 'ItemList',
-                  itemListElement: visiblePosts.map((post, index) => ({
-                    '@type': 'ListItem',
-                    position: index + 1,
-                    name: post.title,
-                    url: `https://swetrix.com${post.standalone ? '/' : '/blog/'}${post.slug}`,
-                  })),
-                },
+            __html: serializeBlogSchema({
+              '@context': 'https://schema.org',
+              '@type': 'CollectionPage',
+              '@id': 'https://swetrix.com/blog#collection',
+              url: 'https://swetrix.com/blog',
+              name: t('blogPage.title'),
+              description: t('blogPage.description'),
+              mainEntity: {
+                '@type': 'ItemList',
+                itemListElement: visiblePosts.map((post, index) => ({
+                  '@type': 'ListItem',
+                  position: index + 1,
+                  name: post.title,
+                  url: `https://swetrix.com${post.standalone ? '/' : '/blog/'}${post.slug}`,
+                })),
               },
-              blogBreadcrumbs(),
-            ]),
+            }),
+          }}
+        />
+        <script
+          type='application/ld+json'
+          dangerouslySetInnerHTML={{
+            __html: serializeBlogSchema(blogBreadcrumbs()),
           }}
         />
         {visiblePosts.length === 0 && (

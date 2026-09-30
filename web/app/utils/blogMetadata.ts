@@ -160,7 +160,9 @@ export function blogArticleMeta(post?: BlogMetadata | null) {
   ]
 }
 
-export function serializeBlogSchema(value: unknown): string {
+export function serializeBlogSchema(
+  value: Record<string, unknown> & { '@context': string },
+): string {
   return JSON.stringify(value)
     .replace(/</g, '\\u003c')
     .replace(/\u2028|\u2029/g, '')

@@ -117,6 +117,7 @@ test('describes the blog hierarchy and safely serializes article titles', () => 
   assert.equal(crumbs[1].item, 'https://swetrix.com/blog')
   assert.equal(blogBreadcrumbs().itemListElement.length, 2)
   const encoded = serializeBlogSchema({
+    '@context': 'https://schema.org',
     headline: '</script><script>alert(1)</script>',
   })
   assert.equal(encoded.includes('<'), false)
@@ -124,4 +125,22 @@ test('describes the blog hierarchy and safely serializes article titles', () => 
     JSON.parse(encoded).headline,
     '</script><script>alert(1)</script>',
   )
+})
+
+test('keeps blog schemas readable by consumers expecting a top-level context', () => {
+  const article = blogPostSchema(
+    { title: 'Article', date: 'September 24, 2026' },
+    '/blog/article',
+    'https://swetrix.com/cover.png',
+  )
+  const breadcrumbs = blogBreadcrumbs(
+    'Article',
+    'https://swetrix.com/blog/article',
+  )
+
+  for (const schema of [article, breadcrumbs, blogBreadcrumbs()]) {
+    const parsed = JSON.parse(serializeBlogSchema(schema))
+    assert.equal(parsed['@context'].toLowerCase(), 'https://schema.org')
+    assert.deepEqual(parsed, schema)
+  }
 })

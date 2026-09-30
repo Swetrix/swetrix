@@ -112,31 +112,38 @@ export default function PostSlug() {
                 <ArticleNav articleRef={articleRef} headings={post.headings} />
               )}
               {post.title ? (
-                <script
-                  type='application/ld+json'
-                  dangerouslySetInnerHTML={{
-                    __html: serializeBlogSchema([
-                      blogPostSchema(
-                        post,
-                        location.pathname,
-                        getOgImageUrl(
-                          post.seoTitle || post.title || 'Blog',
-                          post.seoDescription ||
-                            post.intro ||
-                            t('description.blog'),
+                <>
+                  <script
+                    type='application/ld+json'
+                    dangerouslySetInnerHTML={{
+                      __html: serializeBlogSchema(
+                        blogPostSchema(
+                          post,
+                          location.pathname,
+                          getOgImageUrl(
+                            post.seoTitle || post.title || 'Blog',
+                            post.seoDescription ||
+                              post.intro ||
+                              t('description.blog'),
+                          ),
                         ),
                       ),
-                      ...(!post.standalone
-                        ? [
-                            blogBreadcrumbs(
-                              post.title,
-                              `https://swetrix.com${location.pathname}`,
-                            ),
-                          ]
-                        : []),
-                    ]),
-                  }}
-                />
+                    }}
+                  />
+                  {!post.standalone && (
+                    <script
+                      type='application/ld+json'
+                      dangerouslySetInnerHTML={{
+                        __html: serializeBlogSchema(
+                          blogBreadcrumbs(
+                            post.title,
+                            `https://swetrix.com${location.pathname}`,
+                          ),
+                        ),
+                      }}
+                    />
+                  )}
+                </>
               ) : null}
             </main>
           </div>
