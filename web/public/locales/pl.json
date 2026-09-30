@@ -2655,6 +2655,7 @@
       "ipWhitelist": "Zaufane adresy IP",
       "ipWhitelistHint": "Ruch z tych adresów IP nigdy nie zostanie oznaczony przez ochronę przed botami. Oddziel wiele adresów IP lub zakresów CIDR przecinkami. Przydatne do śledzenia zdarzeń po stronie serwera, ponieważ żądania z Twojego backendu mogą w przeciwnym razie zostać odrzucone jako ruch z centrum danych. Przykład: 172.126.10.16, 192.168.0.1/32, ::1.",
       "ipWhitelistPlaceholder": "Domyślnie brak zaufanych adresów IP",
+      "ipListInstructions": "Naciśnij przecinek lub Enter, aby dodać. Kliknij adres, aby edytować, lub ×, aby usunąć.",
       "countryBlacklist": "Zablokowane kraje",
       "countryBlacklistHint": "Wybierz kraje, których nie chcesz śledzić. Ruch z tych krajów będzie ignorowany w Twojej analityce.",
       "countryBlacklistPlaceholder": "Domyślnie nie blokuje żadnych krajów",
@@ -3333,6 +3334,10 @@
         "featureFlags": "Wprowadzaj funkcje stopniowo, kieruj je do grup docelowych lub pojedynczych użytkowników i wyłączaj zmiany bez kolejnego wdrożenia.",
         "abTesting": "Przeprowadzaj eksperymenty względem celów, dzieląc odwiedzających na różne warianty i porównując wyniki konwersji, zanim udostępnisz zmianę wszystkim.",
         "twentyXHigherApiRateLimits": "Standardowe plany obejmują 300 żądań API na godzinę. Plany Plus obejmują 6000 żądań API na godzinę, co jest 20-krotnie wyższą wartością.",
+        "teamMembers": {
+          "projects": "Członkowie to osoby, które zapraszasz do swoich projektów, na przykład współpracownicy lub klienci. Przyznaj im dostęp administratora lub widza, aby współpracować nad analityką.",
+          "organisations": "Możesz również tworzyć organizacje, grupować swoje projekty i zapraszać osoby, aby uzyskały dostęp do wszystkich projektów w organizacji ze wspólną rolą."
+        },
         "plusWebsites": "Swetrix nie ma limitu liczby stron, które możesz dodać. Więcej stron możesz wykupić w formie dodatków. Zniżki hurtowe są dostępne po kontakcie z działem wsparcia.",
         "customEventLimits": "Plany Enterprise są elastyczne pod względem limitów zdarzeń, limitów zapytań API oraz liczby projektów.",
         "onPremise": "Nasz zespół instaluje Swetrix w Twojej własnej infrastrukturze i zarządza instalacją, konserwacją oraz aktualizacjami za Ciebie.",

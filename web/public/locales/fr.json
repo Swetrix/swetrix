@@ -2655,6 +2655,7 @@
       "ipWhitelist": "Adresses IP de confiance",
       "ipWhitelistHint": "Le trafic provenant de ces adresses IP ne sera jamais signalé par la protection contre les bots. Séparez plusieurs adresses IP ou plages CIDR par des virgules. Utile pour le suivi des événements côté serveur, car les requêtes de votre backend pourraient sinon être rejetées en tant que trafic de centre de données. Exemple : 172.126.10.16, 192.168.0.1/32, ::1.",
       "ipWhitelistPlaceholder": "Aucune adresse IP de confiance par défaut",
+      "ipListInstructions": "Appuyez sur virgule ou Entrée pour ajouter. Cliquez sur une adresse pour modifier, ou sur × pour supprimer.",
       "countryBlacklist": "Pays bloqués",
       "countryBlacklistHint": "Choisissez les pays que vous ne souhaitez pas suivre. Le trafic en provenance de ces pays sera ignoré dans vos analyses.",
       "countryBlacklistPlaceholder": "Aucun pays bloqué par défaut",
@@ -3333,6 +3334,10 @@
         "featureFlags": "Déployez les fonctionnalités progressivement, ciblez des cohortes ou des utilisateurs individuels, et désactivez les modifications sans avoir à redéployer.",
         "abTesting": "Lancez des expériences basées sur des objectifs, répartissez les visiteurs entre les variantes et comparez les résultats de conversion avant de déployer un changement pour tous.",
         "twentyXHigherApiRateLimits": "Les forfaits Standard incluent 300 requêtes API par heure. Les forfaits Plus incluent 6 000 requêtes API par heure, soit 20 fois plus.",
+        "teamMembers": {
+          "projects": "Les membres sont des personnes que vous invitez à vos projets, tels que des collègues ou des clients. Donnez-leur un accès administrateur ou spectateur pour collaborer sur vos analyses.",
+          "organisations": "Vous pouvez également créer des organisations, regrouper vos projets et inviter des personnes à accéder à tous les projets d'une organisation avec un rôle partagé."
+        },
         "plusWebsites": "Swetrix n'a pas de limite sur le nombre de sites web que vous pouvez ajouter. Vous pouvez acheter des sites web supplémentaires via des modules complémentaires. Des remises de volume sont disponibles si vous contactez le support.",
         "customEventLimits": "Les forfaits Entreprise sont flexibles en ce qui concerne les limites d'événements, les limites de requêtes API et la quantité de projets.",
         "onPremise": "Notre équipe installe Swetrix sur votre propre infrastructure et gère l'installation, la maintenance et les mises à jour pour vous.",

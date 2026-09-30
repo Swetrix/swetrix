@@ -2655,6 +2655,7 @@
       "ipWhitelist": "Endereços IP confiáveis",
       "ipWhitelistHint": "O tráfego desses endereços IP nunca será sinalizado pela proteção contra bots. Separe vários endereços IP ou intervalos CIDR por vírgulas. Útil para rastreamento de eventos do lado do servidor, pois as solicitações do seu backend podem ser descartadas como tráfego de datacenter. Exemplo: 172.126.10.16, 192.168.0.1/32, ::1.",
       "ipWhitelistPlaceholder": "Nenhum endereço IP confiável por padrão",
+      "ipListInstructions": "Pressione vírgula ou Enter para adicionar. Clique em um endereço para editar, ou × para remover.",
       "countryBlacklist": "Países bloqueados",
       "countryBlacklistHint": "Escolha os países que você não quer rastrear. O tráfego destes países será ignorado no seu analytics.",
       "countryBlacklistPlaceholder": "Não bloqueando nenhum país por padrão",
@@ -3333,6 +3334,10 @@
         "featureFlags": "Lance recursos gradualmente, direcione a grupos ou usuários individuais e desative alterações sem a necessidade de um novo deploy.",
         "abTesting": "Execute experimentos com base em metas, divida os visitantes entre variantes e compare os resultados de conversão antes de lançar uma mudança para todos.",
         "twentyXHigherApiRateLimits": "Os planos Standard incluem 300 requisições de API por hora. Os planos Plus incluem 6.000 requisições de API por hora, o que é 20x maior.",
+        "teamMembers": {
+          "projects": "Membros são pessoas que você convida para seus projetos, como colegas de equipe ou clientes. Dê a eles acesso de administrador ou visualizador para colaborarem no seu analytics.",
+          "organisations": "Você também pode criar organizações, agrupar seus projetos e convidar pessoas para acessar todos os projetos em uma organização com uma função compartilhada."
+        },
         "plusWebsites": "O Swetrix não tem limite para o número de sites que você pode adicionar. Você pode comprar mais sites por meio de add-ons. Descontos por volume estão disponíveis se você entrar em contato com o suporte.",
         "customEventLimits": "Os planos Enterprise são flexíveis quanto a limites de eventos, limites de taxa da API e quantidade de projetos.",
         "onPremise": "Nossa equipe instala o Swetrix na sua própria infraestrutura e gerencia a instalação, manutenção e atualizações para você.",
