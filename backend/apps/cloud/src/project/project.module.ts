@@ -19,6 +19,7 @@ import {
   ProxyDomain,
 } from './entity'
 import { ProxyDomainService } from './proxy-domain.service'
+import { ProxyDomainConnectService } from './proxy-domain-connect.service'
 import {
   ProxyDomainController,
   ProxyDomainEdgeController,
@@ -54,6 +55,7 @@ import { PendingInvitationModule } from '../pending-invitation/pending-invitatio
     ProjectsViewsRepository,
     GSCService,
     ProxyDomainService,
+    ProxyDomainConnectService,
   ],
   exports: [
     ProjectService,
