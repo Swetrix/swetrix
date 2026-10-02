@@ -102,7 +102,7 @@ const getSum = (arr: any) => {
   return _reduce(arr, (acc, c) => acc + c, 0)
 }
 
-const calculateOptimalTicks = (
+export const calculateOptimalTicks = (
   data: number[],
   targetCount: number = 6,
 ): number[] => {
@@ -2344,6 +2344,7 @@ const typeNameMapping = (t: typeof i18next.t) => ({
   utm_source: t('project.mapping.so'),
   utm_medium: t('project.mapping.me'),
   utm_campaign: t('project.mapping.ca'),
+  campaigns: t('project.ads.campaign'),
   utm_term: t('project.mapping.te'),
   utm_content: t('project.mapping.co'),
   isp: t('project.mapping.isp'),

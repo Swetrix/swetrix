@@ -48,7 +48,7 @@ import {
 import countries from '~/utils/isoCountries'
 import { getProfileDisplayName, ProfileAvatar } from '~/utils/profileAvatars'
 
-import { BrowserIcon, OSIcon } from '../SharedIcons'
+import { AdProviderIcon, BrowserIcon, OSIcon } from '../SharedIcons'
 import { InfoRow, PanelSection } from '../components/DetailPanels'
 import { Pageflow } from '../Sessions/Pageflow'
 
@@ -955,6 +955,19 @@ export const ProfileDetails = ({
                   </>
                 }
               />
+              {details.acquisition?.adCampaign ? (
+                <InfoRow
+                  label={t('project.acquiredVia')}
+                  value={
+                    <>
+                      <AdProviderIcon
+                        provider={details.acquisition.adCampaign.provider}
+                      />
+                      {details.acquisition.adCampaign.campaignName}
+                    </>
+                  }
+                />
+              ) : null}
               <InfoRow
                 label={t('project.avgDuration')}
                 value={

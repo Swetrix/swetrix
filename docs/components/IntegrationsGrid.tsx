@@ -53,6 +53,11 @@ const INTEGRATIONS: {
     href: "/ghost-integration",
   },
   {
+    name: "Google Ads",
+    href: "/integrations/google-ads",
+    customIcon: GoogleGIcon,
+  },
+  {
     name: "Search Console",
     href: "/integrations/google-search-console",
   },

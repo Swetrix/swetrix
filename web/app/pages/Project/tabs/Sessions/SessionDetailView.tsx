@@ -17,7 +17,7 @@ import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from '~/ui/Link'
 
-import { BrowserIcon, OSIcon } from '../SharedIcons'
+import { AdProviderIcon, BrowserIcon, OSIcon } from '../SharedIcons'
 import { InfoRow, PanelSection } from '../components/DetailPanels'
 import { PROJECT_TABS } from '~/lib/constants'
 import {
@@ -789,6 +789,27 @@ export const SessionDetailView = ({
           {campaignRows.length > 0 ? (
             <PanelSection title={t('project.campaigns')}>
               <div>
+                {details.adCampaign ? (
+                  <InfoRow
+                    label={t('project.ads.title')}
+                    value={
+                      <span className='inline-flex max-w-full items-center gap-1'>
+                        <AdProviderIcon
+                          provider={details.adCampaign.provider}
+                        />
+                        <Text
+                          as='span'
+                          size='sm'
+                          weight='medium'
+                          colour='inherit'
+                          truncate
+                        >
+                          {details.adCampaign.campaignName}
+                        </Text>
+                      </span>
+                    }
+                  />
+                ) : null}
                 {campaignRows.map(({ label, value }) => (
                   <InfoRow key={label} label={label} value={value} />
                 ))}
