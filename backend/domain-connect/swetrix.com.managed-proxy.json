@@ -1,0 +1,21 @@
+{
+  "providerId": "swetrix.com",
+  "providerName": "Swetrix",
+  "serviceId": "managed-proxy",
+  "serviceName": "Managed reverse proxy",
+  "version": 1,
+  "logoUrl": "https://swetrix.com/assets/logo/dark.svg",
+  "description": "Connect a subdomain to your Swetrix managed reverse proxy.",
+  "syncBlock": false,
+  "syncPubKeyDomain": "domainconnect.swetrix.com",
+  "syncRedirectDomain": "swetrix.com",
+  "hostRequired": true,
+  "records": [
+    {
+      "type": "CNAME",
+      "host": "@",
+      "pointsTo": "%proxyTargetId%.proxy.swetrix.org",
+      "ttl": 3600
+    }
+  ]
+}

@@ -10,11 +10,12 @@ import {
   SpinnerIcon,
   PlusIcon,
   CaretDownIcon,
+  ArrowUpRightIcon,
 } from '@phosphor-icons/react'
 import cx from 'clsx'
 import dayjs from 'dayjs'
 import { Trans, useTranslation } from 'react-i18next'
-import { useFetcher } from 'react-router'
+import { useFetcher, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 
 import type { ProxyDomain, ProxyDomainStatus } from '~/lib/models/Project'
@@ -296,16 +297,21 @@ interface ProxyDomainsTabProps {
 
 export default function ProxyDomainsTab({ projectId }: ProxyDomainsTabProps) {
   const { t, i18n } = useTranslation('common')
+  const [searchParams, setSearchParams] = useSearchParams()
 
   const listFetcher = useFetcher<ProjectSettingsActionData>()
   const addFetcher = useFetcher<ProjectSettingsActionData>()
   const deleteFetcher = useFetcher<ProjectSettingsActionData>()
   const verifyFetcher = useFetcher<ProjectSettingsActionData>()
+  const cloudflareFetcher = useFetcher<ProjectSettingsActionData>()
 
   const settingsAction = `/projects/settings/${projectId}`
 
   const [domains, setDomains] = useState<ProxyDomain[]>([])
   const [loading, setLoading] = useState(true)
+  const [domainsLoaded, setDomainsLoaded] = useState(false)
+  const [cloudflareSetupAvailable, setCloudflareSetupAvailable] =
+    useState(false)
   const [showAddModal, setShowAddModal] = useState(false)
   const [hostnameInput, setHostnameInput] = useState('')
   const [hostnameError, setHostnameError] = useState<string | null>(null)
@@ -315,6 +321,7 @@ export default function ProxyDomainsTab({ projectId }: ProxyDomainsTabProps) {
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const fetchDomainsRef = useRef<() => void>(() => {})
   const verifyingIdRef = useRef<string | null>(null)
+  const cloudflareReturnHandledRef = useRef(false)
   const [verifyingId, setVerifyingId] = useState<string | null>(null)
 
   const statusLabels: Record<ProxyDomainStatus, string> = {
@@ -346,6 +353,8 @@ export default function ProxyDomainsTab({ projectId }: ProxyDomainsTabProps) {
       toast.error(listFetcher.data.error)
     } else if (listFetcher.data.proxyDomains) {
       setDomains(listFetcher.data.proxyDomains)
+      setDomainsLoaded(true)
+      setCloudflareSetupAvailable(!!listFetcher.data.cloudflareSetupAvailable)
     }
     setLoading(false)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -438,6 +447,51 @@ export default function ProxyDomainsTab({ projectId }: ProxyDomainsTabProps) {
     setVerifyingId(null)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [verifyFetcher.state, verifyFetcher.data])
+
+  useEffect(() => {
+    if (cloudflareFetcher.state !== 'idle' || !cloudflareFetcher.data) return
+    if (cloudflareFetcher.data.error) {
+      toast.error(cloudflareFetcher.data.error)
+    } else if (cloudflareFetcher.data.cloudflareSetupUrl) {
+      window.location.assign(cloudflareFetcher.data.cloudflareSetupUrl)
+    }
+  }, [cloudflareFetcher.state, cloudflareFetcher.data])
+
+  useEffect(() => {
+    const hostname = searchParams.get('cloudflare')
+    if (!hostname || !domainsLoaded || cloudflareReturnHandledRef.current)
+      return
+    cloudflareReturnHandledRef.current = true
+
+    const nextParams = new URLSearchParams(searchParams)
+    nextParams.delete('cloudflare')
+    nextParams.delete('error')
+    nextParams.delete('error_description')
+    setSearchParams(nextParams, { replace: true })
+
+    if (searchParams.has('error')) {
+      toast.error(t('project.settings.proxy.cloudflareNotCompleted'))
+      return
+    }
+
+    const domain = domains.find((item) => item.hostname === hostname)
+    if (!domain) return
+    setExpandedIds((prev) => new Set([...prev, domain.id]))
+    verifyingIdRef.current = domain.id
+    setVerifyingId(domain.id)
+    verifyFetcher.submit(
+      { intent: 'verify-proxy-domain', id: domain.id },
+      { method: 'POST', action: settingsAction },
+    )
+  }, [
+    domainsLoaded,
+    domains,
+    searchParams,
+    setSearchParams,
+    settingsAction,
+    t,
+    verifyFetcher,
+  ])
 
   const submitAddDomain = () => {
     const validated = validateHostnameClient(hostnameInput)
@@ -537,6 +591,28 @@ export default function ProxyDomainsTab({ projectId }: ProxyDomainsTabProps) {
       </div>
 
       <DnsRecordTable domain={domain} />
+
+      {cloudflareSetupAvailable ? (
+        <div className='flex flex-wrap items-center gap-x-3 gap-y-2'>
+          <Button
+            variant='secondary'
+            size='sm'
+            loading={cloudflareFetcher.state !== 'idle'}
+            onClick={() => {
+              cloudflareFetcher.submit(
+                { intent: 'configure-proxy-cloudflare', id: domain.id },
+                { method: 'POST', action: settingsAction },
+              )
+            }}
+          >
+            {t('project.settings.proxy.configureCloudflare')}
+            <ArrowUpRightIcon className='ml-1.5 size-4' aria-hidden='true' />
+          </Button>
+          <Text as='p' size='xs' colour='secondary'>
+            {t('project.settings.proxy.cloudflareSetupDescription')}
+          </Text>
+        </div>
+      ) : null}
 
       <CloudflareTip />
 
