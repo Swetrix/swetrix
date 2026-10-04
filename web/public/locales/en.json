@@ -75,6 +75,7 @@
   "common": {
     "status": "Status",
     "connect": "Connect",
+    "select": "Select",
     "disconnect": "Disconnect",
     "docs": "Docs",
     "bookACall": "Book a call with the founder",
@@ -1165,6 +1166,7 @@
     "add": "Add alert",
     "delete": "Delete alert",
     "noNameError": "Please enter a name for the alert.",
+    "noCustomEventError": "Please enter a custom event name.",
     "queryValueError": "Please fill threshold and the query value has to be a number.",
     "noIntegration": "You have not configured an integration yet. Create one in your <url>account settings</url>.",
     "noNotificationChannel": "You do not have a notification channel set up, please set it up to be notified when one of your alerts is triggered.",
@@ -3630,7 +3632,8 @@
     "gaAlternative": "Cookieless Google Analytics alternative",
     "agencies": "Privacy-first analytics for agencies",
     "projectWithPassword": "Website analytics - password required",
-    "subscribe": "Start your free trial"
+    "subscribe": "Start your free trial",
+    "unsubscribe": "Unsubscribe from email reports"
   },
   "description": {
     "default": "Swetrix is a privacy-first, cookieless Google Analytics alternative with real-time analytics, no sampling, and built-in performance & error monitoring.",
