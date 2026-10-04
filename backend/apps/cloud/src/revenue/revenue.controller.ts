@@ -1,3 +1,4 @@
+import { ApiKeyAccess } from '../api-key/api-key-access.decorator'
 import {
   Controller,
   Get,
@@ -62,6 +63,7 @@ export class RevenueController {
   @ApiBearerAuth()
   @Get('/:pid/revenue/status')
   @Auth(true, true)
+  @ApiKeyAccess('revenue:read', 'params', 'pid')
   @ApiResponse({ status: 200, type: RevenueStatusDto })
   async getRevenueStatus(
     @CurrentUserId() userId: string,
@@ -299,6 +301,7 @@ export class RevenueAnalyticsController {
   @ApiBearerAuth()
   @Get('/')
   @Auth(true, true)
+  @ApiKeyAccess('revenue:read', 'query', 'pid')
   @ApiResponse({ status: 200 })
   async getRevenueStats(
     @CurrentUserId() userId: string,
@@ -422,6 +425,7 @@ export class RevenueAnalyticsController {
   @ApiBearerAuth()
   @Post()
   @Auth(true, false)
+  @ApiKeyAccess('revenue:write', 'body', 'pid')
   @HttpCode(201)
   @ApiResponse({ status: 201 })
   async logRevenue(

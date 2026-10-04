@@ -1,3 +1,4 @@
+import { ApiKeyAccess } from '../../../api-key/api-key-access.decorator'
 import {
   Controller,
   Get,
@@ -47,6 +48,10 @@ export class ProfilesV2Controller {
 
   @Get()
   @Auth(true, true)
+  @ApiKeyAccess('analytics:read', 'params', 'pid', [
+    'events:read',
+    'errors:read',
+  ])
   @CacheableAnalytics()
   @ApiOperation({
     summary: 'Profiles',
@@ -72,6 +77,10 @@ export class ProfilesV2Controller {
 
   @Get(':profileId')
   @Auth(true, true)
+  @ApiKeyAccess('analytics:read', 'params', 'pid', [
+    'events:read',
+    'errors:read',
+  ])
   @ApiOperation({
     summary: 'Profile details',
     description:
@@ -103,6 +112,10 @@ export class ProfilesV2Controller {
 
   @Get(':profileId/sessions')
   @Auth(true, true)
+  @ApiKeyAccess('analytics:read', 'params', 'pid', [
+    'events:read',
+    'errors:read',
+  ])
   @ApiOperation({
     summary: 'Profile sessions',
     description: 'Paginated sessions recorded for a specific profile.',

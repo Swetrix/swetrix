@@ -1,3 +1,4 @@
+import ApiKeys from '~/components/ApiKeys/ApiKeys'
 import _isEmpty from 'lodash/isEmpty'
 import _isString from 'lodash/isString'
 import _join from 'lodash/join'
@@ -8,6 +9,7 @@ import _size from 'lodash/size'
 import { Link } from '~/ui/Link'
 import {
   SlidersHorizontalIcon,
+  KeyIcon,
   ShieldIcon,
   LockIcon,
   UserCircleIcon,
@@ -233,6 +235,7 @@ const ProjectSettings = () => {
     | 'general'
     | 'shields'
     | 'access'
+    | 'apiKeys'
     | 'captcha'
     | 'integrations'
     | 'alerts'
@@ -257,6 +260,14 @@ const ProjectSettings = () => {
             icon: SlidersHorizontalIcon,
             iconColor: 'text-blue-500',
             visible: true,
+          },
+          {
+            id: 'apiKeys',
+            label: t('apiKeys.title'),
+            description: t('apiKeys.projectDescription'),
+            icon: KeyIcon,
+            iconColor: 'text-slate-500',
+            visible: project?.role === 'owner',
           },
           {
             id: 'access',
@@ -1080,6 +1091,7 @@ const ProjectSettings = () => {
                   />
                 ) : null}
 
+                {activeTab === 'apiKeys' ? <ApiKeys projectId={id} /> : null}
                 {activeTab === 'access' ? (
                   <AccessSettings
                     form={form}

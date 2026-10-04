@@ -1,3 +1,4 @@
+import { ApiKeyAccess } from '../../../api-key/api-key-access.decorator'
 import {
   Controller,
   Get,
@@ -51,6 +52,7 @@ export class ProjectV2Controller {
 
   @Get('funnel')
   @Auth(true, true)
+  @ApiKeyAccess('funnels:read', 'params', 'pid')
   @CacheableAnalytics()
   @ApiOperation({
     summary: 'Funnel analysis',
@@ -76,6 +78,11 @@ export class ProjectV2Controller {
 
   @Get('funnel/sessions')
   @Auth(true, true)
+  @ApiKeyAccess('funnels:read', 'params', 'pid', [
+    'analytics:read',
+    'events:read',
+    'errors:read',
+  ])
   @CacheableAnalytics()
   @ApiOperation({
     summary: 'Funnel sessions',
@@ -104,6 +111,7 @@ export class ProjectV2Controller {
 
   @Get('live-visitors')
   @Auth(true, true)
+  @ApiKeyAccess('analytics:read', 'params', 'pid')
   @ApiOperation({
     summary: 'Live visitors',
     description:
@@ -127,6 +135,7 @@ export class ProjectV2Controller {
 
   @Get('dimensions')
   @Auth(true, true)
+  @ApiKeyAccess('analytics:read', 'params', 'pid')
   @ApiOperation({
     summary: 'Dimension & metric discovery',
     description:
@@ -157,6 +166,7 @@ export class ProjectV2Controller {
 
   @Get('dimensions/:dimension/values')
   @Auth(true, true)
+  @ApiKeyAccess('analytics:read', 'params', 'pid')
   @ApiOperation({
     summary: 'Dimension values',
     description:

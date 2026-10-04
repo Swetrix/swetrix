@@ -1,3 +1,4 @@
+import { ApiKeyAccess } from '../api-key/api-key-access.decorator'
 import * as fs from 'fs'
 import * as os from 'os'
 import * as path from 'path'
@@ -290,6 +291,7 @@ export class DataImportController {
 
   @Get(':projectId/has-imported-data')
   @Auth(true, true)
+  @ApiKeyAccess('analytics:read', 'params', 'projectId')
   @ApiBearerAuth()
   async hasImportedData(
     @Param('projectId') projectId: string,

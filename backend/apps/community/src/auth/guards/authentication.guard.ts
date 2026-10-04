@@ -19,7 +19,7 @@ export class AuthenticationGuard implements CanActivate {
       return true
     }
 
-    if (!user) return true
+    if (!user || user.apiKeyAccess) return true
 
     if (
       user?.isTwoFactorAuthenticationEnabled &&

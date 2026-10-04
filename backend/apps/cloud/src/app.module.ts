@@ -1,3 +1,4 @@
+import { ApiKeyModule } from './api-key/api-key.module'
 import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { ConfigModule } from '@nestjs/config'
@@ -96,6 +97,7 @@ const modules = [
   FeatureFlagModule,
   AiModule,
   AuthModule,
+  ApiKeyModule,
   CaptchaModule,
   HealthModule,
   OrganisationModule,

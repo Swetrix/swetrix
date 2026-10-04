@@ -1,3 +1,4 @@
+import ApiKeys from '~/components/ApiKeys/ApiKeys'
 import cx from 'clsx'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
@@ -578,7 +579,6 @@ const UserSettings = () => {
   const [isSessionReplayAddonModalOpened, setIsSessionReplayAddonModalOpened] =
     useState(false)
   const [showModal, setShowModal] = useState(false)
-  const [showAPIDeleteModal, setShowAPIDeleteModal] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const translatedFrequencies = useMemo(
     () => _map(reportFrequencies, (key) => t(`profileSettings.${key}`)),
@@ -614,7 +614,6 @@ const UserSettings = () => {
   const pendingPasswordChangeRef = useRef(false)
   const pendingToggles = useRef<Map<string, boolean>>(new Map())
 
-  const isSubmitting = fetcher.state === 'submitting'
   const submittedIntent = fetcher.formData?.get('intent')?.toString()
   const isProfileUpdateSubmitting =
     fetcher.state !== 'idle' && submittedIntent === 'update-profile'
@@ -982,7 +981,7 @@ const UserSettings = () => {
     if (!shouldHandleFetcherData(fetcher.data)) return
 
     if (fetcher.data.success) {
-      const { intent, user: updatedUser, apiKey } = fetcher.data
+      const { intent, user: updatedUser } = fetcher.data
 
       if (intent === 'update-profile' && updatedUser) {
         if (pendingPasswordChangeRef.current) {
@@ -998,12 +997,6 @@ const UserSettings = () => {
           passwordChangedRef.current = false
           logout()
         }
-      } else if (intent === 'generate-api-key' && apiKey) {
-        mergeUser({ apiKey })
-        toast.success(t('profileSettings.autosave.apiKeyGenerated'))
-      } else if (intent === 'delete-api-key') {
-        mergeUser({ apiKey: null })
-        toast.success(t('profileSettings.autosave.apiKeyDeleted'))
       } else if (intent === 'toggle-live-visitors' && updatedUser) {
         pendingToggles.current.delete('live-visitors')
         mergeUser(updatedUser)
@@ -1485,22 +1478,6 @@ const UserSettings = () => {
     fetcher.submit(formData, { method: 'post' })
   }
 
-  const onApiKeyGenerate = () => {
-    if (isSubmitting) {
-      return
-    }
-
-    const formData = new FormData()
-    formData.set('intent', 'generate-api-key')
-    fetcher.submit(formData, { method: 'post' })
-  }
-
-  const onApiKeyDelete = () => {
-    const formData = new FormData()
-    formData.set('intent', 'delete-api-key')
-    fetcher.submit(formData, { method: 'post' })
-  }
-
   const handleTimeFormatChange = (
     timeFormat: NonNullable<Form['timeFormat']>,
   ) => {
@@ -1630,50 +1607,9 @@ const UserSettings = () => {
                   </div>
                 </SettingsSection>
 
-                <SettingsSection
-                  title={t('profileSettings.apiKey')}
-                  description={t('profileSettings.apiKeyDesc')}
-                >
-                  {user?.apiKey ? (
-                    <>
-                      <Alert variant='warning' className='mb-3'>
-                        {t('profileSettings.apiKeyWarning')}
-                      </Alert>
-                      <div className='max-w-md'>
-                        <Input
-                          label={t('profileSettings.apiKey')}
-                          name='apiKey'
-                          type='password'
-                          autoComplete='off'
-                          value={user.apiKey}
-                          readOnly
-                        />
-                      </div>
-                      <Button
-                        variant='danger'
-                        size='lg'
-                        className='mt-4'
-                        onClick={() => setShowAPIDeleteModal(true)}
-                      >
-                        {t('profileSettings.deleteApiKeyBtn')}
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      <Text
-                        as='p'
-                        size='sm'
-                        colour='secondary'
-                        className='mb-3'
-                      >
-                        {t('profileSettings.noApiKey')}
-                      </Text>
-                      <Button size='lg' onClick={onApiKeyGenerate}>
-                        {t('profileSettings.addApiKeyBtn')}
-                      </Button>
-                    </>
-                  )}
-                </SettingsSection>
+                <div id='api-keys' className='py-6'>
+                  <ApiKeys />
+                </div>
 
                 {isSelfhosted ? (
                   <>
@@ -3067,20 +3003,6 @@ const UserSettings = () => {
           </>
         }
         isOpened={showModal}
-      />
-      <Modal
-        onClose={() => setShowAPIDeleteModal(false)}
-        onSubmit={() => {
-          setShowAPIDeleteModal(false)
-          onApiKeyDelete()
-        }}
-        submitText={t('profileSettings.deleteApiKeyBtn')}
-        closeText={t('common.close')}
-        title={t('profileSettings.apiKeyDelete')}
-        submitType='danger'
-        type='error'
-        message={t('profileSettings.apiKeyDeleteConf')}
-        isOpened={showAPIDeleteModal}
       />
       <Modal
         onClose={() => {

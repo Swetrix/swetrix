@@ -3742,5 +3742,114 @@
     "imprint": "Legal notice",
     "cloudEdition": "Cloud edition",
     "starOnGithub": "Star us on GitHub"
+  },
+  "apiKeys": {
+    "title": "API keys",
+    "description": "Give each integration its own key, with only the permissions and projects it needs.",
+    "projectDescription": "API keys that can access this project, and the permissions they have.",
+    "create": "Create API key",
+    "manage": "Manage API keys",
+    "retry": "Try again",
+    "loading": "Loading API keys",
+    "edit": "Edit permissions",
+    "name": "Key name",
+    "namePlaceholder": "e.g. Reporting dashboard",
+    "projects": "Project access",
+    "projectsHint": "Only projects you own can be assigned to a key.",
+    "allProjects": "All projects",
+    "selectedProjects": "Selected projects",
+    "searchProjects": "Search projects",
+    "noProjects": "No projects found",
+    "projectsSelected_one": "{{count}} project selected",
+    "projectsSelected_other": "{{count}} projects selected",
+    "allProjectsHint": "Includes every project you own now and any you create later.",
+    "permissions": "Permissions",
+    "permissionsHint": "Choose what this key can read or change. Combined responses may require more than one read permission.",
+    "restrictHint": "This key currently has unrestricted access. Saving will replace that access with the permissions you choose below.",
+    "none": "No access",
+    "readOnly": "Read only",
+    "readWrite": "Read & write",
+    "readOnlyHint": "This resource only supports read access through the API.",
+    "organisationsHint": "Organisation permissions require access to all projects.",
+    "save": "Save permissions",
+    "cancel": "Cancel",
+    "emptyTitle": "No API keys yet",
+    "emptyDescription": "Create a key to connect a script, dashboard, or integration.",
+    "projectEmpty": "No API keys have access to this project.",
+    "unrestricted": "Unrestricted",
+    "created": "Created {{date}}",
+    "createdBefore": "Created before scoped API keys",
+    "rotated": "Rotated {{date}}",
+    "hide": "Hide key",
+    "reveal": "Reveal key",
+    "copy": "Copy key",
+    "copied": "API key copied",
+    "copyFailed": "Could not copy. Select and copy the key manually.",
+    "secret": "API key",
+    "rotate": "Rotate key",
+    "revoke": "Revoke",
+    "fullAccess": "Full API access",
+    "scopeCount_one": "{{count}} permission group",
+    "scopeCount_other": "{{count}} permission groups",
+    "unrestrictedHint": "This key retains its original access to all API-enabled resources. Edit its permissions to limit access.",
+    "rotateTitle": "Rotate “{{name}}”?",
+    "rotateDescription": "The current secret will stop working immediately. Permissions stay the same. Update your integrations with the replacement key.",
+    "revokeTitle": "Revoke “{{name}}”?",
+    "revokeDescription": "Any integration using this key will lose access immediately. This cannot be undone.",
+    "ready": "“{{name}}” is ready",
+    "secretHint": "Store this key securely in your integration. You can reveal it again from this list.",
+    "success": {
+      "create": "API key created",
+      "update": "Permissions saved",
+      "rotate": "API key rotated",
+      "delete": "API key revoked"
+    },
+    "resources": {
+      "analytics": {
+        "name": "Analytics",
+        "description": "Traffic, performance, sessions, profiles, SEO, and CAPTCHA statistics."
+      },
+      "events": {
+        "name": "Events",
+        "description": "Read custom events or send tracking events."
+      },
+      "projects": {
+        "name": "Project settings",
+        "description": "Read settings; create, update, or delete projects and saved views."
+      },
+      "funnels": {
+        "name": "Funnels",
+        "description": "Read funnel analysis or manage saved funnels."
+      },
+      "annotations": {
+        "name": "Annotations",
+        "description": "Read or manage timeline annotations."
+      },
+      "errors": {
+        "name": "Errors",
+        "description": "Read error reports, send errors, or update their status."
+      },
+      "replays": {
+        "name": "Session replays",
+        "description": "View and export recordings; write access allows recording and deletion."
+      },
+      "goals": {
+        "name": "Goals",
+        "description": "View goals, conversions, and associated sessions."
+      },
+      "flags": {
+        "name": "Feature flags",
+        "description": "View flag configuration, statistics, and evaluations."
+      },
+      "revenue": {
+        "name": "Revenue",
+        "description": "Read revenue statistics or record transactions."
+      },
+      "organisations": {
+        "name": "Organisations",
+        "description": "Read or manage organisations and their members. Applies account-wide."
+      }
+    },
+    "projectReadOnly": "This account has a viewer role on this project, so its key can only read project data."
   }
 }

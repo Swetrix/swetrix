@@ -3,6 +3,13 @@ const { queriesRunner, dbName } = require('./setup')
 const { initialiseDatabase } = require('./initialise_database')
 
 const CLICKHOUSE_INIT_QUERIES = [
+  `CREATE TABLE IF NOT EXISTS ${dbName}.api_key (
+    id String, userId String, name String, keyHash String,
+    encryptedKey String, keyPreview String, scopes String, projectIds String,
+    allProjects UInt8 DEFAULT 0, unrestricted UInt8 DEFAULT 0,
+    created Nullable(String), rotated Nullable(String)
+  ) ENGINE = MergeTree() ORDER BY (userId, id)`,
+
   `CREATE TABLE IF NOT EXISTS ${dbName}.session_replay_chunks
   (
     pid FixedString(12),

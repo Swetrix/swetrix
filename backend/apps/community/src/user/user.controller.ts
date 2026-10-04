@@ -1,3 +1,4 @@
+import { ApiKeyService } from '../api-key/api-key.service'
 import {
   Controller,
   Get,
@@ -5,8 +6,6 @@ import {
   Body,
   BadRequestException,
   Post,
-  Headers,
-  Ip,
   ConflictException,
   Delete,
   Param,
@@ -32,7 +31,6 @@ import {
   deleteAllRefreshTokensClickhouse,
   deleteProjectsByUserIdClickhouse,
   deleteProjectSharesByUserIdClickhouse,
-  getIPFromHeaders,
   getProjectsClickhouse,
 } from '../common/utils'
 import {
@@ -57,6 +55,7 @@ import { Auth } from '../auth/decorators'
 @Auth()
 export class UserController {
   constructor(
+    private readonly apiKeys: ApiKeyService,
     private readonly logger: AppLoggerService,
     private readonly userService: UserService,
     private readonly mailerService: MailerService,
@@ -291,32 +290,10 @@ export class UserController {
 
   @ApiBearerAuth()
   @Post('api-key')
-  async generateApiKey(
-    @CurrentUserId() userId: string,
-    @Headers() headers,
-    @Ip() reqIP,
-  ) {
-    this.logger.log({ userId }, 'POST /user/api-key')
-
-    const ip = getIPFromHeaders(headers) || reqIP || ''
-
-    await checkRateLimit(ip, 'generate-api-key', 5, 3600)
-
-    const user = await this.userService.findOne({ id: userId })
-
-    if (!user) {
-      throw new BadRequestException('User not found')
-    }
-
-    if (!_isNull(user.apiKey)) {
-      throw new ConflictException('You already have an API key')
-    }
-
-    const apiKey: string = randomUUID()
-
-    await this.userService.update(userId, { apiKey })
-
-    return { apiKey }
+  async generateApiKey() {
+    throw new BadRequestException(
+      'Create scoped API keys through /user/api-keys',
+    )
   }
 
   @ApiBearerAuth()
@@ -334,7 +311,7 @@ export class UserController {
       throw new ConflictException("You don't have an API key")
     }
 
-    await this.userService.update(userId, { apiKey: null })
+    await this.apiKeys.remove(userId, 'legacy')
   }
 
   @ApiBearerAuth()

@@ -1,3 +1,4 @@
+import { ApiKeyAccess } from '../../../api-key/api-key-access.decorator'
 import {
   Controller,
   Get,
@@ -47,6 +48,12 @@ export class SessionsV2Controller {
 
   @Get()
   @Auth(true, true)
+  @ApiKeyAccess('analytics:read', 'params', 'pid', [
+    'events:read',
+    'errors:read',
+    'replays:read',
+    'revenue:read',
+  ])
   @CacheableAnalytics()
   @ApiOperation({
     summary: 'Sessions',
@@ -72,6 +79,12 @@ export class SessionsV2Controller {
 
   @Get(':psid')
   @Auth(true, true)
+  @ApiKeyAccess('analytics:read', 'params', 'pid', [
+    'events:read',
+    'errors:read',
+    'replays:read',
+    'revenue:read',
+  ])
   @ApiOperation({
     summary: 'Session details',
     description:

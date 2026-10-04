@@ -1,3 +1,4 @@
+import { ApiKeyAccess } from '../../../api-key/api-key-access.decorator'
 import {
   Controller,
   Get,
@@ -54,6 +55,7 @@ export class TrafficV2Controller {
 
   @Get('summary')
   @Auth(true, true)
+  @ApiKeyAccess('analytics:read', 'params', 'pid')
   @CacheableAnalytics()
   @ApiOperation({
     summary: 'Traffic summary',
@@ -79,6 +81,7 @@ export class TrafficV2Controller {
 
   @Get('timeseries')
   @Auth(true, true)
+  @ApiKeyAccess('analytics:read', 'params', 'pid')
   @CacheableAnalytics()
   @ApiOperation({
     summary: 'Traffic timeseries',
@@ -104,6 +107,7 @@ export class TrafficV2Controller {
 
   @Get('breakdown')
   @Auth(true, true)
+  @ApiKeyAccess('analytics:read', 'params', 'pid')
   @CacheableAnalytics()
   @ApiOperation({
     summary: 'Traffic breakdown',
@@ -132,6 +136,7 @@ export class TrafficV2Controller {
 
   @Get('custom-events')
   @Auth(true, true)
+  @ApiKeyAccess('events:read', 'params', 'pid')
   @CacheableAnalytics()
   @ApiOperation({
     summary: 'Custom events',
@@ -160,6 +165,7 @@ export class TrafficV2Controller {
 
   @Get('custom-metrics')
   @Auth(true, true)
+  @ApiKeyAccess('events:read', 'params', 'pid')
   @CacheableAnalytics()
   @ApiOperation({
     summary: 'Custom metrics',
@@ -188,6 +194,7 @@ export class TrafficV2Controller {
 
   @Get('custom-events/timeseries')
   @Auth(true, true)
+  @ApiKeyAccess('events:read', 'params', 'pid')
   @CacheableAnalytics()
   @ApiOperation({
     summary: 'Custom events timeseries',
@@ -216,6 +223,7 @@ export class TrafficV2Controller {
 
   @Get('custom-events/metadata')
   @Auth(true, true)
+  @ApiKeyAccess('events:read', 'params', 'pid')
   @CacheableAnalytics()
   @ApiOperation({
     summary: 'Custom event metadata',
@@ -244,6 +252,7 @@ export class TrafficV2Controller {
 
   @Get('page-properties/metadata')
   @Auth(true, true)
+  @ApiKeyAccess('analytics:read', 'params', 'pid')
   @CacheableAnalytics()
   @ApiOperation({
     summary: 'Page property values',
@@ -271,6 +280,7 @@ export class TrafficV2Controller {
 
   @Get('page-properties')
   @Auth(true, true)
+  @ApiKeyAccess('analytics:read', 'params', 'pid')
   @CacheableAnalytics()
   @ApiOperation({
     summary: 'Page properties',

@@ -57,6 +57,12 @@ Swetrix will send transactional emails for some actions, like password reset or 
 
 If you don't have an SMTP provider, some regular email providers offer this functionality. For example, you can [configure Gmail for app specific passwords](https://support.google.com/mail/answer/185833) and use them as SMTP credentials (in this case, the `SMTP_HOST` should be `smtp.gmail.com` with port `587`).
 
+### API key encryption
+
+`API_KEY_ENCRYPTION_SECRET` is an optional dedicated secret for encrypting API keys at rest. When unset, Swetrix derives the encryption key from `SECRET_KEY_BASE`. Set it before creating keys and keep it stable across all API instances and backups. Changing the effective encryption secret prevents revealing previously stored keys; authentication still works because it uses a separate SHA-256 digest. Rotate affected keys to create secrets encrypted with the new configuration.
+
+Existing UUID keys remain valid. The self-hosted database initializer creates the `api_key` table automatically. If you manage schema upgrades manually, apply `backend/migrations/clickhouse/selfhosted_2026_10_01_api_keys.js` before starting the updated API. Cloud installations use `backend/migrations/mysql/2026_10_01_api_keys.sql`.
+
 ### Google Search Console integration
 
 To let users connect their Google Search Console account from project settings (and populate the SEO dashboard), the API needs an OAuth client created in your own Google Cloud project. The full step-by-step guide lives in [Google Search Console](/selfhosting/google-search-console); the relevant variables are:

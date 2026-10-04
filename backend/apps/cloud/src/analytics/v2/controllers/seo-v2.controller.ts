@@ -1,3 +1,4 @@
+import { ApiKeyAccess } from '../../../api-key/api-key-access.decorator'
 import {
   Controller,
   Get,
@@ -50,6 +51,7 @@ export class SeoV2Controller {
 
   @Get('status')
   @Auth(true, true)
+  @ApiKeyAccess('analytics:read', 'params', 'pid')
   @CacheableAnalytics()
   @ApiOperation({
     summary: 'Search Console connection status',
@@ -74,6 +76,7 @@ export class SeoV2Controller {
 
   @Get('summary')
   @Auth(true, true)
+  @ApiKeyAccess('analytics:read', 'params', 'pid')
   @CacheableAnalytics()
   @ApiOperation({
     summary: 'SEO summary',
@@ -99,6 +102,7 @@ export class SeoV2Controller {
 
   @Get('timeseries')
   @Auth(true, true)
+  @ApiKeyAccess('analytics:read', 'params', 'pid')
   @CacheableAnalytics()
   @ApiOperation({
     summary: 'SEO timeseries',
@@ -124,6 +128,7 @@ export class SeoV2Controller {
 
   @Get('breakdown')
   @Auth(true, true)
+  @ApiKeyAccess('analytics:read', 'params', 'pid')
   @CacheableAnalytics()
   @ApiOperation({
     summary: 'SEO breakdown',
@@ -152,6 +157,7 @@ export class SeoV2Controller {
 
   @Get('branded-traffic')
   @Auth(true, true)
+  @ApiKeyAccess('analytics:read', 'params', 'pid')
   @CacheableAnalytics()
   @ApiOperation({
     summary: 'Branded vs non-branded traffic',
@@ -177,6 +183,7 @@ export class SeoV2Controller {
 
   @Get('positions')
   @Auth(true, true)
+  @ApiKeyAccess('analytics:read', 'params', 'pid')
   @CacheableAnalytics()
   @ApiOperation({
     summary: 'Search position analytics',

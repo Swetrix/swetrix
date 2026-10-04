@@ -9,6 +9,14 @@ export class MultiAuthGuard extends AuthGuard(['jwt-access-token', 'api-key']) {
     super()
   }
 
+  canActivate(context: ExecutionContext) {
+    if (context.switchToHttp().getRequest().headers?.['x-api-key']) {
+      const KeyGuard = AuthGuard('api-key')
+      return new KeyGuard().canActivate(context)
+    }
+    return super.canActivate(context)
+  }
+
   handleRequest(
     err: any,
     user: any,

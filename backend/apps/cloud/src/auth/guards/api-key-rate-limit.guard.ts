@@ -11,7 +11,7 @@ export class ApiKeyRateLimitGuard implements CanActivate {
     const request = context.switchToHttp().getRequest()
     const { user } = request
 
-    if (request.headers['x-api-key']) {
+    if (user?.apiKeyAccess) {
       if (!user) return false
 
       const { apiRateLimitPerHour } = getEffectiveAccountLimits(user)
@@ -21,7 +21,7 @@ export class ApiKeyRateLimitGuard implements CanActivate {
         user.dashboardBlockReason !== null
           ? 0
           : apiRateLimitPerHour
-      return checkRateLimitForApiKey(user.apiKey, reqAmount)
+      return checkRateLimitForApiKey(`account:${user.id}`, reqAmount)
     }
 
     return true

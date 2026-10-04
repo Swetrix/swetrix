@@ -1,3 +1,4 @@
+import { ApiKeyModule } from './api-key/api-key.module'
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { ScheduleModule } from '@nestjs/schedule'
@@ -82,6 +83,7 @@ const modules = [
   FeatureFlagModule,
   CaptchaModule,
   AuthModule,
+  ApiKeyModule,
   TwoFactorAuthModule,
   DataImportModule,
 ]

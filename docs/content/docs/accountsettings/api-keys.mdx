@@ -1,46 +1,85 @@
 ---
 title: API keys
 slug: /settings/api-keys
-description: "Create and manage Swetrix API keys to access analytics data and integrate your account with scripts, dashboards, and other tools."
+description: "Create scoped Swetrix API keys, choose project access, and manage permissions, rotation, and revocation."
 ---
 
-API keys allow you to authenticate with the Swetrix API programmatically. You can use them to retrieve statistics, manage your account, and more.
+API keys connect scripts, dashboards, and integrations to Swetrix. Create a separate key for each integration and grant only the permissions it needs.
 
-## Creating an API key
+## Create a key
 
-To create a new API key:
+1. Open **Account Settings → Account → API keys**.
+2. Click **Create API key** and give it a descriptive name.
+3. Choose **Selected projects** or **All projects**. Selected projects must belong to your account. All projects includes projects you own now and those you create later.
+4. Set each permission group to **No access**, **Read only**, or **Read & write**. Read-only resources have no write option.
+5. Create the key, reveal it with the eye button, and copy it into your integration.
 
-1.  Go to your **[Account Settings](https://swetrix.com/user-settings)**.
-2.  Open the **Account** tab.
-3.  Scroll down to the **API key** section.
-4.  Click the **Generate API key** button.
-
-Your new API key will be displayed.
+New keys start with `swx_`. Nothing is granted until you choose permissions. A key cannot access a selected project after you transfer ownership away from your account.
 
 <Callout type="warn">
-Treat API keys like passwords. Keep them secret, do not hardcode them, and do not share them.
-
+Keep keys in a server-side secret store or environment variable. Never put an account API key in browser tracking code or a public repository.
 </Callout>
 
-## Deleting an API key
+## Permissions
 
-If your API key is compromised or you no longer need it, you can delete it:
+| Group | Read only | Read & write |
+| --- | --- | --- |
+| Analytics | Traffic, performance, sessions, profiles, SEO, and CAPTCHA statistics | Not available |
+| Events | Custom events and their metadata | Also send tracking events |
+| Project settings | Project lists, settings, and saved views | Also create, update, or delete projects and views |
+| Funnels | Saved funnels and funnel analysis | Also manage saved funnels |
+| Annotations | Timeline annotations | Also create, edit, or delete annotations |
+| Errors | Error reports and affected sessions | Also send errors and update error status |
+| Session replays | View and export recordings | Also record and delete replays |
+| Goals | Goals, conversion statistics, and associated sessions | Not available |
+| Feature flags | Configuration, statistics, and evaluations | Not available |
+| Revenue (Cloud) | Revenue statistics | Also record transactions |
+| Organisations (Cloud) | Organisations and members | Also manage organisations and members |
 
-1.  Navigate to the **API key** section in your [Account Settings](https://swetrix.com/user-settings).
-2.  Click the **Delete API key** button.
-3.  Confirm the deletion in the modal window.
+Project creation requires **All projects** and **Project settings: Read & write**. Organisation permissions apply account-wide and also require **All projects**. Read & write includes read access.
 
-<img alt="Delete API key" src="/docs/img/accountsettings/api-key.png" />
+Some responses combine resources and require multiple read permissions:
 
-Once deleted, any applications or scripts using this key will no longer be able to access the API.
+- The v1 `/log` response includes custom events, so it needs **Analytics** and **Events**. `/log/chart` and the v2 traffic summary work with **Analytics** alone.
+- Session lists and details (including goal sessions) need **Analytics**, **Events**, **Errors**, and **Session replays**, plus **Revenue** on Cloud.
+- Profile lists and sessions need **Analytics**, **Events**, and **Errors**. Profile details also need **Revenue** on Cloud.
+- Project lists and details include saved funnels, so they need **Project settings** and **Funnels**.
+- Funnel and journey session lists also need **Analytics**, **Events**, and **Errors**. Error session lists also need **Analytics**.
+- Queries that filter on custom events or event metadata also require **Events**.
 
-## Using the API key
+Permissions apply to API-enabled endpoints. Account credentials, billing, and API-key management still require a signed-in session. Public tracking endpoints continue to accept ordinary tracker requests without a key; when a key is supplied, its permissions and project access are checked. A key does not grant any rights beyond those of its account.
 
-You can use your API key to authenticate requests to the Swetrix API. For more information on available endpoints and how to use them, please refer to the [Statistics API reference](/statistics-api).
+## View and edit access
 
-Example usage:
+The API keys list shows names, creation dates, project access, and permissions. Secrets are masked. Use the eye button to reveal a key, then copy it. Revealed list entries hide again after a minute or when you leave the browser tab.
+
+Choose **Edit permissions** to change a key's name, projects, or permissions without changing its secret.
+
+Project owners can open **Project Settings → API keys** to see keys with access to that project, including existing unrestricted keys belonging to collaborators. This view shows metadata only; another person's key cannot be revealed, rotated, or revoked there.
+
+## Rotate or revoke a key
+
+**Rotate key** creates a replacement secret with the same permissions and project access. The old secret stops working immediately. Update every integration using it.
+
+For a deployment without interruption, create a second key with the required permissions, switch your integration, then revoke the old key.
+
+**Revoke** permanently removes the key and immediately stops future authenticated requests. Requests already authorised may finish.
+
+## Existing keys
+
+Keys created before scoped API keys retain their original unrestricted access. Their UUID format remains valid. They appear as **Unrestricted**, and their creation date is shown as predating scoped keys because that date was not recorded.
+
+Rotating an existing key gives it the `swx_` prefix while retaining unrestricted access. Editing its permissions replaces unrestricted access with your chosen scopes and projects, without changing its secret.
+
+## Use a key
+
+Send the key in the `X-Api-Key` header. For example, a key with **Analytics: Read only** and access to the requested project can fetch traffic statistics:
 
 ```bash
-curl 'https://api.swetrix.com/v1/log?pid=YOUR_PROJECT_ID&timeBucket=day&period=7d' \
-  -H "X-Api-Key: YOUR_API_KEY"
+curl 'https://api.swetrix.com/v1/log/chart?pid=YOUR_PROJECT_ID&timeBucket=day&period=7d' \
+  -H "X-Api-Key: $SWETRIX_API_KEY"
 ```
+
+Invalid or revoked credentials return `401`. A valid key without the required permission or project access returns `403`. Multi-project requests require access to every requested project. Cloud keys share the account's API rate limit.
+
+See the [Statistics API reference](/statistics-api) for available endpoints.

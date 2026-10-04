@@ -94,7 +94,6 @@ export interface UserSettingsActionData {
     repeat?: string
   }
   user?: Partial<User>
-  apiKey?: string
   twoFAData?: {
     secret?: string
     otpauthUrl?: string
@@ -303,47 +302,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
       return data<UserSettingsActionData>(
         { intent, success: true, user: result.data as User },
-        { headers: createHeadersWithCookies(result.cookies) },
-      )
-    }
-
-    case 'generate-api-key': {
-      const result = await serverFetch<{ apiKey: string }>(
-        request,
-        'user/api-key',
-        {
-          method: 'POST',
-        },
-      )
-
-      if (result.error) {
-        const error = Array.isArray(result.error)
-          ? result.error[0]
-          : (result.error as string)
-
-        return data<UserSettingsActionData>({ intent, error }, { status: 400 })
-      }
-
-      return data<UserSettingsActionData>(
-        { intent, success: true, apiKey: result.data?.apiKey },
-        { headers: createHeadersWithCookies(result.cookies) },
-      )
-    }
-
-    case 'delete-api-key': {
-      const result = await serverFetch(request, 'user/api-key', {
-        method: 'DELETE',
-      })
-
-      if (result.error) {
-        return data<UserSettingsActionData>(
-          { intent, error: result.error as string },
-          { status: 400 },
-        )
-      }
-
-      return data<UserSettingsActionData>(
-        { intent, success: true },
         { headers: createHeadersWithCookies(result.cookies) },
       )
     }
