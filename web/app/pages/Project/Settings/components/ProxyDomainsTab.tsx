@@ -309,6 +309,7 @@ export default function ProxyDomainsTab({ projectId }: ProxyDomainsTabProps) {
 
   const [domains, setDomains] = useState<ProxyDomain[]>([])
   const [loading, setLoading] = useState(true)
+  const [domainsLoaded, setDomainsLoaded] = useState(false)
   const [cloudflareSetupAvailable, setCloudflareSetupAvailable] =
     useState(false)
   const [showAddModal, setShowAddModal] = useState(false)
@@ -352,6 +353,7 @@ export default function ProxyDomainsTab({ projectId }: ProxyDomainsTabProps) {
       toast.error(listFetcher.data.error)
     } else if (listFetcher.data.proxyDomains) {
       setDomains(listFetcher.data.proxyDomains)
+      setDomainsLoaded(true)
       setCloudflareSetupAvailable(!!listFetcher.data.cloudflareSetupAvailable)
     }
     setLoading(false)
@@ -457,7 +459,8 @@ export default function ProxyDomainsTab({ projectId }: ProxyDomainsTabProps) {
 
   useEffect(() => {
     const hostname = searchParams.get('cloudflare')
-    if (!hostname || loading || cloudflareReturnHandledRef.current) return
+    if (!hostname || !domainsLoaded || cloudflareReturnHandledRef.current)
+      return
     cloudflareReturnHandledRef.current = true
 
     const nextParams = new URLSearchParams(searchParams)
@@ -481,7 +484,7 @@ export default function ProxyDomainsTab({ projectId }: ProxyDomainsTabProps) {
       { method: 'POST', action: settingsAction },
     )
   }, [
-    loading,
+    domainsLoaded,
     domains,
     searchParams,
     setSearchParams,
