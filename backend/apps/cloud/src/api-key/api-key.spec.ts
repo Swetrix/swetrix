@@ -5,8 +5,10 @@ import { ForbiddenException, UnauthorizedException } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import { validate } from 'class-validator'
 import { plainToInstance } from 'class-transformer'
+import { createDecipheriv, hkdfSync } from 'crypto'
 
 jest.mock('./api-key.store', () => ({ ApiKeyStore: class {} }))
+jest.mock('../common/constants', () => ({}))
 import { ApiKeyService } from './api-key.service'
 import { ApiKeyGuard } from './api-key.guard'
 import { ApiKeyRecord, ApiKeyPolicy } from './api-key.types'
@@ -114,6 +116,37 @@ describe('scoped API keys', () => {
     expect(decryptApiKey(cipher, userId, 'id')).toBe(secret)
     expect(() => decryptApiKey(cipher, 'other', 'id')).toThrow()
     expect(() => decryptApiKey(cipher, userId, 'other')).toThrow()
+
+    const derivedKey = Buffer.from(
+      hkdfSync('sha256', process.env.SECRET_KEY_BASE, '', 'api-key', 32),
+    )
+    const [iv, tag, encrypted] = cipher
+      .split('.')
+      .map((part) => Buffer.from(part, 'base64'))
+    const decipher = createDecipheriv('aes-256-gcm', derivedKey, iv)
+    decipher.setAAD(Buffer.from(`${userId}:id`))
+    decipher.setAuthTag(tag)
+    expect(
+      Buffer.concat([decipher.update(encrypted), decipher.final()]).toString(
+        'utf8',
+      ),
+    ).toBe(secret)
+  })
+
+  it('requires a base secret even in test environments', () => {
+    const cipher = encryptApiKey('secret', userId, 'id')
+    const base = process.env.SECRET_KEY_BASE
+    delete process.env.SECRET_KEY_BASE
+    try {
+      expect(() => encryptApiKey('secret', userId, 'id')).toThrow(
+        'SECRET_KEY_BASE is required',
+      )
+      expect(() => decryptApiKey(cipher, userId, 'id')).toThrow(
+        'SECRET_KEY_BASE is required',
+      )
+    } finally {
+      process.env.SECRET_KEY_BASE = base
+    }
   })
 
   it('lists metadata without secrets and reveals only to the owner', async () => {

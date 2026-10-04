@@ -4,16 +4,15 @@ import {
   createHash,
   randomBytes,
 } from 'crypto'
+import { deriveKey } from '../common/utils'
 
 export const hashApiKey = (key: string) =>
   createHash('sha256').update(key).digest('hex')
 export const generateApiKey = () => `swx_${randomBytes(32).toString('hex')}`
 const encryptionKey = () => {
-  const secret =
-    process.env.API_KEY_ENCRYPTION_SECRET || process.env.SECRET_KEY_BASE
-  if (!secret)
-    throw new Error('API_KEY_ENCRYPTION_SECRET or SECRET_KEY_BASE is required')
-  return createHash('sha256').update(`swetrix-api-keys:${secret}`).digest()
+  if (!process.env.SECRET_KEY_BASE)
+    throw new Error('SECRET_KEY_BASE is required')
+  return Buffer.from(deriveKey('api-key', 32), 'hex')
 }
 export const encryptApiKey = (key: string, userId: string, id: string) => {
   const iv = randomBytes(12)

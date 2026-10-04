@@ -37,13 +37,14 @@ export const deriveKey = (
     | 'access-token'
     | 'gsc-token'
     | 'ga4-token'
-    | 'revenue',
+    | 'revenue'
+    | 'api-key',
   length = 32,
 ) => {
   const baseStr = process.env.SECRET_KEY_BASE
 
-  // Security footgun: if SECRET_KEY_BASE is missing, token secrets become
-  // predictable across deployments. Fail closed outside dev/test.
+  // If SECRET_KEY_BASE is missing, token secrets become predictable across deployments.
+  // Fail closed outside dev/test.
   if (!baseStr) {
     const env = process.env.NODE_ENV
     if (env === 'development' || env === 'test') {
