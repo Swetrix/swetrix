@@ -1,7 +1,12 @@
 import { AuthGuard } from '@nestjs/passport'
 import { ApiKeyStrategy } from '../auth/strategies/api-key.strategy'
 import 'reflect-metadata'
-import { ForbiddenException, UnauthorizedException } from '@nestjs/common'
+import {
+  ConflictException,
+  ForbiddenException,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import { validate } from 'class-validator'
 import { plainToInstance } from 'class-transformer'
@@ -165,6 +170,39 @@ describe('scoped API keys', () => {
     await expect(service.reveal('other', result.key.id)).rejects.toThrow()
     await expect(service.rotate('other', result.key.id)).rejects.toThrow()
     await expect(service.remove('other', result.key.id)).rejects.toThrow()
+  })
+
+  it('asks the owner to rotate a key when decryption fails', async () => {
+    const { service, records } = setup()
+    const { key } = await service.create(userId, input())
+    records.get(key.id).encryptedKey = 'invalid-ciphertext'
+
+    await expect(service.reveal(userId, key.id)).rejects.toThrow(
+      new ConflictException(
+        'Unable to decrypt this API key. Please rotate the key.',
+      ),
+    )
+    await expect(service.reveal('other', key.id)).rejects.toThrow(
+      NotFoundException,
+    )
+
+    const rotated = await service.rotate(userId, key.id)
+    await expect(service.reveal(userId, key.id)).resolves.toEqual({
+      secret: rotated.secret,
+    })
+  })
+
+  it('reveals legacy keys without an encryption secret', async () => {
+    const { service } = setup()
+    const base = process.env.SECRET_KEY_BASE
+    delete process.env.SECRET_KEY_BASE
+    try {
+      await expect(service.reveal(userId, 'legacy')).resolves.toEqual({
+        secret: 'old-uuid-key',
+      })
+    } finally {
+      process.env.SECRET_KEY_BASE = base
+    }
   })
 
   it('rotates and revokes immediately while preserving scope and creation date', async () => {

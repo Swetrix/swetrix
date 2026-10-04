@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -141,11 +142,15 @@ export class ApiKeyService {
 
   async reveal(userId: string, id: string) {
     const key = await this.get(userId, id)
-    const secret =
-      id === 'legacy'
-        ? (await this.store.userById(userId)).apiKey
-        : decryptApiKey(key.encryptedKey, userId, id)
-    return { secret }
+    if (id === 'legacy')
+      return { secret: (await this.store.userById(userId)).apiKey }
+    try {
+      return { secret: decryptApiKey(key.encryptedKey, userId, id) }
+    } catch {
+      throw new ConflictException(
+        'Unable to decrypt this API key. Please rotate the key.',
+      )
+    }
   }
 
   private async validate(userId: string, dto: SaveApiKeyDto) {
