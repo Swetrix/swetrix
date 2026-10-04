@@ -4,6 +4,7 @@
   "root": "apps/cloud",
   "monorepo": true,
   "compilerOptions": {
+    "deleteOutDir": true,
     "assets": [
       { "include": "common/templates/**/*", "watchAssets": true },
       { "include": "i18n/**/*", "watchAssets": true },

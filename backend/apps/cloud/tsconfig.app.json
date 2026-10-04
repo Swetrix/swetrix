@@ -9,13 +9,17 @@
     "allowSyntheticDefaultImports": true,
     "target": "es2022",
     "sourceMap": true,
+    "rootDir": "./src",
     "outDir": "./dist",
     "baseUrl": "./",
     "incremental": true,
+    "tsBuildInfoFile": "./dist/tsconfig.app.tsbuildinfo",
     "skipLibCheck": true,
     "inlineSources": true,
     "resolveJsonModule": true,
 
     "sourceRoot": "/"
-  }
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["**/*.spec.ts", "**/*.test.ts", "**/__tests__/**"]
 }
