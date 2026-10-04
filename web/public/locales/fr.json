@@ -2476,6 +2476,9 @@
         "dnsRecordTTL": "TTL",
         "ttlAuto": "Auto",
         "cloudflareTipTitle": "Vous utilisez Cloudflare ?",
+        "configureCloudflare": "Configurer avec Cloudflare",
+        "cloudflareSetupDescription": "Vous utilisez Cloudflare ? Connectez-vous pour approuver cet enregistrement DNS.",
+        "cloudflareNotCompleted": "La configuration de Cloudflare n'a pas été terminée. Réessayez ou ajoutez l'enregistrement DNS manuellement.",
         "cloudflareTipBody": "Assurez-vous que l'enregistrement est défini sur <1>DNS uniquement</1> (DNS only), et non sur <3>Proxy activé</3> (Proxied). Le proxy de Cloudflare interfère avec la génération de notre certificat.",
         "cloudflareProxied": "Proxy activé",
         "cloudflareDnsOnly": "DNS uniquement",
@@ -3742,5 +3745,115 @@
     "imprint": "Mention légale",
     "cloudEdition": "Édition Cloud",
     "starOnGithub": "Affichez-nous sur Github"
+  },
+  "apiKeys": {
+    "title": "Clés API",
+    "tooltip": "Les clés API connectent vos scripts, tableaux de bord et intégrations à Swetrix. Choisissez les projets et les permissions auxquels chaque clé peut accéder. Effectuez la rotation d'une clé pour remplacer son secret, ou révoquez-la pour bloquer l'accès.",
+    "description": "Donnez à chaque intégration sa propre clé, avec uniquement les permissions et les projets dont elle a besoin.",
+    "projectDescription": "Les clés API qui peuvent accéder à ce projet, et les permissions dont elles disposent.",
+    "create": "Créer une clé API",
+    "manage": "Gérer les clés API",
+    "retry": "Réessayer",
+    "loading": "Chargement des clés API",
+    "edit": "Modifier les permissions",
+    "name": "Nom de la clé",
+    "namePlaceholder": "ex. Tableau de bord de reporting",
+    "projects": "Accès au projet",
+    "projectsHint": "Seuls les projets dont vous êtes propriétaire peuvent être assignés à une clé.",
+    "allProjects": "Tous les projets",
+    "selectedProjects": "Projets sélectionnés",
+    "searchProjects": "Rechercher des projets",
+    "noProjects": "Aucun projet trouvé",
+    "projectsSelected_one": "{{count}} projet sélectionné",
+    "projectsSelected_other": "{{count}} projets sélectionnés",
+    "allProjectsHint": "Inclut tous les projets que vous possédez actuellement et ceux que vous créerez plus tard.",
+    "permissions": "Permissions",
+    "permissionsHint": "Choisissez ce que cette clé peut lire ou modifier. Les réponses combinées peuvent nécessiter plus d'une permission de lecture.",
+    "restrictHint": "Cette clé a actuellement un accès non restreint. L'enregistrement remplacera cet accès par les permissions que vous choisissez ci-dessous.",
+    "none": "Aucun accès",
+    "readOnly": "Lecture seule",
+    "readWrite": "Lecture et écriture",
+    "readOnlyHint": "Cette ressource prend uniquement en charge l'accès en lecture via l'API.",
+    "organisationsHint": "Les permissions d'organisation nécessitent l'accès à tous les projets.",
+    "save": "Enregistrer les permissions",
+    "cancel": "Annuler",
+    "emptyTitle": "Aucune clé API pour le moment",
+    "emptyDescription": "Créez une clé pour connecter un script, un tableau de bord ou une intégration.",
+    "projectEmpty": "Aucune clé API n'a accès à ce projet.",
+    "unrestricted": "Non restreint",
+    "created": "Créée le {{date}}",
+    "createdBefore": "Créée avant les clés API restreintes",
+    "rotated": "Renouvelée le {{date}}",
+    "hide": "Masquer la clé",
+    "reveal": "Révéler la clé",
+    "copy": "Copier la clé",
+    "copied": "Clé API copiée",
+    "copyFailed": "Impossible de copier. Sélectionnez et copiez la clé manuellement.",
+    "secret": "Clé API",
+    "rotate": "Renouveler la clé",
+    "revoke": "Révoquer",
+    "fullAccess": "Accès API complet",
+    "scopeCount_one": "{{count}} groupe de permissions",
+    "scopeCount_other": "{{count}} groupes de permissions",
+    "unrestrictedHint": "Cette clé conserve son accès d'origine à toutes les ressources via l'API. Modifiez ses permissions pour limiter l'accès.",
+    "rotateTitle": "Faire une rotation de « {{name}} » ?",
+    "rotateDescription": "Le secret actuel cessera de fonctionner immédiatement. Les permissions restent identiques. Mettez à jour vos intégrations avec la clé de remplacement.",
+    "revokeTitle": "Révoquer « {{name}} » ?",
+    "revokeDescription": "Toute intégration utilisant cette clé perdra l'accès immédiatement. Cette action est irréversible.",
+    "ready": "« {{name}} » est prête",
+    "secretHint": "Stockez cette clé en toute sécurité dans votre intégration. Vous pouvez l'afficher de nouveau à partir de cette liste.",
+    "success": {
+      "create": "Clé API créée",
+      "update": "Permissions enregistrées",
+      "rotate": "Rotation de la clé API effectuée",
+      "delete": "Clé API révoquée"
+    },
+    "resources": {
+      "analytics": {
+        "name": "Analyses",
+        "description": "Trafic, performances, sessions, profils, SEO, et statistiques CAPTCHA."
+      },
+      "events": {
+        "name": "Événements",
+        "description": "Lire les événements personnalisés ou envoyer des événements de suivi."
+      },
+      "projects": {
+        "name": "Paramètres du projet",
+        "description": "Lire les paramètres ; créer, mettre à jour, ou supprimer des projets et des vues sauvegardées."
+      },
+      "funnels": {
+        "name": "Tunnels",
+        "description": "Lire les analyses de tunnels ou gérer les tunnels sauvegardés."
+      },
+      "annotations": {
+        "name": "Annotations",
+        "description": "Lire ou gérer les annotations de la frise chronologique."
+      },
+      "errors": {
+        "name": "Erreurs",
+        "description": "Lire les rapports d'erreur, envoyer des erreurs ou mettre à jour leur statut."
+      },
+      "replays": {
+        "name": "Enregistrements de session",
+        "description": "Afficher et exporter les enregistrements ; l'accès en écriture permet l'enregistrement et la suppression."
+      },
+      "goals": {
+        "name": "Objectifs",
+        "description": "Afficher les objectifs, les conversions et les sessions associées."
+      },
+      "flags": {
+        "name": "Feature flags",
+        "description": "Afficher la configuration des flags, les statistiques et les évaluations."
+      },
+      "revenue": {
+        "name": "Revenus",
+        "description": "Lire les statistiques de revenus ou enregistrer des transactions."
+      },
+      "organisations": {
+        "name": "Organisations",
+        "description": "Lire ou gérer les organisations et leurs membres. S'applique à l'échelle du compte."
+      }
+    },
+    "projectReadOnly": "Ce compte a un rôle de lecteur sur ce projet, sa clé ne peut donc que lire les données du projet."
   }
 }

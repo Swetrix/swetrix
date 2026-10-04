@@ -2476,6 +2476,9 @@
         "dnsRecordTTL": "TTL",
         "ttlAuto": "Automático",
         "cloudflareTipTitle": "Usando Cloudflare?",
+        "configureCloudflare": "Configurar com Cloudflare",
+        "cloudflareSetupDescription": "Usando Cloudflare? Faça login para aprovar este registro DNS.",
+        "cloudflareNotCompleted": "A configuração da Cloudflare não foi concluída. Tente novamente ou adicione o registro DNS manualmente.",
         "cloudflareTipBody": "Certifique-se de que o registro esteja definido como <1>Apenas DNS</1>, não <3>Com proxy</3>. O proxy da Cloudflare interfere no nosso provisionamento de certificados.",
         "cloudflareProxied": "Com proxy",
         "cloudflareDnsOnly": "Apenas DNS",
@@ -3742,5 +3745,115 @@
     "imprint": "Aviso legal",
     "cloudEdition": "Edição Cloud",
     "starOnGithub": "Deixe uma estrela no GitHub"
+  },
+  "apiKeys": {
+    "title": "Chaves de API",
+    "tooltip": "As chaves de API conectam seus scripts, dashboards e integrações ao Swetrix. Escolha quais projetos e permissões cada chave pode acessar. Rotacione uma chave para substituir seu segredo, ou revogue-a para interromper o acesso.",
+    "description": "Dê a cada integração sua própria chave, com apenas as permissões e projetos de que ela precisa.",
+    "projectDescription": "Chaves de API que podem acessar este projeto, e as permissões que elas têm.",
+    "create": "Criar chave de API",
+    "manage": "Gerenciar chaves de API",
+    "retry": "Tentar novamente",
+    "loading": "Carregando chaves de API",
+    "edit": "Editar permissões",
+    "name": "Nome da chave",
+    "namePlaceholder": "ex. Dashboard de relatórios",
+    "projects": "Acesso a projetos",
+    "projectsHint": "Apenas projetos de sua propriedade podem ser atribuídos a uma chave.",
+    "allProjects": "Todos os projetos",
+    "selectedProjects": "Projetos selecionados",
+    "searchProjects": "Pesquisar projetos",
+    "noProjects": "Nenhum projeto encontrado",
+    "projectsSelected_one": "{{count}} projeto selecionado",
+    "projectsSelected_other": "{{count}} projetos selecionados",
+    "allProjectsHint": "Inclui todos os projetos de sua propriedade agora e qualquer um que você criar depois.",
+    "permissions": "Permissões",
+    "permissionsHint": "Escolha o que esta chave pode ler ou alterar. Respostas combinadas podem exigir mais de uma permissão de leitura.",
+    "restrictHint": "Esta chave atualmente possui acesso irrestrito. Salvar substituirá esse acesso pelas permissões que você escolher abaixo.",
+    "none": "Sem acesso",
+    "readOnly": "Somente leitura",
+    "readWrite": "Leitura e escrita",
+    "readOnlyHint": "Este recurso suporta apenas acesso de leitura pela API.",
+    "organisationsHint": "As permissões da organização exigem acesso a todos os projetos.",
+    "save": "Salvar permissões",
+    "cancel": "Cancelar",
+    "emptyTitle": "Nenhuma chave de API ainda",
+    "emptyDescription": "Crie uma chave para conectar um script, dashboard ou integração.",
+    "projectEmpty": "Nenhuma chave de API tem acesso a este projeto.",
+    "unrestricted": "Irrestrito",
+    "created": "Criada em {{date}}",
+    "createdBefore": "Criada antes das chaves de API com escopo",
+    "rotated": "Rotacionada em {{date}}",
+    "hide": "Ocultar chave",
+    "reveal": "Revelar chave",
+    "copy": "Copiar chave",
+    "copied": "Chave de API copiada",
+    "copyFailed": "Não foi possível copiar. Selecione e copie a chave manualmente.",
+    "secret": "Chave de API",
+    "rotate": "Rotacionar chave",
+    "revoke": "Revogar",
+    "fullAccess": "Acesso total à API",
+    "scopeCount_one": "{{count}} grupo de permissões",
+    "scopeCount_other": "{{count}} grupos de permissão",
+    "unrestrictedHint": "Esta chave retém seu acesso original a todos os recursos ativados por API. Edite suas permissões para limitar o acesso.",
+    "rotateTitle": "Rotacionar “{{name}}”?",
+    "rotateDescription": "O segredo atual deixará de funcionar imediatamente. As permissões continuam as mesmas. Atualize suas integrações com a chave de substituição.",
+    "revokeTitle": "Revogar “{{name}}”?",
+    "revokeDescription": "Qualquer integração usando esta chave perderá o acesso imediatamente. Isso não pode ser desfeito.",
+    "ready": "“{{name}}” está pronta",
+    "secretHint": "Armazene esta chave com segurança em sua integração. Você pode revelá-la novamente a partir desta lista.",
+    "success": {
+      "create": "Chave de API criada",
+      "update": "Permissões salvas",
+      "rotate": "Chave de API rotacionada",
+      "delete": "Chave de API revogada"
+    },
+    "resources": {
+      "analytics": {
+        "name": "Analytics",
+        "description": "Estatísticas de tráfego, desempenho, sessões, perfis, SEO e CAPTCHA."
+      },
+      "events": {
+        "name": "Eventos",
+        "description": "Ler eventos personalizados ou enviar eventos de rastreamento."
+      },
+      "projects": {
+        "name": "Configurações do projeto",
+        "description": "Ler configurações; criar, atualizar ou excluir projetos e visualizações salvas."
+      },
+      "funnels": {
+        "name": "Funis",
+        "description": "Ler a análise de funil ou gerenciar funis salvos."
+      },
+      "annotations": {
+        "name": "Anotações",
+        "description": "Ler ou gerenciar anotações na linha do tempo."
+      },
+      "errors": {
+        "name": "Erros",
+        "description": "Ler relatórios de erro, enviar erros ou atualizar seus status."
+      },
+      "replays": {
+        "name": "Replays de sessão",
+        "description": "Visualizar e exportar gravações; o acesso de escrita permite gravação e exclusão."
+      },
+      "goals": {
+        "name": "Metas",
+        "description": "Visualizar metas, conversões e sessões associadas."
+      },
+      "flags": {
+        "name": "Feature flags",
+        "description": "Visualizar configuração de flags, estatísticas e avaliações."
+      },
+      "revenue": {
+        "name": "Receita",
+        "description": "Ler estatísticas de receita ou registrar transações."
+      },
+      "organisations": {
+        "name": "Organizações",
+        "description": "Ler ou gerenciar organizações e seus membros. Aplica-se a toda a conta."
+      }
+    },
+    "projectReadOnly": "Esta conta tem um papel de visualizador neste projeto, então sua chave só pode ler os dados do projeto."
   }
 }

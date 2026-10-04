@@ -2476,6 +2476,9 @@
         "dnsRecordTTL": "TTL",
         "ttlAuto": "Auto",
         "cloudflareTipTitle": "Nutzen Sie Cloudflare?",
+        "configureCloudflare": "Mit Cloudflare konfigurieren",
+        "cloudflareSetupDescription": "Verwenden Sie Cloudflare? Melden Sie sich an, um diesen DNS-Eintrag zu bestätigen.",
+        "cloudflareNotCompleted": "Cloudflare-Setup wurde nicht abgeschlossen. Versuchen Sie es erneut oder fügen Sie den DNS-Eintrag manuell hinzu.",
         "cloudflareTipBody": "Stellen Sie sicher, dass der Eintrag auf <1>Nur DNS</1> (DNS only) und nicht auf <3>Proxied</3> gesetzt ist. Der Proxy von Cloudflare stört unsere Zertifikatsbereitstellung.",
         "cloudflareProxied": "Proxied",
         "cloudflareDnsOnly": "Nur DNS",
@@ -3742,5 +3745,115 @@
     "imprint": "Impressum",
     "cloudEdition": "Cloud-Edition",
     "starOnGithub": "Bewerte uns auf Github"
+  },
+  "apiKeys": {
+    "title": "API-Schlüssel",
+    "tooltip": "API-Schlüssel verbinden Ihre Skripte, Dashboards und Integrationen mit Swetrix. Wählen Sie, auf welche Projekte und Berechtigungen jeder Schlüssel zugreifen kann. Rotieren Sie einen Schlüssel, um sein Secret zu ersetzen, oder widerrufen Sie ihn, um den Zugriff zu sperren.",
+    "description": "Geben Sie jeder Integration ihren eigenen Schlüssel, mit genau den Berechtigungen und Projekten, die sie benötigt.",
+    "projectDescription": "API-Schlüssel, die auf dieses Projekt zugreifen können, und deren Berechtigungen.",
+    "create": "API-Schlüssel erstellen",
+    "manage": "API-Schlüssel verwalten",
+    "retry": "Erneut versuchen",
+    "loading": "API-Schlüssel werden geladen",
+    "edit": "Berechtigungen bearbeiten",
+    "name": "Schlüsselname",
+    "namePlaceholder": "z. B. Reporting-Dashboard",
+    "projects": "Projektzugriff",
+    "projectsHint": "Nur Projekte, die Ihnen gehören, können einem Schlüssel zugewiesen werden.",
+    "allProjects": "Alle Projekte",
+    "selectedProjects": "Ausgewählte Projekte",
+    "searchProjects": "Projekte suchen",
+    "noProjects": "Keine Projekte gefunden",
+    "projectsSelected_one": "{{count}} Projekt ausgewählt",
+    "projectsSelected_other": "{{count}} Projekte ausgewählt",
+    "allProjectsHint": "Beinhaltet jedes Projekt, das Sie jetzt besitzen und alle, die Sie zukünftig erstellen.",
+    "permissions": "Berechtigungen",
+    "permissionsHint": "Wählen Sie, was dieser Schlüssel lesen oder ändern kann. Kombinierte Antworten erfordern möglicherweise mehr als eine Leseberechtigung.",
+    "restrictHint": "Dieser Schlüssel hat derzeit uneingeschränkten Zugriff. Durch das Speichern wird dieser Zugriff durch die unten ausgewählten Berechtigungen ersetzt.",
+    "none": "Kein Zugriff",
+    "readOnly": "Nur lesen",
+    "readWrite": "Lesen & schreiben",
+    "readOnlyHint": "Diese Ressource unterstützt nur Lesezugriff über die API.",
+    "organisationsHint": "Organisationsberechtigungen erfordern Zugriff auf alle Projekte.",
+    "save": "Berechtigungen speichern",
+    "cancel": "Abbrechen",
+    "emptyTitle": "Noch keine API-Schlüssel",
+    "emptyDescription": "Erstelle einen Schlüssel, um ein Skript, Dashboard oder eine Integration zu verbinden.",
+    "projectEmpty": "Keine API-Schlüssel haben Zugriff auf dieses Projekt.",
+    "unrestricted": "Uneingeschränkt",
+    "created": "Erstellt {{date}}",
+    "createdBefore": "Vor bereichsbezogenen API-Schlüsseln erstellt",
+    "rotated": "Rotiert {{date}}",
+    "hide": "Schlüssel verbergen",
+    "reveal": "Schlüssel anzeigen",
+    "copy": "Schlüssel kopieren",
+    "copied": "API-Schlüssel kopiert",
+    "copyFailed": "Konnte nicht kopiert werden. Wähle und kopiere den Schlüssel manuell.",
+    "secret": "API-Schlüssel",
+    "rotate": "Schlüssel rotieren",
+    "revoke": "Widerrufen",
+    "fullAccess": "Voller API-Zugriff",
+    "scopeCount_one": "{{count}} Berechtigungsgruppe",
+    "scopeCount_other": "{{count}} Berechtigungsgruppen",
+    "unrestrictedHint": "Dieser Schlüssel behält seinen ursprünglichen Zugriff auf alle API-aktivierten Ressourcen. Bearbeiten Sie die Berechtigungen, um den Zugriff einzuschränken.",
+    "rotateTitle": "„{{name}}“ rotieren?",
+    "rotateDescription": "Das aktuelle Secret funktioniert ab sofort nicht mehr. Die Berechtigungen bleiben gleich. Aktualisieren Sie Ihre Integrationen mit dem Ersatzschlüssel.",
+    "revokeTitle": "„{{name}}“ widerrufen?",
+    "revokeDescription": "Jede Integration, die diesen Schlüssel verwendet, verliert sofort den Zugriff. Dies kann nicht rückgängig gemacht werden.",
+    "ready": "„{{name}}“ ist bereit",
+    "secretHint": "Bewahren Sie diesen Schlüssel sicher in Ihrer Integration auf. Sie können ihn aus dieser Liste erneut anzeigen.",
+    "success": {
+      "create": "API-Schlüssel erstellt",
+      "update": "Berechtigungen gespeichert",
+      "rotate": "API-Schlüssel rotiert",
+      "delete": "API-Schlüssel widerrufen"
+    },
+    "resources": {
+      "analytics": {
+        "name": "Analytics",
+        "description": "Statistiken für Traffic, Leistung, Sitzungen, Profile, SEO und CAPTCHA."
+      },
+      "events": {
+        "name": "Events",
+        "description": "Benutzerdefinierte Events lesen oder Tracking-Events senden."
+      },
+      "projects": {
+        "name": "Projekteinstellungen",
+        "description": "Einstellungen lesen; Projekte und gespeicherte Ansichten erstellen, aktualisieren oder löschen."
+      },
+      "funnels": {
+        "name": "Funnels",
+        "description": "Funnel-Analysen lesen oder gespeicherte Funnels verwalten."
+      },
+      "annotations": {
+        "name": "Anmerkungen",
+        "description": "Timeline-Anmerkungen lesen oder verwalten."
+      },
+      "errors": {
+        "name": "Fehler",
+        "description": "Fehlerberichte lesen, Fehler senden oder deren Status aktualisieren."
+      },
+      "replays": {
+        "name": "Sitzungsaufzeichnungen",
+        "description": "Aufzeichnungen ansehen und exportieren; Schreibzugriff erlaubt Aufzeichnung und Löschung."
+      },
+      "goals": {
+        "name": "Ziele",
+        "description": "Ziele, Conversions und zugehörige Sitzungen ansehen."
+      },
+      "flags": {
+        "name": "Feature-Flags",
+        "description": "Flag-Konfiguration, Statistiken und Auswertungen ansehen."
+      },
+      "revenue": {
+        "name": "Umsatz",
+        "description": "Umsatzstatistiken lesen oder Transaktionen erfassen."
+      },
+      "organisations": {
+        "name": "Organisationen",
+        "description": "Organisationen und deren Mitglieder lesen oder verwalten. Gilt für das gesamte Konto."
+      }
+    },
+    "projectReadOnly": "Dieses Konto hat eine Betrachterrolle in diesem Projekt, daher kann sein Schlüssel nur Projektdaten lesen."
   }
 }

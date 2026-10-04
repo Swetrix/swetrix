@@ -2476,6 +2476,9 @@
         "dnsRecordTTL": "TTL",
         "ttlAuto": "Auto",
         "cloudflareTipTitle": "Używasz Cloudflare?",
+        "configureCloudflare": "Skonfiguruj z Cloudflare",
+        "cloudflareSetupDescription": "Używasz Cloudflare? Zaloguj się, aby zatwierdzić ten rekord DNS.",
+        "cloudflareNotCompleted": "Konfiguracja Cloudflare nie została ukończona. Spróbuj ponownie lub dodaj rekord DNS ręcznie.",
         "cloudflareTipBody": "Upewnij się, że rekord jest ustawiony na <1>Tylko DNS</1> (DNS only), a nie <3>Obsługiwane przez proxy</3> (Proxied). Proxy Cloudflare zakłóca proces wydawania naszego certyfikatu.",
         "cloudflareProxied": "Obsługiwane przez proxy",
         "cloudflareDnsOnly": "Tylko DNS",
@@ -3742,5 +3745,115 @@
     "imprint": "Nota prawna",
     "cloudEdition": "Edycja chmurowa",
     "starOnGithub": "Daj nam gwiazdkę na GitHubie"
+  },
+  "apiKeys": {
+    "title": "Klucze API",
+    "tooltip": "Klucze API łączą Twoje skrypty, panele i integracje ze Swetrix. Wybierz, do jakich projektów i uprawnień każdy klucz ma dostęp. Odnów klucz, aby zastąpić jego sekret, lub unieważnij go, aby zablokować dostęp.",
+    "description": "Nadaj każdej integracji własny klucz, tylko z uprawnieniami i projektami, których potrzebuje.",
+    "projectDescription": "Klucze API, które mają dostęp do tego projektu oraz ich uprawnienia.",
+    "create": "Utwórz klucz API",
+    "manage": "Zarządzaj kluczami API",
+    "retry": "Spróbuj ponownie",
+    "loading": "Ładowanie kluczy API",
+    "edit": "Edytuj uprawnienia",
+    "name": "Nazwa klucza",
+    "namePlaceholder": "np. Panel raportowania",
+    "projects": "Dostęp do projektów",
+    "projectsHint": "Do klucza można przypisać tylko te projekty, których jesteś właścicielem.",
+    "allProjects": "Wszystkie projekty",
+    "selectedProjects": "Wybrane projekty",
+    "searchProjects": "Szukaj projektów",
+    "noProjects": "Nie znaleziono projektów",
+    "projectsSelected_one": "Wybrano {{count}} projekt",
+    "projectsSelected_other": "Wybrano projektów: {{count}}",
+    "allProjectsHint": "Obejmuje wszystkie obecne i przyszłe projekty, których jesteś właścicielem.",
+    "permissions": "Uprawnienia",
+    "permissionsHint": "Wybierz, co ten klucz może odczytać lub zmienić. Złożone odpowiedzi mogą wymagać więcej niż jednego uprawnienia do odczytu.",
+    "restrictHint": "Ten klucz ma obecnie nieograniczony dostęp. Zapisanie zastąpi ten dostęp uprawnieniami wybranymi poniżej.",
+    "none": "Brak dostępu",
+    "readOnly": "Tylko do odczytu",
+    "readWrite": "Odczyt i zapis",
+    "readOnlyHint": "Ten zasób obsługuje tylko dostęp do odczytu przez API.",
+    "organisationsHint": "Uprawnienia organizacji wymagają dostępu do wszystkich projektów.",
+    "save": "Zapisz uprawnienia",
+    "cancel": "Anuluj",
+    "emptyTitle": "Brak kluczy API",
+    "emptyDescription": "Utwórz klucz, aby podłączyć skrypt, dashboard lub integrację.",
+    "projectEmpty": "Żadne klucze API nie mają dostępu do tego projektu.",
+    "unrestricted": "Nieograniczony",
+    "created": "Utworzono {{date}}",
+    "createdBefore": "Utworzono przed obsługą zakresów kluczy API",
+    "rotated": "Zrotowano {{date}}",
+    "hide": "Ukryj klucz",
+    "reveal": "Pokaż klucz",
+    "copy": "Skopiuj klucz",
+    "copied": "Skopiowano klucz API",
+    "copyFailed": "Nie udało się skopiować. Zaznacz i skopiuj klucz ręcznie.",
+    "secret": "Klucz API",
+    "rotate": "Rotuj klucz",
+    "revoke": "Unieważnij",
+    "fullAccess": "Pełny dostęp do API",
+    "scopeCount_one": "{{count}} grupa uprawnień",
+    "scopeCount_other": "{{count}} grupy uprawnień",
+    "unrestrictedHint": "Ten klucz zachowuje swój pierwotny dostęp do wszystkich zasobów z włączonym API. Edytuj jego uprawnienia, aby ograniczyć dostęp.",
+    "rotateTitle": "Rotować „{{name}}”?",
+    "rotateDescription": "Obecny sekret przestanie działać natychmiast. Uprawnienia pozostają bez zmian. Zaktualizuj swoje integracje, podając nowy klucz.",
+    "revokeTitle": "Odwołać „{{name}}”?",
+    "revokeDescription": "Każda integracja używająca tego klucza natychmiast utraci dostęp. Tej akcji nie można cofnąć.",
+    "ready": "„{{name}}” jest gotowy",
+    "secretHint": "Przechowuj ten klucz bezpiecznie w swojej integracji. Możesz go ponownie wyświetlić z tej listy.",
+    "success": {
+      "create": "Klucz API utworzony",
+      "update": "Uprawnienia zapisane",
+      "rotate": "Klucz API zrotowany",
+      "delete": "Klucz API odwołany"
+    },
+    "resources": {
+      "analytics": {
+        "name": "Analityka",
+        "description": "Ruch, wydajność, sesje, profile, SEO i statystyki CAPTCHA."
+      },
+      "events": {
+        "name": "Zdarzenia",
+        "description": "Odczytuj zdarzenia niestandardowe lub wysyłaj zdarzenia śledzące."
+      },
+      "projects": {
+        "name": "Ustawienia projektu",
+        "description": "Odczytuj ustawienia; twórz, aktualizuj lub usuwaj projekty i zapisane widoki."
+      },
+      "funnels": {
+        "name": "Lejki",
+        "description": "Odczytuj analizy lejków lub zarządzaj zapisanymi lejkami."
+      },
+      "annotations": {
+        "name": "Adnotacje",
+        "description": "Odczytuj lub zarządzaj adnotacjami na osi czasu."
+      },
+      "errors": {
+        "name": "Błędy",
+        "description": "Odczytuj raporty o błędach, wysyłaj błędy lub aktualizuj ich status."
+      },
+      "replays": {
+        "name": "Odtwarzanie sesji",
+        "description": "Przeglądaj i eksportuj nagrania; dostęp do zapisu umożliwia nagrywanie i usuwanie."
+      },
+      "goals": {
+        "name": "Cele",
+        "description": "Przeglądaj cele, konwersje i powiązane sesje."
+      },
+      "flags": {
+        "name": "Flagi funkcji",
+        "description": "Przeglądaj konfigurację flag, statystyki i ewaluacje."
+      },
+      "revenue": {
+        "name": "Przychody",
+        "description": "Odczytuj statystyki przychodów lub rejestruj transakcje."
+      },
+      "organisations": {
+        "name": "Organizacje",
+        "description": "Przeglądaj lub zarządzaj organizacjami i ich członkami. Dotyczy całego konta."
+      }
+    },
+    "projectReadOnly": "To konto ma rolę widza w tym projekcie, więc ten klucz może tylko odczytywać dane projektu."
   }
 }
