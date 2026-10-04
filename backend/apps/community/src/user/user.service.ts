@@ -134,6 +134,11 @@ export class UserService {
 
   async delete(userId: string) {
     await clickhouse.command({
+      query: 'ALTER TABLE api_key DELETE WHERE userId = {userId:String}',
+      query_params: { userId },
+      clickhouse_settings: { mutations_sync: '2' },
+    })
+    await clickhouse.command({
       query: `ALTER TABLE user DELETE WHERE id = {id:FixedString(36)}`,
       query_params: { id: userId },
     })
@@ -180,6 +185,8 @@ export class UserService {
   omitSensitiveData(user: Partial<User>): Partial<User> {
     return _omit(user, [
       'password',
+      'apiKey',
+      'apiKeyAccess',
       'twoFactorAuthenticationSecret',
       'twoFactorRecoveryCode',
     ])

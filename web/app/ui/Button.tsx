@@ -49,6 +49,7 @@ export interface ButtonProps extends Omit<
   variant?: ButtonVariant
   size?: ButtonSize
   loading?: boolean
+  form?: string
   to?: LinkProps['to']
   linkProps?: Omit<LinkProps, 'to' | 'children' | 'className'>
   /**

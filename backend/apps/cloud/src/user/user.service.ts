@@ -2425,6 +2425,8 @@ export class UserService {
 
     return _omit(enhancedUser, [
       'password',
+      'apiKey',
+      'apiKeyAccess',
       'twoFactorRecoveryCode',
       'twoFactorAuthenticationSecret',
     ])

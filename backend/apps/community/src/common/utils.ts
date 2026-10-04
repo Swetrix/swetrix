@@ -85,7 +85,12 @@ export const hash = (content: string): string => {
  * Derives a key from the SECRET_KEY_BASE environment variable using the HKDF algorithm.
  */
 export const deriveKey = (
-  purpose: 'refresh-token' | 'access-token' | 'gsc-token' | 'ga4-token',
+  purpose:
+    | 'refresh-token'
+    | 'access-token'
+    | 'gsc-token'
+    | 'ga4-token'
+    | 'api-key',
   length = 32,
 ) => {
   const base = Buffer.from(process.env.SECRET_KEY_BASE || '', 'utf8')

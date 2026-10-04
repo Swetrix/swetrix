@@ -1,3 +1,4 @@
+import ApiKeys from '~/components/ApiKeys/ApiKeys'
 import _isEmpty from 'lodash/isEmpty'
 import _isString from 'lodash/isString'
 import _join from 'lodash/join'
@@ -1104,6 +1105,12 @@ const ProjectSettings = () => {
                   />
                 ) : null}
               </form>
+            ) : null}
+
+            {activeTab === 'access' && project.role === 'owner' ? (
+              <div className='mt-8'>
+                <ApiKeys projectId={id} />
+              </div>
             ) : null}
 
             {activeTab === 'shields' ? (

@@ -101,7 +101,6 @@ export interface User {
   billingFrequency: string | null
   nextBillDate: string | null
   cancellationEffectiveDate: string | null
-  apiKey: string | null
   telegramChatId: string | null
   isTelegramChatIdConfirmed: boolean
   timeFormat: '12-hour' | '24-hour'

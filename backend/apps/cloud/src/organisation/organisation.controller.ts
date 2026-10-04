@@ -1,3 +1,4 @@
+import { ApiKeyAccess } from '../api-key/api-key-access.decorator'
 import {
   Controller,
   Post,
@@ -65,6 +66,7 @@ export class OrganisationController {
   @ApiQuery({ name: 'search', required: false, type: String })
   @ApiResponse({ status: 200, type: [Organisation] })
   @Auth(true)
+  @ApiKeyAccess('organisations:read', 'account', 'pid')
   async get(
     @CurrentUserId() userId: string,
     @Query('take', new ParseIntPipe({ optional: true })) take?: number,
@@ -80,6 +82,7 @@ export class OrganisationController {
   @Get('/:orgId')
   @ApiResponse({ status: 200, type: Organisation })
   @Auth(true)
+  @ApiKeyAccess('organisations:read', 'account', 'pid')
   async getOne(
     @Param('orgId') orgId: string,
     @CurrentUserId() userId: string,
@@ -125,9 +128,9 @@ export class OrganisationController {
 
   @ApiBearerAuth()
   @Post('/')
-  @Auth()
   @ApiResponse({ status: 200, type: Organisation })
   @Auth(true)
+  @ApiKeyAccess('organisations:write', 'account', 'pid')
   async create(
     @Body() createOrgDTO: CreateOrganisationDTO,
     @CurrentUserId() uid: string,
@@ -161,8 +164,8 @@ export class OrganisationController {
   @ApiBearerAuth()
   @Post('/:orgId/invite')
   @HttpCode(200)
-  @Auth()
   @Auth(true)
+  @ApiKeyAccess('organisations:write', 'account', 'pid')
   async inviteMember(
     @Param('orgId') orgId: string,
     @Body() inviteDTO: InviteMemberDTO,
@@ -241,10 +244,7 @@ export class OrganisationController {
           },
         )
 
-        return await this.organisationService.findOne({
-          where: { id: orgId },
-          relations: ['members', 'members.user'],
-        })
+        return this.getOne(orgId, userId)
       } catch (reason) {
         this.logger.error(
           { orgId: organisation?.id, email: inviteDTO.email, reason },
@@ -299,10 +299,7 @@ export class OrganisationController {
         },
       )
 
-      return await this.organisationService.findOne({
-        where: { id: orgId },
-        relations: ['members', 'members.user'],
-      })
+      return this.getOne(orgId, userId)
     } catch (reason) {
       this.logger.error(
         { orgId: organisation?.id, inviteeId: invitee?.id, reason },
@@ -315,8 +312,8 @@ export class OrganisationController {
   @ApiBearerAuth()
   @Patch('/member/:memberId')
   @HttpCode(200)
-  @Auth()
   @Auth(true)
+  @ApiKeyAccess('organisations:write', 'account', 'pid')
   async updateMemberRole(
     @Param('memberId') memberId: string,
     @Body() updateDTO: UpdateMemberRoleDTO,
@@ -364,8 +361,8 @@ export class OrganisationController {
   @ApiBearerAuth()
   @Delete('/member/:memberId')
   @HttpCode(204)
-  @Auth()
   @Auth(true)
+  @ApiKeyAccess('organisations:write', 'account', 'pid')
   async removeMember(
     @Param('memberId') memberId: string,
     @CurrentUserId() uid: string,
@@ -401,6 +398,7 @@ export class OrganisationController {
   @Delete('/:orgId')
   @ApiResponse({ status: 200, type: Organisation })
   @Auth(true)
+  @ApiKeyAccess('organisations:write', 'account', 'pid')
   async delete(
     @Param('orgId') orgId: string,
     @CurrentUserId() userId: string,
@@ -444,6 +442,7 @@ export class OrganisationController {
   @Patch('/:orgId')
   @ApiResponse({ status: 200, type: Organisation })
   @Auth(true)
+  @ApiKeyAccess('organisations:write', 'account', 'pid')
   async update(
     @Param('orgId') orgId: string,
     @Body() updateOrgDTO: UpdateOrganisationDTO,

@@ -1,3 +1,4 @@
+import { ApiKeyAccess } from '../api-key/api-key-access.decorator'
 import {
   Controller,
   Get,
@@ -261,6 +262,7 @@ export class FeatureFlagController {
   @ApiBearerAuth()
   @Get('/project/:projectId')
   @Auth(true, true)
+  @ApiKeyAccess('flags:read', 'params', 'projectId')
   @ApiResponse({ status: 200, type: [FeatureFlagDto] })
   @ApiOperation({ summary: 'Get all feature flags for a project' })
   async getProjectFeatureFlags(
@@ -313,6 +315,7 @@ export class FeatureFlagController {
   @ApiBearerAuth()
   @Get('/:flagId')
   @Auth(true, true)
+  @ApiKeyAccess('flags:read', 'flag', 'flagId')
   @ApiResponse({ status: 200, type: FeatureFlagDto })
   @ApiOperation({ summary: 'Get a feature flag by ID' })
   async getFeatureFlag(
@@ -939,6 +942,7 @@ export class FeatureFlagController {
   @ApiBearerAuth()
   @Get('/:id/stats')
   @Auth(true, true)
+  @ApiKeyAccess('flags:read', 'flag', 'id')
   @ApiResponse({ status: 200, type: FeatureFlagStatsDto })
   @ApiOperation({ summary: 'Get statistics for a feature flag' })
   async getFeatureFlagStats(
@@ -1045,6 +1049,7 @@ export class FeatureFlagController {
   @ApiBearerAuth()
   @Get('/:id/profiles')
   @Auth(true, true)
+  @ApiKeyAccess('flags:read', 'flag', 'id')
   @ApiResponse({ status: 200, type: FeatureFlagProfilesResponseDto })
   @ApiOperation({
     summary: 'Get profiles who have evaluated a feature flag',

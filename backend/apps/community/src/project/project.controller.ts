@@ -1,3 +1,5 @@
+import { Req } from '@nestjs/common'
+import { ApiKeyAccess } from '../api-key/api-key-access.decorator'
 import {
   Controller,
   Body,
@@ -134,7 +136,9 @@ export class ProjectController {
   })
   @ApiResponse({ status: 200, type: [Project] })
   @Auth(true)
+  @ApiKeyAccess('projects:read', 'list', 'pid', ['funnels:read'])
   async get(
+    @Req() request: { apiKeyProjectIds?: string[] },
     @CurrentUserId() userId: string,
     @Query('take', new ParseIntPipe({ optional: true })) take?: number,
     @Query('skip', new ParseIntPipe({ optional: true })) skip?: number,
@@ -199,6 +203,10 @@ export class ProjectController {
     })
 
     let combinedProjects = _map(combinedProjectsMap, (p) => p)
+    if (request.apiKeyProjectIds)
+      combinedProjects = combinedProjects.filter((project) =>
+        request.apiKeyProjectIds.includes(project.id),
+      )
 
     // Get pinned project IDs to mark shared projects as pinned too
     const pinnedProjectIds = await getPinnedProjectsClickhouse(userId)
@@ -327,6 +335,7 @@ export class ProjectController {
   @ApiOperation({ summary: 'Pin a project to the top of the dashboard' })
   @ApiResponse({ status: 200, description: 'Project pinned successfully' })
   @Auth(true)
+  @ApiKeyAccess('projects:write', 'params', 'id')
   async pinProject(
     @Param('id') projectId: string,
     @CurrentUserId() userId: string,
@@ -353,6 +362,7 @@ export class ProjectController {
   @ApiOperation({ summary: 'Unpin a project from the top of the dashboard' })
   @ApiResponse({ status: 200, description: 'Project unpinned successfully' })
   @Auth(true)
+  @ApiKeyAccess('projects:write', 'params', 'id')
   async unpinProject(
     @Param('id') projectId: string,
     @CurrentUserId() userId: string,
@@ -526,6 +536,7 @@ export class ProjectController {
   @Post('/')
   @ApiResponse({ status: 201, type: Project })
   @Auth(true)
+  @ApiKeyAccess('projects:write', 'create', 'pid')
   async create(
     @Body() projectDTO: CreateProjectDTO,
     @CurrentUserId() userId: string,
@@ -558,6 +569,7 @@ export class ProjectController {
   @Delete('/reset/:id')
   @HttpCode(204)
   @Auth(true)
+  @ApiKeyAccess('projects:write', 'params', 'id')
   @ApiResponse({ status: 204, description: 'Empty body' })
   async reset(
     @Param('id') id: string,
@@ -657,6 +669,7 @@ export class ProjectController {
   @Post('/funnel')
   @ApiResponse({ status: 201 })
   @Auth(true)
+  @ApiKeyAccess('funnels:write', 'body', 'pid')
   async createFunnel(
     @Body() funnelDTO: FunnelCreateDTO,
     @CurrentUserId() userId: string,
@@ -697,6 +710,7 @@ export class ProjectController {
   @Patch('/funnel')
   @ApiResponse({ status: 200 })
   @Auth(true)
+  @ApiKeyAccess('funnels:write', 'body', 'pid')
   async updateFunnel(
     @Body() funnelDTO: FunnelUpdateDTO,
     @CurrentUserId() userId: string,
@@ -735,6 +749,7 @@ export class ProjectController {
   @Delete('/funnel/:id/:pid')
   @ApiResponse({ status: 200 })
   @Auth(true)
+  @ApiKeyAccess('funnels:write', 'params', 'pid')
   async deleteFunnel(
     @Param('id') id: string,
     @Param('pid') pid: string,
@@ -766,6 +781,7 @@ export class ProjectController {
   @Get('/funnels/:pid')
   @ApiResponse({ status: 200 })
   @Auth(true)
+  @ApiKeyAccess('funnels:read', 'params', 'pid')
   async getFunnels(
     @Param('pid') pid: string,
     @CurrentUserId() userId: string,
@@ -793,6 +809,7 @@ export class ProjectController {
   @Post('/annotation')
   @ApiResponse({ status: 201 })
   @Auth(true)
+  @ApiKeyAccess('annotations:write', 'body', 'pid')
   async createAnnotation(
     @Body() annotationDTO: AnnotationCreateDTO,
     @CurrentUserId() userId: string,
@@ -826,6 +843,7 @@ export class ProjectController {
   @Patch('/annotation')
   @ApiResponse({ status: 200 })
   @Auth(true)
+  @ApiKeyAccess('annotations:write', 'body', 'pid')
   async updateAnnotation(
     @Body() annotationDTO: AnnotationUpdateDTO,
     @CurrentUserId() userId: string,
@@ -863,6 +881,7 @@ export class ProjectController {
   @Delete('/annotation/:id/:pid')
   @ApiResponse({ status: 200 })
   @Auth(true)
+  @ApiKeyAccess('annotations:write', 'params', 'pid')
   async deleteAnnotation(
     @Param('id') id: string,
     @Param('pid') pid: string,
@@ -894,6 +913,7 @@ export class ProjectController {
   @Get('/annotations/:pid')
   @ApiResponse({ status: 200 })
   @Auth(true, true)
+  @ApiKeyAccess('annotations:read', 'params', 'pid')
   async getAnnotations(
     @Param('pid') pid: string,
     @CurrentUserId() userId: string,
@@ -914,6 +934,7 @@ export class ProjectController {
 
   @Get('password/:projectId')
   @Auth(true, true)
+  @ApiKeyAccess('projects:read', 'params', 'projectId')
   @ApiResponse({ status: 200, type: Project })
   async checkPassword(
     @Param('projectId') projectId: string,
@@ -954,6 +975,7 @@ export class ProjectController {
   })
   @ApiResponse({ status: 200 })
   @Auth(true)
+  @ApiKeyAccess('projects:write', 'params', 'pid')
   async deletePartially(
     @Param('pid') pid: string,
     @Query('from') from: string,
@@ -996,6 +1018,7 @@ export class ProjectController {
   @Delete('/:id')
   @HttpCode(204)
   @Auth(true)
+  @ApiKeyAccess('projects:write', 'params', 'id')
   @ApiResponse({ status: 204, description: 'Empty body' })
   async delete(
     @Param('id') id: string,
@@ -1051,6 +1074,7 @@ export class ProjectController {
   @Put('/:id')
   @HttpCode(200)
   @Auth(true)
+  @ApiKeyAccess('projects:write', 'params', 'id')
   @ApiResponse({ status: 200, type: Project })
   async update(
     @Param('id') id: string,
@@ -1199,6 +1223,7 @@ export class ProjectController {
 
   @Get('/:id')
   @Auth(true, true)
+  @ApiKeyAccess('projects:read', 'params', 'id', ['funnels:read'])
   @ApiResponse({ status: 200, type: Project })
   async getOne(
     @Param('id') id: string,
@@ -1313,6 +1338,7 @@ export class ProjectController {
   @ApiBearerAuth()
   @Get(':projectId/views/:viewId')
   @Auth(true, true)
+  @ApiKeyAccess('projects:read', 'params', 'projectId')
   async getProjectView(
     @Param() params: ProjectViewIdsDto,
     @CurrentUserId() userId: string,
@@ -1334,6 +1360,7 @@ export class ProjectController {
   @ApiBearerAuth()
   @Post(':projectId/views')
   @Auth(true)
+  @ApiKeyAccess('projects:write', 'params', 'projectId')
   async createProjectView(
     @Param() params: ProjectIdDto,
     @Body() body: CreateProjectViewDto,
@@ -1387,6 +1414,7 @@ export class ProjectController {
   @ApiBearerAuth()
   @Get(':projectId/views')
   @Auth(true, true)
+  @ApiKeyAccess('projects:read', 'params', 'projectId')
   async getProjectViews(
     @Param() params: ProjectIdDto,
     @CurrentUserId() userId: string,
@@ -1410,6 +1438,7 @@ export class ProjectController {
   @ApiBearerAuth()
   @Patch(':projectId/views/:viewId')
   @Auth(true)
+  @ApiKeyAccess('projects:write', 'params', 'projectId')
   async updateProjectView(
     @Param() params: ProjectViewIdsDto,
     @Body() body: UpdateProjectViewDto,
@@ -1495,6 +1524,7 @@ export class ProjectController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':projectId/views/:viewId')
   @Auth(true)
+  @ApiKeyAccess('projects:write', 'params', 'projectId')
   async deleteProjectView(
     @Param() params: ProjectViewIdsDto,
     @CurrentUserId() userId: string,

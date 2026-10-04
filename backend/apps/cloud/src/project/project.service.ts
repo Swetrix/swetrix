@@ -308,6 +308,7 @@ export class ProjectService {
     userId: string,
     search?: string,
     sort?: string,
+    allowedProjectIds?: string[],
   ): Promise<Pagination<Project>> {
     const queryBuilder = this.projectsRepository
       .createQueryBuilder('project')
@@ -358,6 +359,15 @@ export class ProjectService {
         { userId },
       )
 
+    if (allowedProjectIds) {
+      queryBuilder.andWhere(
+        allowedProjectIds.length
+          ? 'project.id IN (:...allowedProjectIds)'
+          : '1 = 0',
+        { allowedProjectIds },
+      )
+    }
+
     if (search?.trim()) {
       queryBuilder
         .andWhere('project.name LIKE :search')
@@ -403,6 +413,7 @@ export class ProjectService {
     options: PaginationOptionsInterface,
     userId: string,
     search?: string,
+    allowedProjectIds?: string[],
   ): Promise<Pagination<Project>> {
     const queryBuilder = this.projectsRepository
       .createQueryBuilder('project')
@@ -418,6 +429,15 @@ export class ProjectService {
           )
         }),
       )
+
+    if (allowedProjectIds) {
+      queryBuilder.andWhere(
+        allowedProjectIds.length
+          ? 'project.id IN (:...allowedProjectIds)'
+          : '1 = 0',
+        { allowedProjectIds },
+      )
+    }
 
     if (search?.trim()) {
       queryBuilder.andWhere('LOWER(project.name) LIKE LOWER(:search)', {

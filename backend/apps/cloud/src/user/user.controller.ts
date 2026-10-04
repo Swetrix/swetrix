@@ -1,3 +1,4 @@
+import { ApiKeyService } from '../api-key/api-key.service'
 import {
   Controller,
   Req,
@@ -12,7 +13,6 @@ import {
   FileTypeValidator,
   UseGuards,
   UseInterceptors,
-  ConflictException,
   Headers,
   Ip,
   NotFoundException,
@@ -32,13 +32,11 @@ import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import _map from 'lodash/map'
 import _join from 'lodash/join'
-import _isNull from 'lodash/isNull'
 import _isEmpty from 'lodash/isEmpty'
 import _includes from 'lodash/includes'
 import _isString from 'lodash/isString'
 import _pick from 'lodash/pick'
 import _round from 'lodash/round'
-import { randomUUID } from 'crypto'
 import { Markup } from 'telegraf'
 
 import { Public, CurrentUserId, Auth } from '../auth/decorators'
@@ -119,6 +117,7 @@ const formatUsageInfo = (
 @Auth()
 export class UserController {
   constructor(
+    private readonly apiKeys: ApiKeyService,
     private readonly userService: UserService,
     private readonly authService: AuthService,
     private readonly projectService: ProjectService,
@@ -196,34 +195,10 @@ export class UserController {
 
   @ApiBearerAuth()
   @Post('/api-key')
-  async generateApiKey(
-    @CurrentUserId() userId: string,
-    @Headers() headers,
-    @Ip() reqIP,
-  ): Promise<{
-    apiKey: string
-  }> {
-    this.logger.log({ userId }, 'POST /user/api-key')
-
-    const ip = getIPFromHeaders(headers) || reqIP || ''
-
-    await checkRateLimit(ip, 'generate-api-key', 5, 3600)
-
-    const user = await this.userService.findOne({ where: { id: userId } })
-
-    if (!_isNull(user.apiKey)) {
-      throw new ConflictException('You already have an API key')
-    }
-
-    const apiKey: string = randomUUID()
-
-    await this.userService.update(userId, { apiKey })
-
-    await trackCustom(ip, headers['user-agent'], {
-      ev: 'API_KEY_GENERATED',
-    })
-
-    return { apiKey }
+  async generateApiKey() {
+    throw new BadRequestException(
+      'Create scoped API keys through /user/api-keys',
+    )
   }
 
   @ApiBearerAuth()
@@ -237,17 +212,11 @@ export class UserController {
 
     const ip = getIPFromHeaders(headers) || requestIp || ''
 
-    const user = await this.userService.findOne({ where: { id: userId } })
-
-    if (_isNull(user.apiKey)) {
-      throw new ConflictException("You don't have an API key")
-    }
-
     await trackCustom(ip, headers['user-agent'], {
       ev: 'API_KEY_DELETED',
     })
 
-    await this.userService.update(userId, { apiKey: null })
+    await this.apiKeys.remove(userId, 'legacy')
   }
 
   @ApiBearerAuth()

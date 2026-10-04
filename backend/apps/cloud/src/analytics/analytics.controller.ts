@@ -1,3 +1,5 @@
+import { ApiKeyCollection } from '../api-key/api-key-collection.decorator'
+import { ApiKeyAccess } from '../api-key/api-key-access.decorator'
 import _isEmpty from 'lodash/isEmpty'
 import _isArray from 'lodash/isArray'
 import _toNumber from 'lodash/toNumber'
@@ -255,6 +257,7 @@ export class AnalyticsController {
   @ApiBearerAuth()
   @Get()
   @Auth(true, true)
+  @ApiKeyAccess('analytics:read', 'query', 'pid', ['events:read'])
   async getData(
     @Query() data: GetDataDto,
     @CurrentUserId() uid: string,
@@ -432,6 +435,7 @@ export class AnalyticsController {
 
   @Get('funnel')
   @Auth(true, true)
+  @ApiKeyAccess('funnels:read', 'query', 'pid')
   async getFunnel(
     @Query() data: GetFunnelsDto,
     @CurrentUserId() uid: string,
@@ -569,6 +573,11 @@ export class AnalyticsController {
 
   @Get('funnel-sessions')
   @Auth(true, true)
+  @ApiKeyAccess('funnels:read', 'query', 'pid', [
+    'analytics:read',
+    'events:read',
+    'errors:read',
+  ])
   async getFunnelSessions(
     @Query() data: GetFunnelSessionsDto,
     @CurrentUserId() uid: string,
@@ -668,6 +677,7 @@ export class AnalyticsController {
 
   @Get('meta')
   @Auth(true, true)
+  @ApiKeyAccess('events:read', 'query', 'pid')
   async getCustomEventMetadata(
     @Query() data: GetCustomEventMetadata,
     @CurrentUserId() uid: string,
@@ -690,6 +700,7 @@ export class AnalyticsController {
 
   @Get('property')
   @Auth(true, true)
+  @ApiKeyAccess('analytics:read', 'query', 'pid')
   async getPagePropertyMetadata(
     @Query() data: GetPagePropertyMetaDto,
     @CurrentUserId() uid: string,
@@ -712,6 +723,7 @@ export class AnalyticsController {
 
   @Get('filters')
   @Auth(true, true)
+  @ApiKeyAccess('analytics:read', 'query', 'pid')
   async getFilters(
     @Query() data: GetFiltersDto,
     @CurrentUserId() uid: string,
@@ -734,6 +746,7 @@ export class AnalyticsController {
 
   @Get('errors-filters')
   @Auth(true, true)
+  @ApiKeyAccess('errors:read', 'query', 'pid')
   async getErrorsFilters(
     @Query() data: GetFiltersDto,
     @CurrentUserId() uid: string,
@@ -759,6 +772,7 @@ export class AnalyticsController {
 
   @Get('filters/versions')
   @Auth(true, true)
+  @ApiKeyAccess('analytics:read', 'query', 'pid')
   async getVersionFilters(
     @Query() data: GetVersionFiltersDto,
     @CurrentUserId() uid: string,
@@ -784,6 +798,7 @@ export class AnalyticsController {
 
   @Get('chart')
   @Auth(true, true)
+  @ApiKeyAccess('analytics:read', 'query', 'pid')
   async getChartData(
     @Query() data: GetDataDto,
     @CurrentUserId() uid: string,
@@ -849,6 +864,7 @@ export class AnalyticsController {
 
   @Get('performance')
   @Auth(true, true)
+  @ApiKeyAccess('analytics:read', 'query', 'pid')
   async getPerfData(
     @Query() data: GetDataDto & { measure: PerfMeasure },
     @CurrentUserId() uid: string,
@@ -943,6 +959,7 @@ export class AnalyticsController {
 
   @Get('performance/chart')
   @Auth(true, true)
+  @ApiKeyAccess('analytics:read', 'query', 'pid')
   async getPerfChartData(
     @Query() data: GetDataDto & { measure: PerfMeasure },
     @CurrentUserId() uid: string,
@@ -1010,6 +1027,7 @@ export class AnalyticsController {
 
   @Get('captcha')
   @Auth(true, true)
+  @ApiKeyAccess('analytics:read', 'query', 'pid')
   async getCaptchaData(
     @Query() data: GetDataDto,
     @CurrentUserId() uid: string,
@@ -1019,6 +1037,7 @@ export class AnalyticsController {
 
   @Get('journeys')
   @Auth(true, true)
+  @ApiKeyAccess('analytics:read', 'query', 'pid')
   async getJourneys(
     @Query() data: GetJourneysDto,
     @CurrentUserId() uid: string,
@@ -1101,6 +1120,11 @@ export class AnalyticsController {
 
   @Get('journey-sessions')
   @Auth(true, true)
+  @ApiKeyAccess('analytics:read', 'query', 'pid', [
+    'analytics:read',
+    'events:read',
+    'errors:read',
+  ])
   async getJourneySessions(
     @Query() data: GetJourneySessionsDto,
     @CurrentUserId() uid: string,
@@ -1181,6 +1205,7 @@ export class AnalyticsController {
 
   @Get('keywords')
   @Auth(true, true)
+  @ApiKeyAccess('analytics:read', 'query', 'pid')
   async getKeywords(
     @Query() data: GetKeywordsDto,
     @CurrentUserId() uid: string,
@@ -1216,6 +1241,7 @@ export class AnalyticsController {
 
   @Get('birdseye')
   @Auth(true, true)
+  @ApiKeyAccess('analytics:read', 'query', 'pid')
   // returns overall short statistics per project
   async getOverallStats(
     @Query() data: GetOverallStatsDto,
@@ -1278,6 +1304,7 @@ export class AnalyticsController {
 
   @Get('performance/birdseye')
   @Auth(true, true)
+  @ApiKeyAccess('analytics:read', 'query', 'pid')
   async getPerformanceOverallStats(
     @Query() data: GetOverallStatsDto & { measure: PerfMeasure },
     @CurrentUserId() uid: string,
@@ -1353,6 +1380,7 @@ export class AnalyticsController {
 
   @Get('hb')
   @Auth(true, true)
+  @ApiKeyAccess('analytics:read', 'query', 'pid')
   async getHeartBeatStats(
     @Query() data: GetHeartbeatStatsDto,
     @CurrentUserId() uid: string,
@@ -1409,6 +1437,7 @@ export class AnalyticsController {
 
   @Get('live-visitors')
   @Auth(true, true)
+  @ApiKeyAccess('analytics:read', 'query', 'pid')
   async getLiveVisitors(
     @Query() queryParams: LiveVisitorsDto,
     @CurrentUserId() uid: string,
@@ -1470,6 +1499,7 @@ export class AnalyticsController {
 
   @Get('bot-stats')
   @Auth(true, true)
+  @ApiKeyAccess('analytics:read', 'query', 'pid')
   async getBotStats(
     @Query() data: GetBotStatsDto,
     @CurrentUserId() uid: string,
@@ -1493,6 +1523,8 @@ export class AnalyticsController {
   }
 
   @Post('session-replay/start')
+  @ApiKeyCollection()
+  @ApiKeyAccess('replays:write', 'body', 'pid')
   @Public()
   async startSessionReplay(
     @Body() replayDTO: SessionReplayStartDto,
@@ -1540,6 +1572,8 @@ export class AnalyticsController {
   }
 
   @Post('session-replay/chunk')
+  @ApiKeyCollection()
+  @ApiKeyAccess('replays:write', 'body', 'pid')
   @Public()
   async uploadSessionReplayChunk(
     @Body() replayDTO: SessionReplayChunkDto,
@@ -1588,6 +1622,8 @@ export class AnalyticsController {
   }
 
   @Post('error')
+  @ApiKeyCollection()
+  @ApiKeyAccess('errors:write', 'body', 'pid')
   @Public()
   async logError(@Body() errorDTO: ErrorDto, @Headers() headers, @Ip() reqIP) {
     const { 'user-agent': userAgent, origin } = headers
@@ -1708,6 +1744,7 @@ export class AnalyticsController {
   // Update error(s) status
   @Patch('error-status')
   @Auth(true, true)
+  @ApiKeyAccess('errors:write', 'body', 'pid')
   async patchStatus(
     @Body() statusDTO: PatchStatusDto,
     @CurrentUserId() uid: string,
@@ -1730,6 +1767,8 @@ export class AnalyticsController {
   }
 
   @Post('custom')
+  @ApiKeyCollection()
+  @ApiKeyAccess('events:write', 'body', 'pid')
   @Public()
   async logCustom(
     @Body() eventsDTO: EventsDto,
@@ -1950,6 +1989,7 @@ export class AnalyticsController {
 
   @Post('hb')
   @Auth(true, true)
+  @ApiKeyAccess('events:write', 'body', 'pid')
   async heartbeat(
     @Body() logDTO: PageviewsDto,
     @Headers() headers,
@@ -2004,6 +2044,8 @@ export class AnalyticsController {
 
   // Log pageview event
   @Post()
+  @ApiKeyCollection()
+  @ApiKeyAccess('events:write', 'body', 'pid')
   @Public()
   async log(@Body() logDTO: PageviewsDto, @Headers() headers, @Ip() reqIP) {
     const { 'user-agent': userAgent, origin } = headers
@@ -2301,6 +2343,12 @@ export class AnalyticsController {
 
   @Get('sessions')
   @Auth(true, true)
+  @ApiKeyAccess('analytics:read', 'query', 'pid', [
+    'events:read',
+    'errors:read',
+    'replays:read',
+    'revenue:read',
+  ])
   async getSessions(
     @Query() data: GetSessionsDto,
     @CurrentUserId() uid: string,
@@ -2395,6 +2443,7 @@ export class AnalyticsController {
 
   @Get('session-replays')
   @Auth(true, true)
+  @ApiKeyAccess('replays:read', 'query', 'pid')
   async getSessionReplays(
     @Query() data: GetSessionReplaysDto,
     @CurrentUserId() uid: string,
@@ -2478,6 +2527,7 @@ export class AnalyticsController {
 
   @Get('errors')
   @Auth(true, true)
+  @ApiKeyAccess('errors:read', 'query', 'pid')
   async getErrors(
     @Query() data: GetErrorsDto,
     @CurrentUserId() uid: string,
@@ -2566,6 +2616,7 @@ export class AnalyticsController {
 
   @Get('get-error')
   @Auth(true, true)
+  @ApiKeyAccess('errors:read', 'query', 'pid')
   async getError(
     @Query() data: GetErrorDto,
     @CurrentUserId() uid: string,
@@ -2631,6 +2682,7 @@ export class AnalyticsController {
 
   @Get('error-overview')
   @Auth(true, true)
+  @ApiKeyAccess('errors:read', 'query', 'pid')
   async getErrorOverview(
     @Query() data: GetErrorOverviewDto,
     @CurrentUserId() uid: string,
@@ -2728,6 +2780,7 @@ export class AnalyticsController {
 
   @Get('error-sessions')
   @Auth(true, true)
+  @ApiKeyAccess('errors:read', 'query', 'pid', ['analytics:read'])
   async getErrorSessions(
     @Query() data: GetErrorDto & { take?: number; skip?: number },
     @CurrentUserId() uid: string,
@@ -2809,6 +2862,12 @@ export class AnalyticsController {
 
   @Get('session')
   @Auth(true, true)
+  @ApiKeyAccess('analytics:read', 'query', 'pid', [
+    'events:read',
+    'errors:read',
+    'replays:read',
+    'revenue:read',
+  ])
   async getSession(
     @Query() data: GetSessionDto,
     @CurrentUserId() uid: string,
@@ -2839,6 +2898,7 @@ export class AnalyticsController {
 
   @Get('session-replay')
   @Auth(true, true)
+  @ApiKeyAccess('replays:read', 'query', 'pid')
   async getSessionReplay(
     @Query() data: GetSessionReplayDto,
     @CurrentUserId() uid: string,
@@ -2864,6 +2924,7 @@ export class AnalyticsController {
 
   @Delete('session-replay')
   @Auth(true, true)
+  @ApiKeyAccess('replays:write', 'query', 'pid')
   async deleteSessionReplay(
     @Query() data: GetSessionReplayDto,
     @CurrentUserId() uid: string,
@@ -2929,6 +2990,7 @@ export class AnalyticsController {
 
   @Post('session-replay/export')
   @Auth(true, true)
+  @ApiKeyAccess('replays:read', 'body', 'pid')
   async startSessionReplayExport(
     @Body() data: SessionReplayExportStartDto,
     @CurrentUserId() uid: string | null,
@@ -2959,6 +3021,7 @@ export class AnalyticsController {
 
   @Get('session-replay/export/:exportId')
   @Auth(true, true)
+  @ApiKeyAccess('replays:read', 'export', 'exportId')
   async getSessionReplayExport(
     @Param('exportId') exportId: string,
     @CurrentUserId() uid: string | null,
@@ -2980,6 +3043,7 @@ export class AnalyticsController {
 
   @Get('session-replay/export/:exportId/download')
   @Auth(true, true)
+  @ApiKeyAccess('replays:read', 'export', 'exportId')
   async downloadSessionReplayExport(
     @Param('exportId') exportId: string,
     @CurrentUserId() uid: string | null,
@@ -3002,6 +3066,10 @@ export class AnalyticsController {
 
   @Get('profiles')
   @Auth(true, true)
+  @ApiKeyAccess('analytics:read', 'query', 'pid', [
+    'events:read',
+    'errors:read',
+  ])
   async getProfiles(
     @Query() data: GetProfilesDto,
     @CurrentUserId() uid: string,
@@ -3092,6 +3160,11 @@ export class AnalyticsController {
 
   @Get('profile')
   @Auth(true, true)
+  @ApiKeyAccess('analytics:read', 'query', 'pid', [
+    'events:read',
+    'errors:read',
+    'revenue:read',
+  ])
   async getProfile(
     @Query() data: GetProfileDto,
     @CurrentUserId() uid: string,
@@ -3129,6 +3202,10 @@ export class AnalyticsController {
 
   @Get('profile/sessions')
   @Auth(true, true)
+  @ApiKeyAccess('analytics:read', 'query', 'pid', [
+    'events:read',
+    'errors:read',
+  ])
   async getProfileSessions(
     @Query() data: GetProfileSessionsDto,
     @CurrentUserId() uid: string,
@@ -3219,6 +3296,7 @@ export class AnalyticsController {
 
   @Get('custom-events')
   @Auth(true, true)
+  @ApiKeyAccess('events:read', 'query', 'pid')
   async getCustomEvents(
     @Query() data: GetCustomEventsDto,
     @CurrentUserId() uid: string,
@@ -3325,6 +3403,8 @@ export class AnalyticsController {
    * profile and shown on its dashboard page.
    */
   @Post('identify')
+  @ApiKeyCollection()
+  @ApiKeyAccess('events:write', 'body', 'pid')
   @Public()
   async identify(
     @Body() dto: IdentifyDto,
@@ -3416,6 +3496,8 @@ export class AnalyticsController {
   // Revenue attribution endpoints
 
   @Post('profile-id')
+  @ApiKeyCollection()
+  @ApiKeyAccess('events:write', 'body', 'pid')
   @Public()
   async getOrCreateProfileId(
     @Body() dto: GetProfileIdDto,
@@ -3447,6 +3529,8 @@ export class AnalyticsController {
   }
 
   @Post('session-id')
+  @ApiKeyCollection()
+  @ApiKeyAccess('events:write', 'body', 'pid')
   @Public()
   async getOrCreateSessionId(
     @Body() dto: GetSessionIdDto,

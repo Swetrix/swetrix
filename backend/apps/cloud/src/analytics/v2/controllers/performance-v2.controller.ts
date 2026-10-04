@@ -1,3 +1,4 @@
+import { ApiKeyAccess } from '../../../api-key/api-key-access.decorator'
 import {
   Controller,
   Get,
@@ -48,6 +49,7 @@ export class PerformanceV2Controller {
 
   @Get('summary')
   @Auth(true, true)
+  @ApiKeyAccess('analytics:read', 'params', 'pid')
   @CacheableAnalytics()
   @ApiOperation({
     summary: 'Performance summary',
@@ -73,6 +75,7 @@ export class PerformanceV2Controller {
 
   @Get('timeseries')
   @Auth(true, true)
+  @ApiKeyAccess('analytics:read', 'params', 'pid')
   @CacheableAnalytics()
   @ApiOperation({
     summary: 'Performance timeseries',
@@ -101,6 +104,7 @@ export class PerformanceV2Controller {
 
   @Get('breakdown')
   @Auth(true, true)
+  @ApiKeyAccess('analytics:read', 'params', 'pid')
   @CacheableAnalytics()
   @ApiOperation({
     summary: 'Performance breakdown',

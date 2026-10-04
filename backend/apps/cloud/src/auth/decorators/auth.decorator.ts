@@ -1,3 +1,4 @@
+import { ApiKeyGuard } from '../../api-key/api-key.guard'
 import { applyDecorators, SetMetadata, UseGuards } from '@nestjs/common'
 import {
   ApiKeyRateLimitGuard,
@@ -11,7 +12,12 @@ export function Auth(allowApiKeyAuth = false, isOptionalAuth = false) {
   return applyDecorators(
     SetMetadata(IS_OPTIONAL_AUTH_KEY, isOptionalAuth),
     allowApiKeyAuth
-      ? UseGuards(MultiAuthGuard, ApiKeyRateLimitGuard, AuthenticationGuard)
+      ? UseGuards(
+          MultiAuthGuard,
+          ApiKeyGuard,
+          ApiKeyRateLimitGuard,
+          AuthenticationGuard,
+        )
       : UseGuards(JwtAccessTokenGuard, AuthenticationGuard),
   )
 }

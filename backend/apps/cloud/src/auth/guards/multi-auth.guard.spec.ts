@@ -1,3 +1,4 @@
+import passport from 'passport'
 import { ExecutionContext, UnauthorizedException } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 
@@ -62,5 +63,34 @@ describe('MultiAuthGuard', () => {
         createContext({ authorization: 'Bearer access-token' }),
       ),
     ).toBe(user)
+  })
+})
+
+describe('API key precedence', () => {
+  it('rejects an invalid key even when the session strategy would succeed', async () => {
+    passport.use('api-key', {
+      authenticate() {
+        this.fail()
+      },
+    } as any)
+    passport.use('jwt-access-token', {
+      authenticate() {
+        this.success({ id: 'session-user' })
+      },
+    } as any)
+    const request = {
+      headers: { 'x-api-key': 'invalid' },
+      cookies: { token: 'valid-session' },
+    }
+    const context = {
+      switchToHttp: () => ({
+        getRequest: () => request,
+        getResponse: () => ({}),
+      }),
+    } as ExecutionContext
+    const guard = new MultiAuthGuard({ getAllAndOverride: () => false } as any)
+    await expect(guard.canActivate(context)).rejects.toThrow(
+      UnauthorizedException,
+    )
   })
 })

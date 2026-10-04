@@ -770,6 +770,7 @@ export class User {
     unique: true,
     nullable: true,
     default: null,
+    select: false,
   })
   apiKey: string | null
 

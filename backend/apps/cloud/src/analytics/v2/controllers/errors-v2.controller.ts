@@ -1,3 +1,4 @@
+import { ApiKeyAccess } from '../../../api-key/api-key-access.decorator'
 import {
   Controller,
   Get,
@@ -52,6 +53,7 @@ export class ErrorsV2Controller {
 
   @Get()
   @Auth(true, true)
+  @ApiKeyAccess('errors:read', 'params', 'pid')
   @CacheableAnalytics()
   @ApiOperation({
     summary: 'Error groups',
@@ -77,6 +79,7 @@ export class ErrorsV2Controller {
 
   @Get('overview')
   @Auth(true, true)
+  @ApiKeyAccess('errors:read', 'params', 'pid')
   @CacheableAnalytics()
   @ApiOperation({
     summary: 'Errors overview',
@@ -102,6 +105,7 @@ export class ErrorsV2Controller {
 
   @Get('timeseries')
   @Auth(true, true)
+  @ApiKeyAccess('errors:read', 'params', 'pid')
   @CacheableAnalytics()
   @ApiOperation({
     summary: 'Errors timeseries',
@@ -126,6 +130,7 @@ export class ErrorsV2Controller {
 
   @Get('breakdown')
   @Auth(true, true)
+  @ApiKeyAccess('errors:read', 'params', 'pid')
   @CacheableAnalytics()
   @ApiOperation({
     summary: 'Errors breakdown',
@@ -154,6 +159,7 @@ export class ErrorsV2Controller {
 
   @Get(':eid')
   @Auth(true, true)
+  @ApiKeyAccess('errors:read', 'params', 'pid')
   @ApiOperation({
     summary: 'Error details',
     description:
@@ -181,6 +187,7 @@ export class ErrorsV2Controller {
 
   @Get(':eid/sessions')
   @Auth(true, true)
+  @ApiKeyAccess('errors:read', 'params', 'pid', ['analytics:read'])
   @ApiOperation({
     summary: 'Error sessions',
     description: 'Paginated sessions affected by a specific error group.',

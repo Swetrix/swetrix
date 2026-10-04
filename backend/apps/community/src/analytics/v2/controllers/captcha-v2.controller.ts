@@ -1,3 +1,4 @@
+import { ApiKeyAccess } from '../../../api-key/api-key-access.decorator'
 import {
   Controller,
   Get,
@@ -47,6 +48,7 @@ export class CaptchaV2Controller {
 
   @Get('summary')
   @Auth(true, true)
+  @ApiKeyAccess('analytics:read', 'params', 'pid')
   @CacheableAnalytics()
   @ApiOperation({
     summary: 'Captcha summary',
@@ -72,6 +74,7 @@ export class CaptchaV2Controller {
 
   @Get('timeseries')
   @Auth(true, true)
+  @ApiKeyAccess('analytics:read', 'params', 'pid')
   @CacheableAnalytics()
   @ApiOperation({
     summary: 'Captcha timeseries',
@@ -97,6 +100,7 @@ export class CaptchaV2Controller {
 
   @Get('breakdown')
   @Auth(true, true)
+  @ApiKeyAccess('analytics:read', 'params', 'pid')
   @CacheableAnalytics()
   @ApiOperation({
     summary: 'Captcha breakdown',

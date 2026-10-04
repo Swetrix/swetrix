@@ -1,3 +1,4 @@
+import { ApiKeyAccess } from '../api-key/api-key-access.decorator'
 import {
   Controller,
   Get,
@@ -125,7 +126,8 @@ export class GoalController {
   ) {}
 
   @Get('/:goalId')
-  @Auth(false, true)
+  @Auth(true, true)
+  @ApiKeyAccess('goals:read', 'goal', 'goalId')
   async getGoal(
     @CurrentUserId() userId: string,
     @Param('goalId') goalId: string,
@@ -150,7 +152,8 @@ export class GoalController {
   }
 
   @Get('/project/:projectId')
-  @Auth(false, true)
+  @Auth(true, true)
+  @ApiKeyAccess('goals:read', 'params', 'projectId')
   async getProjectGoals(
     @CurrentUserId() userId: string,
     @Param('projectId') projectId: string,
@@ -773,7 +776,8 @@ export class GoalController {
   }
 
   @Get('/:id/stats')
-  @Auth()
+  @Auth(true)
+  @ApiKeyAccess('goals:read', 'goal', 'id')
   async getGoalStats(
     @CurrentUserId() userId: string,
     @Param('id') id: string,
@@ -925,7 +929,13 @@ export class GoalController {
   }
 
   @Get('/:id/sessions')
-  @Auth()
+  @Auth(true)
+  @ApiKeyAccess('goals:read', 'goal', 'id', [
+    'analytics:read',
+    'events:read',
+    'errors:read',
+    'replays:read',
+  ])
   async getGoalSessions(
     @CurrentUserId() userId: string,
     @Param('id') id: string,
@@ -1066,7 +1076,8 @@ export class GoalController {
   }
 
   @Get('/:id/chart')
-  @Auth()
+  @Auth(true)
+  @ApiKeyAccess('goals:read', 'goal', 'id')
   async getGoalChart(
     @CurrentUserId() userId: string,
     @Param('id') id: string,

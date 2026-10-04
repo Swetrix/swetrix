@@ -1,3 +1,4 @@
+import { ApiKeyAccess } from '../api-key/api-key-access.decorator'
 import {
   Controller,
   Get,
@@ -141,6 +142,7 @@ export class GoalController {
   @ApiBearerAuth()
   @Get('/:goalId')
   @Auth(true, true)
+  @ApiKeyAccess('goals:read', 'goal', 'goalId')
   @ApiResponse({ status: 200, type: Goal })
   async getGoal(
     @CurrentUserId() userId: string,
@@ -171,6 +173,7 @@ export class GoalController {
   @ApiBearerAuth()
   @Get('/project/:projectId')
   @Auth(true, true)
+  @ApiKeyAccess('goals:read', 'params', 'projectId')
   @ApiResponse({ status: 200, type: [GoalDto] })
   async getProjectGoals(
     @CurrentUserId() userId: string,
@@ -849,6 +852,7 @@ export class GoalController {
   @ApiBearerAuth()
   @Get('/:id/stats')
   @Auth(true, true)
+  @ApiKeyAccess('goals:read', 'goal', 'id')
   @ApiResponse({ status: 200, type: GoalStatsDto })
   async getGoalStats(
     @CurrentUserId() userId: string,
@@ -1003,6 +1007,13 @@ export class GoalController {
   @ApiBearerAuth()
   @Get('/:id/sessions')
   @Auth(true, true)
+  @ApiKeyAccess('goals:read', 'goal', 'id', [
+    'analytics:read',
+    'events:read',
+    'errors:read',
+    'replays:read',
+    'revenue:read',
+  ])
   async getGoalSessions(
     @CurrentUserId() userId: string,
     @Param('id') id: string,
@@ -1145,6 +1156,7 @@ export class GoalController {
   @ApiBearerAuth()
   @Get('/:id/chart')
   @Auth(true, true)
+  @ApiKeyAccess('goals:read', 'goal', 'id')
   async getGoalChart(
     @CurrentUserId() userId: string,
     @Param('id') id: string,

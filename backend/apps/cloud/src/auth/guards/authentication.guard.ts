@@ -21,7 +21,7 @@ export class AuthenticationGuard implements CanActivate {
 
     // If user is missing here, upstream guards (e.g., JwtAccessTokenGuard) already rejected the request,
     // or this route allows API key auth via MultiAuthGuard. When using API key, skip 2FA enforcement.
-    if (!user) return true
+    if (!user || user.apiKeyAccess) return true
 
     if (
       user?.isTwoFactorAuthenticationEnabled &&
