@@ -59,7 +59,7 @@ If you don't have an SMTP provider, some regular email providers offer this func
 
 ### API key encryption
 
-`API_KEY_ENCRYPTION_SECRET` is an optional dedicated secret for encrypting API keys at rest. When unset, Swetrix derives the encryption key from `SECRET_KEY_BASE`. Set it before creating keys and keep it stable across all API instances and backups. Changing the effective encryption secret prevents revealing previously stored keys; authentication still works because it uses a separate SHA-256 digest. Rotate affected keys to create secrets encrypted with the new configuration.
+`SECRET_KEY_BASE` variable is required for encrypting API keys at rest. Set it before creating keys and keep it stable across all API instances and backups. Changing the effective encryption secret prevents revealing previously stored keys; authentication still works because it uses a separate SHA-256 digest. Rotate affected keys to create secrets encrypted with the new configuration.
 
 Existing UUID keys remain valid. The self-hosted database initializer creates the `api_key` table automatically. If you manage schema upgrades manually, apply `backend/migrations/clickhouse/selfhosted_2026_10_01_api_keys.js` before starting the updated API. Cloud installations use `backend/migrations/mysql/2026_10_01_api_keys.sql`.
 

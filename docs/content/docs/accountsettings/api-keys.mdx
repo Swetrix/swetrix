@@ -9,32 +9,33 @@ API keys connect scripts, dashboards, and integrations to Swetrix. Create a sepa
 ## Create a key
 
 1. Open **Account Settings → Account → API keys**.
-2. Click **Create API key** and give it a descriptive name.
-3. Choose **Selected projects** or **All projects**. Selected projects must belong to your account. All projects includes projects you own now and those you create later.
+2. Click **Create API key** to open the editor modal and give it a descriptive name.
+3. Select individual projects, or enable **All projects**. Selected projects must belong to your account. All projects includes projects you own now and those you create later.
 4. Set each permission group to **No access**, **Read only**, or **Read & write**. Read-only resources have no write option.
 5. Create the key, reveal it with the eye button, and copy it into your integration.
 
 New keys start with `swx_`. Nothing is granted until you choose permissions. A key cannot access a selected project after you transfer ownership away from your account.
 
 <Callout type="warn">
-Keep keys in a server-side secret store or environment variable. Never put an account API key in browser tracking code or a public repository.
+  Keep keys in a server-side secret store or environment variable. Never put an account API key in
+  browser tracking code or a public repository.
 </Callout>
 
 ## Permissions
 
-| Group | Read only | Read & write |
-| --- | --- | --- |
-| Analytics | Traffic, performance, sessions, profiles, SEO, and CAPTCHA statistics | Not available |
-| Events | Custom events and their metadata | Also send tracking events |
-| Project settings | Project lists, settings, and saved views | Also create, update, or delete projects and views |
-| Funnels | Saved funnels and funnel analysis | Also manage saved funnels |
-| Annotations | Timeline annotations | Also create, edit, or delete annotations |
-| Errors | Error reports and affected sessions | Also send errors and update error status |
-| Session replays | View and export recordings | Also record and delete replays |
-| Goals | Goals, conversion statistics, and associated sessions | Not available |
-| Feature flags | Configuration, statistics, and evaluations | Not available |
-| Revenue (Cloud) | Revenue statistics | Also record transactions |
-| Organisations (Cloud) | Organisations and members | Also manage organisations and members |
+| Group                 | Read only                                                             | Read & write                                      |
+| --------------------- | --------------------------------------------------------------------- | ------------------------------------------------- |
+| Analytics             | Traffic, performance, sessions, profiles, SEO, and CAPTCHA statistics | Not available                                     |
+| Events                | Custom events and their metadata                                      | Also send tracking events                         |
+| Project settings      | Project lists, settings, and saved views                              | Also create, update, or delete projects and views |
+| Funnels               | Saved funnels and funnel analysis                                     | Also manage saved funnels                         |
+| Annotations           | Timeline annotations                                                  | Also create, edit, or delete annotations          |
+| Errors                | Error reports and affected sessions                                   | Also send errors and update error status          |
+| Session replays       | View and export recordings                                            | Also record and delete replays                    |
+| Goals                 | Goals, conversion statistics, and associated sessions                 | Not available                                     |
+| Feature flags         | Configuration, statistics, and evaluations                            | Not available                                     |
+| Revenue (Cloud)       | Revenue statistics                                                    | Also record transactions                          |
+| Organisations (Cloud) | Organisations and members                                             | Also manage organisations and members             |
 
 Project creation requires **All projects** and **Project settings: Read & write**. Organisation permissions apply account-wide and also require **All projects**. Read & write includes read access.
 
@@ -53,9 +54,9 @@ Permissions apply to API-enabled endpoints. Account credentials, billing, and AP
 
 The API keys list shows names, creation dates, project access, and permissions. Secrets are masked. Use the eye button to reveal a key, then copy it. Revealed list entries hide again after a minute or when you leave the browser tab.
 
-Choose **Edit permissions** to change a key's name, projects, or permissions without changing its secret.
+Choose **Edit permissions** to open the editor modal and change a key's name, projects, or permissions without changing its secret. Save your changes, or cancel to discard them.
 
-Project owners can open **Project Settings → API keys** to see keys with access to that project, including existing unrestricted keys belonging to collaborators. This view shows metadata only; another person's key cannot be revealed, rotated, or revoked there.
+Project owners can open **Project Settings → Access → API keys** to see keys with access to that project, including existing unrestricted keys belonging to collaborators. This view shows metadata only; another person's key cannot be revealed, rotated, or revoked there.
 
 ## Rotate or revoke a key
 

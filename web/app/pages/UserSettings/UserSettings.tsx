@@ -1607,9 +1607,9 @@ const UserSettings = () => {
                   </div>
                 </SettingsSection>
 
-                <div id='api-keys' className='py-6'>
+                <section id='api-keys' className='[&+&]:mt-8'>
                   <ApiKeys />
-                </div>
+                </section>
 
                 {isSelfhosted ? (
                   <>

@@ -9,10 +9,14 @@ import {
 } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import type { ApiKey, ApiKeyInput, ApiKeyList } from '~/lib/models/ApiKey'
+import ProjectAccessSelector from '~/components/ProjectAccessSelector'
+import { DOCS_URL } from '~/lib/constants'
 import Button from '~/ui/Button'
 import Input from '~/ui/Input'
 import Modal from '~/ui/Modal'
 import { Link } from '~/ui/Link'
+import { Text } from '~/ui/Text'
+import Tooltip from '~/ui/Tooltip'
 
 const requestKeys = async <T,>(
   operation?: string,
@@ -53,7 +57,6 @@ export default function ApiKeys({ projectId }: { projectId?: string }) {
   const [busy, setBusy] = useState(false)
   const [editor, setEditor] = useState<ApiKey | 'new' | null>(null)
   const [input, setInput] = useState<ApiKeyInput>(emptyInput)
-  const [search, setSearch] = useState('')
   const [secrets, setSecrets] = useState<Record<string, string>>({})
   const [confirmation, setConfirmation] = useState<{
     operation: 'rotate' | 'delete'
@@ -116,9 +119,19 @@ export default function ApiKeys({ projectId }: { projectId?: string }) {
             projectIds: key.projectIds,
           },
     )
-    setSearch('')
     setError('')
   }
+
+  const closeEditor = () => {
+    if (busy) return
+    setEditor(null)
+    setError('')
+  }
+
+  const canSave =
+    Boolean(input.name.trim()) &&
+    input.scopes.length > 0 &&
+    (input.allProjects || input.projectIds.length > 0)
 
   const mutate = async (operation: string, key?: ApiKey) => {
     if (busy) return
@@ -189,19 +202,40 @@ export default function ApiKeys({ projectId }: { projectId?: string }) {
 
   return (
     <section
-      className='text-sm text-slate-900 dark:text-gray-50'
+      className='text-sm text-gray-900 dark:text-gray-50'
       aria-label={t('apiKeys.title')}
     >
       <div className='flex flex-wrap items-start justify-between gap-4'>
         <div className='max-w-xl'>
-          <h3 className='text-base font-semibold'>{t('apiKeys.title')}</h3>
-          <p className='mt-1 text-gray-600 dark:text-gray-400'>
+          <div className='flex items-center gap-1.5'>
+            <Text as='h3' size='lg' weight='bold'>
+              {t('apiKeys.title')}
+            </Text>
+            <Tooltip
+              ariaLabel={`${t('common.learnMore')}: ${t('apiKeys.title')}`}
+              contentClassName='max-w-[calc(100vw-2rem)] sm:max-w-80'
+              text={
+                <span className='block space-y-2 text-pretty'>
+                  <span className='block'>{t('apiKeys.tooltip')}</span>
+                  <a
+                    href={`${DOCS_URL}/settings/api-keys`}
+                    className='font-semibold underline decoration-dashed hover:decoration-solid'
+                    target='_blank'
+                    rel='noreferrer noopener'
+                  >
+                    {t('common.learnMore')}
+                  </a>
+                </span>
+              }
+            />
+          </div>
+          <Text as='p' size='sm' colour='secondary' className='mt-1'>
             {t(
               projectId ? 'apiKeys.projectDescription' : 'apiKeys.description',
             )}
-          </p>
+          </Text>
         </div>
-        {!projectId && !editor ? (
+        {!projectId ? (
           <Button onClick={() => startEdit('new')} disabled={!data || busy}>
             <PlusIcon className='mr-1.5 size-4' />
             {t('apiKeys.create')}
@@ -214,7 +248,7 @@ export default function ApiKeys({ projectId }: { projectId?: string }) {
         ) : null}
       </div>
 
-      {error ? (
+      {error && !editor && !confirmation ? (
         <div
           role='alert'
           className='mt-4 flex items-center justify-between gap-3 text-red-600 dark:text-red-400'
@@ -236,285 +270,236 @@ export default function ApiKeys({ projectId }: { projectId?: string }) {
       ) : null}
 
       {editor && data ? (
-        <form
-          className='mt-6 border-y border-gray-200 py-6 dark:border-slate-800'
-          onSubmit={(event) => {
-            event.preventDefault()
-            void mutate(
-              editor === 'new' ? 'create' : 'update',
-              editor === 'new' ? undefined : editor,
-            )
-          }}
-        >
-          <h4 className='mb-4 font-semibold'>
-            {t(editor === 'new' ? 'apiKeys.create' : 'apiKeys.edit')}
-          </h4>
-          <fieldset disabled={busy} className='space-y-6'>
-            <Input
-              label={t('apiKeys.name')}
-              value={input.name}
-              maxLength={80}
-              required
-              placeholder={t('apiKeys.namePlaceholder')}
-              onChange={(event) =>
-                setInput((current) => ({
-                  ...current,
-                  name: event.target.value,
-                }))
-              }
-              className='max-w-md'
-            />
-            <fieldset>
-              <legend className='font-medium'>{t('apiKeys.projects')}</legend>
-              <p className='mt-1 text-gray-500 dark:text-gray-400'>
-                {t('apiKeys.projectsHint')}
-              </p>
-              <div className='mt-3 flex flex-wrap gap-5'>
-                {[false, true].map((all) => (
-                  <label
-                    key={String(all)}
-                    className='flex cursor-pointer items-center gap-2'
-                  >
-                    <input
-                      type='radio'
-                      name='projectAccess'
-                      checked={input.allProjects === all}
-                      onChange={() =>
-                        setInput((current) => ({
-                          ...current,
-                          allProjects: all,
-                          scopes: all
-                            ? current.scopes
-                            : current.scopes.filter(
-                                (scope) => !scope.startsWith('organisations:'),
-                              ),
-                        }))
-                      }
-                    />
-                    {t(
-                      all ? 'apiKeys.allProjects' : 'apiKeys.selectedProjects',
-                    )}
-                  </label>
-                ))}
-              </div>
-              {!input.allProjects ? (
-                <div className='mt-4 max-w-xl'>
-                  <Input
-                    aria-label={t('apiKeys.searchProjects')}
-                    placeholder={t('apiKeys.searchProjects')}
-                    value={search}
-                    onChange={(event) => setSearch(event.target.value)}
-                  />
-                  <div className='mt-2 max-h-48 overflow-y-auto rounded-md border border-gray-200 dark:border-slate-700'>
-                    {data.projects
-                      .filter((project) =>
-                        `${project.name} ${project.id}`
-                          .toLowerCase()
-                          .includes(search.toLowerCase()),
-                      )
-                      .map((project) => (
-                        <label
-                          key={project.id}
-                          className='flex cursor-pointer items-center gap-3 px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-slate-800'
-                        >
-                          <input
-                            type='checkbox'
-                            checked={input.projectIds.includes(project.id)}
-                            onChange={(event) =>
-                              setInput((current) => ({
-                                ...current,
-                                projectIds: event.target.checked
-                                  ? [...current.projectIds, project.id]
-                                  : current.projectIds.filter(
-                                      (id) => id !== project.id,
-                                    ),
-                              }))
-                            }
-                          />
-                          <span className='min-w-0 flex-1 truncate'>
-                            {project.name}
-                          </span>
-                          <span className='font-mono text-xs text-gray-500'>
-                            {project.id}
-                          </span>
-                        </label>
-                      ))}
-                    {!data.projects.some((project) =>
-                      `${project.name} ${project.id}`
-                        .toLowerCase()
-                        .includes(search.toLowerCase()),
-                    ) ? (
-                      <p className='p-3 text-gray-500'>
-                        {t('apiKeys.noProjects')}
-                      </p>
-                    ) : null}
-                  </div>
-                  <p className='mt-2 text-xs text-gray-500'>
-                    {t('apiKeys.projectsSelected', {
-                      count: input.projectIds.length,
-                    })}
-                  </p>
-                </div>
-              ) : (
-                <p className='mt-3 text-xs text-gray-500 dark:text-gray-400'>
-                  {t('apiKeys.allProjectsHint')}
-                </p>
-              )}
-            </fieldset>
-            <fieldset>
-              <legend className='font-medium'>
-                {t('apiKeys.permissions')}
-              </legend>
-              <p className='mt-1 text-gray-500 dark:text-gray-400'>
-                {t('apiKeys.permissionsHint')}
-              </p>
-              {editor !== 'new' && editor.unrestricted ? (
-                <p className='mt-3 text-amber-700 dark:text-amber-400'>
-                  {t('apiKeys.restrictHint')}
-                </p>
+        <Modal
+          isOpened
+          onClose={closeEditor}
+          title={t(editor === 'new' ? 'apiKeys.create' : 'apiKeys.edit')}
+          size='medium'
+          closeText={t('apiKeys.cancel')}
+          customButtons={
+            <Button
+              type='submit'
+              form='api-key-editor'
+              size='lg'
+              loading={busy}
+              disabled={!canSave}
+              className='w-full justify-center sm:w-auto'
+            >
+              {t(editor === 'new' ? 'apiKeys.create' : 'apiKeys.save')}
+            </Button>
+          }
+          message={
+            <form
+              id='api-key-editor'
+              className='max-h-[65dvh] overflow-y-auto pr-1 text-left text-gray-900 dark:text-gray-50'
+              onSubmit={(event) => {
+                event.preventDefault()
+                event.stopPropagation()
+                if (!canSave) return
+                void mutate(
+                  editor === 'new' ? 'create' : 'update',
+                  editor === 'new' ? undefined : editor,
+                )
+              }}
+            >
+              {error ? (
+                <Text
+                  as='p'
+                  size='sm'
+                  colour='error'
+                  role='alert'
+                  className='mb-4'
+                >
+                  {error}
+                </Text>
               ) : null}
-              <div className='mt-3 divide-y divide-gray-200 border-y border-gray-200 dark:divide-slate-800 dark:border-slate-800'>
-                {Object.entries(data.scopes).map(([scope, actions]) => (
-                  <fieldset
-                    key={scope}
-                    className='grid gap-2 py-3 sm:grid-cols-[1fr_auto] sm:items-center'
-                  >
-                    <legend className='sr-only'>
-                      {t(`apiKeys.resources.${scope}.name`)}
-                    </legend>
-                    <div>
-                      <p className='font-medium'>
-                        {t(`apiKeys.resources.${scope}.name`)}
-                      </p>
-                      <p className='mt-0.5 text-xs text-gray-500 dark:text-gray-400'>
-                        {t(`apiKeys.resources.${scope}.description`)}
-                      </p>
-                    </div>
-                    <div className='flex items-center gap-1'>
-                      {['none', 'read', 'write'].map((access) => {
-                        const selected = input.scopes.includes(`${scope}:write`)
-                          ? 'write'
-                          : input.scopes.includes(`${scope}:read`)
-                            ? 'read'
-                            : 'none'
-                        const disabled =
-                          access !== 'none' &&
-                          (!actions.includes(access) ||
-                            (scope === 'organisations' && !input.allProjects))
-                        return (
-                          <label
-                            key={access}
-                            title={
-                              disabled
-                                ? t(
-                                    scope === 'organisations'
-                                      ? 'apiKeys.organisationsHint'
-                                      : 'apiKeys.readOnlyHint',
-                                  )
-                                : undefined
-                            }
-                            className={`relative rounded-md px-2.5 py-2 text-xs ring-inset has-focus-visible:ring-2 has-focus-visible:ring-slate-500 ${disabled ? 'cursor-not-allowed text-gray-300 dark:text-slate-600' : 'cursor-pointer'} ${selected === access ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900' : disabled ? '' : 'hover:bg-gray-100 dark:hover:bg-slate-800'}`}
+              <fieldset disabled={busy} className='space-y-6'>
+                <Input
+                  label={t('apiKeys.name')}
+                  value={input.name}
+                  maxLength={80}
+                  required
+                  placeholder={t('apiKeys.namePlaceholder')}
+                  onChange={(event) =>
+                    setInput((current) => ({
+                      ...current,
+                      name: event.target.value,
+                    }))
+                  }
+                />
+                <ProjectAccessSelector
+                  projects={data.projects}
+                  value={input}
+                  disabled={busy}
+                  onChange={(access) =>
+                    setInput((current) => ({
+                      ...current,
+                      ...access,
+                      scopes: access.allProjects
+                        ? current.scopes
+                        : current.scopes.filter(
+                            (scope) => !scope.startsWith('organisations:'),
+                          ),
+                    }))
+                  }
+                />
+                <fieldset>
+                  <legend className='font-medium'>
+                    {t('apiKeys.permissions')}
+                  </legend>
+                  <Text as='p' size='sm' colour='secondary' className='mt-1'>
+                    {t('apiKeys.permissionsHint')}
+                  </Text>
+                  {editor !== 'new' && editor.unrestricted ? (
+                    <p className='mt-3 text-amber-700 dark:text-amber-400'>
+                      {t('apiKeys.restrictHint')}
+                    </p>
+                  ) : null}
+                  <div className='mt-3 divide-y divide-gray-200 border-y border-gray-200 dark:divide-slate-800 dark:border-slate-800'>
+                    {Object.entries(data.scopes).map(([scope, actions]) => (
+                      <fieldset
+                        key={scope}
+                        className='grid gap-2 py-3 sm:grid-cols-[1fr_auto] sm:items-center'
+                      >
+                        <legend className='sr-only'>
+                          {t(`apiKeys.resources.${scope}.name`)}
+                        </legend>
+                        <div>
+                          <Text as='p' size='sm' weight='medium'>
+                            {t(`apiKeys.resources.${scope}.name`)}
+                          </Text>
+                          <Text
+                            as='p'
+                            size='sm'
+                            colour='secondary'
+                            className='mt-0.5'
                           >
-                            <input
-                              className='sr-only'
-                              type='radio'
-                              name={`scope-${scope}`}
-                              disabled={disabled}
-                              checked={selected === access}
-                              onChange={() =>
-                                setInput((current) => ({
-                                  ...current,
-                                  scopes: [
-                                    ...current.scopes.filter(
-                                      (value) => !value.startsWith(`${scope}:`),
-                                    ),
-                                    ...(access === 'none'
-                                      ? []
-                                      : access === 'read'
-                                        ? [`${scope}:read`]
-                                        : [`${scope}:read`, `${scope}:write`]),
-                                  ],
-                                }))
-                              }
-                            />
-                            {t(
-                              access === 'none'
-                                ? 'apiKeys.none'
-                                : access === 'read'
-                                  ? 'apiKeys.readOnly'
-                                  : 'apiKeys.readWrite',
-                            )}
-                          </label>
-                        )
-                      })}
-                    </div>
-                  </fieldset>
-                ))}
-              </div>
-            </fieldset>
-            <div className='flex items-center gap-3'>
-              <Button
-                type='submit'
-                loading={busy}
-                disabled={
-                  !input.name.trim() ||
-                  !input.scopes.length ||
-                  (!input.allProjects && !input.projectIds.length)
-                }
-              >
-                {t(editor === 'new' ? 'apiKeys.create' : 'apiKeys.save')}
-              </Button>
-              <Button
-                variant='ghost'
-                onClick={() => {
-                  setEditor(null)
-                  setError('')
-                }}
-              >
-                {t('apiKeys.cancel')}
-              </Button>
-            </div>
-          </fieldset>
-        </form>
+                            {t(`apiKeys.resources.${scope}.description`)}
+                          </Text>
+                        </div>
+                        <div className='flex items-center gap-1'>
+                          {['none', 'read', 'write'].map((access) => {
+                            const selected = input.scopes.includes(
+                              `${scope}:write`,
+                            )
+                              ? 'write'
+                              : input.scopes.includes(`${scope}:read`)
+                                ? 'read'
+                                : 'none'
+                            const disabled =
+                              access !== 'none' &&
+                              (!actions.includes(access) ||
+                                (scope === 'organisations' &&
+                                  !input.allProjects))
+                            return (
+                              <label
+                                key={access}
+                                title={
+                                  disabled
+                                    ? t(
+                                        scope === 'organisations'
+                                          ? 'apiKeys.organisationsHint'
+                                          : 'apiKeys.readOnlyHint',
+                                      )
+                                    : undefined
+                                }
+                                className={`relative rounded-md px-2.5 py-2 text-xs ring-inset has-focus-visible:ring-2 has-focus-visible:ring-slate-500 ${disabled ? 'cursor-not-allowed text-gray-300 dark:text-slate-600' : 'cursor-pointer'} ${selected === access ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900' : disabled ? '' : 'hover:bg-gray-100 dark:hover:bg-slate-800'}`}
+                              >
+                                <input
+                                  className='sr-only'
+                                  type='radio'
+                                  name={`scope-${scope}`}
+                                  disabled={disabled}
+                                  checked={selected === access}
+                                  onChange={() =>
+                                    setInput((current) => ({
+                                      ...current,
+                                      scopes: [
+                                        ...current.scopes.filter(
+                                          (value) =>
+                                            !value.startsWith(`${scope}:`),
+                                        ),
+                                        ...(access === 'none'
+                                          ? []
+                                          : access === 'read'
+                                            ? [`${scope}:read`]
+                                            : [
+                                                `${scope}:read`,
+                                                `${scope}:write`,
+                                              ]),
+                                      ],
+                                    }))
+                                  }
+                                />
+                                {t(
+                                  access === 'none'
+                                    ? 'apiKeys.none'
+                                    : access === 'read'
+                                      ? 'apiKeys.readOnly'
+                                      : 'apiKeys.readWrite',
+                                )}
+                              </label>
+                            )
+                          })}
+                        </div>
+                      </fieldset>
+                    ))}
+                  </div>
+                </fieldset>
+              </fieldset>
+            </form>
+          }
+        />
       ) : null}
 
       {data && !data.keys.length && !editor ? (
-        <div className='mt-6 border-y border-gray-200 py-9 dark:border-slate-800'>
-          <KeyIcon className='mb-3 size-6 text-gray-400' />
-          <p className='font-medium'>{t('apiKeys.emptyTitle')}</p>
-          <p className='mt-1 text-gray-500 dark:text-gray-400'>
+        <div className='mt-6'>
+          <KeyIcon className='mb-3 size-6 text-gray-700 dark:text-gray-200' />
+          <Text as='p' size='sm' weight='medium'>
+            {t('apiKeys.emptyTitle')}
+          </Text>
+          <Text as='p' size='sm' colour='secondary' className='mt-1'>
             {t(projectId ? 'apiKeys.projectEmpty' : 'apiKeys.emptyDescription')}
-          </p>
+          </Text>
         </div>
       ) : null}
       {data?.keys.length ? (
-        <ul className='mt-6 divide-y divide-gray-200 border-y border-gray-200 dark:divide-slate-800 dark:border-slate-800'>
+        <ul className='mt-6 space-y-6'>
           {data.keys.map((key) => (
-            <li key={key.id} className='py-5'>
+            <li key={key.id}>
               <div className='flex flex-wrap items-start justify-between gap-x-6 gap-y-3'>
                 <div className='min-w-0 flex-1'>
                   <div className='flex flex-wrap items-center gap-2'>
-                    <h4 className='font-medium break-all'>{key.name}</h4>
+                    <Text
+                      as='h4'
+                      size='base'
+                      weight='semibold'
+                      className='break-all'
+                    >
+                      {key.name}
+                    </Text>
                     {key.unrestricted ? (
                       <span className='rounded bg-amber-50 px-1.5 py-0.5 text-xs text-amber-800 dark:bg-amber-500/10 dark:text-amber-300'>
                         {t('apiKeys.unrestricted')}
                       </span>
                     ) : null}
                   </div>
-                  <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
+                  <Text as='p' size='sm' colour='secondary' className='mt-1'>
                     {key.created
                       ? t('apiKeys.created', { date: formatDate(key.created) })
                       : t('apiKeys.createdBefore')}
                     {key.rotated
                       ? ` · ${t('apiKeys.rotated', { date: formatDate(key.rotated) })}`
                       : ''}
-                  </p>
+                  </Text>
                   {projectId && key.owner ? (
-                    <p className='mt-1 text-xs text-gray-500'>{key.owner}</p>
+                    <Text as='p' size='sm' colour='secondary' className='mt-1'>
+                      {key.owner}
+                    </Text>
                   ) : null}
                   {!projectId ? (
                     <div className='mt-3 flex min-w-0 items-center gap-1'>
-                      <code className='min-w-0 text-xs break-all text-gray-600 dark:text-gray-300'>
+                      <code className='min-w-0 text-sm break-all'>
                         {secrets[key.id] || key.keyPreview}
                       </code>
                       <Button
@@ -581,7 +566,7 @@ export default function ApiKeys({ projectId }: { projectId?: string }) {
                   </div>
                 ) : null}
               </div>
-              <p className='mt-3 text-gray-600 dark:text-gray-400'>
+              <Text as='p' size='sm' className='mt-3'>
                 {key.allProjects
                   ? t('apiKeys.allProjects')
                   : key.projectIds
@@ -591,9 +576,9 @@ export default function ApiKeys({ projectId }: { projectId?: string }) {
                             ?.name || id,
                       )
                       .join(', ')}
-              </p>
+              </Text>
               <details className='mt-2'>
-                <summary className='w-fit cursor-pointer rounded text-xs font-medium text-gray-600 focus-visible:outline-2 dark:text-gray-300'>
+                <summary className='w-fit cursor-pointer rounded text-sm font-medium focus-visible:outline-2'>
                   {key.unrestricted
                     ? t(
                         key.projectReadOnly
@@ -607,14 +592,19 @@ export default function ApiKeys({ projectId }: { projectId?: string }) {
                       })}
                 </summary>
                 {key.unrestricted ? (
-                  <p className='mt-2 max-w-xl text-xs text-gray-500 dark:text-gray-400'>
+                  <Text
+                    as='p'
+                    size='sm'
+                    colour='secondary'
+                    className='mt-2 max-w-xl'
+                  >
                     {t('apiKeys.unrestrictedHint')}
                     {key.projectReadOnly
                       ? ` ${t('apiKeys.projectReadOnly')}`
                       : ''}
-                  </p>
+                  </Text>
                 ) : (
-                  <dl className='mt-3 grid max-w-lg grid-cols-[1fr_auto] gap-x-6 gap-y-2 text-xs'>
+                  <dl className='mt-3 grid max-w-lg grid-cols-[1fr_auto] gap-x-6 gap-y-2'>
                     {Object.keys(data.scopes)
                       .filter((scope) =>
                         key.scopes.some((permission) =>
@@ -623,9 +613,9 @@ export default function ApiKeys({ projectId }: { projectId?: string }) {
                       )
                       .map((scope) => (
                         <div className='contents' key={scope}>
-                          <dt className='text-gray-500 dark:text-gray-400'>
+                          <Text as='dt' size='sm'>
                             {t(`apiKeys.resources.${scope}.name`)}
-                          </dt>
+                          </Text>
                           <dd>{permissionLabel(key.scopes, scope)}</dd>
                         </div>
                       ))}
