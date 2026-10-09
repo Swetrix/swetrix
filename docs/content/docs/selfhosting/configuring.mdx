@@ -102,6 +102,8 @@ Swetrix Community Edition also supports OIDC authentication. To enable it, you n
 
 When configuring your OIDC provider, use `BASE_URL/socialised` (e.g. `https://analytics.example.com/socialised`) as the redirect URI.
 
+Swetrix supports RSA and EdDSA ID tokens and automatically uses S256 PKCE when the provider advertises support in its discovery document. For Rauthy, you can keep EdDSA signing and S256 PKCE enabled. Allow the `openid`, `email`, and `profile` scopes, and set `OIDC_CLIENT_SECRET` when using a confidential client.
+
 ## Redis
 
 | Variable         | Default    | Description    |
