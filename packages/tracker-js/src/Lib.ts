@@ -400,7 +400,7 @@ export class Lib {
   }
 
   captureError(event: ErrorEvent): void {
-    if (typeof this.errorsOptions?.sampleRate === 'number' && this.errorsOptions.sampleRate >= Math.random()) {
+    if (typeof this.errorsOptions?.sampleRate === 'number' && Math.random() >= this.errorsOptions.sampleRate) {
       return
     }
 
