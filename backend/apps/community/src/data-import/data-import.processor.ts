@@ -131,6 +131,11 @@ export class DataImportProcessor extends WorkerHost {
           context,
         )) {
           totalRows++
+          if (totalRows > 100_000_000) {
+            throw new ImportError(
+              'Import exceeds 100 million events. Please import a shorter date range.',
+            )
+          }
 
           const created = row.data.created as string
           if (created) {
@@ -164,6 +169,12 @@ export class DataImportProcessor extends WorkerHost {
               )
             }
           }
+        }
+
+        if (totalRows === 0) {
+          throw new ImportError(
+            'The export contains no importable events. Please check the file format and date range.',
+          )
         }
 
         if (eventsBatch.length > 0) {

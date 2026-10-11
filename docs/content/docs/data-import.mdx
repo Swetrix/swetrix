@@ -279,13 +279,13 @@ The page auto-refreshes while an import is processing. You can navigate away and
 <TabsContent value="plausible">
 
 <Callout type="warn">
-  Plausible only allows exporting daily aggregated data — there is no raw event export. Swetrix
-  reconstructs synthetic per-event rows from your aggregates so you can browse the data in
-  dashboards. Because the mapper samples each dimension's daily distribution independently with
-  replacement, single-dimension breakdowns (e.g. top browsers or top pages) are deterministic
-  approximations rather than guaranteed exact reproductions of Plausible's report. Only per-day
-  totals and the top-level generated counts (sessions, pageviews, custom events) are preserved
-  exactly.
+  Plausible's full CSV export contains daily aggregated data. Swetrix reconstructs synthetic
+  per-event rows from your aggregates so you can browse the data in dashboards. Because the mapper
+  samples each dimension's daily distribution independently with replacement, single-dimension
+  breakdowns (e.g. top browsers or top pages) are deterministic approximations rather than
+  guaranteed exact reproductions of Plausible's report. Only per-day pageview and custom-event
+  totals are preserved for supported exports. Unique visitor counts, session duration, and bounce
+  rate may differ.
 </Callout>
 
 <Steps>
@@ -340,7 +340,7 @@ For each day in the export, Swetrix:
 4. Distributes the day's `pageviews` across sessions (first page = a sampled entry page, last page = a sampled exit page, middle pages sampled from the pages distribution)
 5. Spreads session start times evenly across the 24h window and pageview gaps within a session based on the average `visit_duration` per session
 
-This is deterministic — re-importing the same export produces identical rows.
+The generated rows are deterministic for the same export and import ID.
 
 <h3>What's not imported?</h3>
 
@@ -375,6 +375,10 @@ This permanently removes all analytics rows associated with that import. Your li
 ## Limitations
 
 - **File size**: Maximum 100 MB per upload (for file-based imports)
+- **Plausible archive size**: Maximum 2 GiB after decompression. CSVs are processed one day at a time; a single day's intermediate data is limited to 128 MiB. Archives above these limits need a shorter export range or help from support.
+- **Plausible daily counts**: Up to 1 million sessions and 1 million custom events per day, with up to 1,000 pageviews per generated session. Imports exceeding these limits fail with an error rather than silently dropping events.
+- **Event count**: Maximum 100 million generated events per import
+- **Umami archive size**: The extracted `website_event.csv` is limited to 512 MiB
 - **One at a time**: Only one import can be active (pending or processing) per project at a time
 - **Timestamps**: Events with invalid timestamps are skipped during import
 - **GA4 dimensions**: Google Analytics 4 imports are subject to API limitations — see the "What's not imported?" section under the Google Analytics 4 tab for details

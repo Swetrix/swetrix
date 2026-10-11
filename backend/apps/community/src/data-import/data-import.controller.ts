@@ -105,7 +105,15 @@ export class DataImportController {
     )
 
     const { encryptedRefreshToken, clientId, clientSecret } =
-      await this.ga4ImportService.consumeTokenForImport(uid, projectId)
+      await this.ga4ImportService
+        .consumeTokenForImport(uid, projectId)
+        .catch(async (error) => {
+          await this.dataImportService.deleteImportRecord(
+            projectId,
+            dataImport.id,
+          )
+          throw error
+        })
 
     try {
       await this.importQueue.add(
@@ -158,7 +166,8 @@ export class DataImportController {
   })
   @UseInterceptors(
     FileInterceptor('file', {
-      limits: { fileSize: MAX_FILE_SIZE },
+      // Multer rejects at the threshold, so allow files exactly at the limit.
+      limits: { fileSize: MAX_FILE_SIZE + 1 },
       storage: diskStorage({
         destination: (_req, _file, cb) => {
           fs.mkdirSync(IMPORT_TMP_DIR, { recursive: true })

@@ -1,5 +1,4 @@
-import * as fs from 'fs'
-import { parse } from 'csv-parse'
+import { readCsvRows } from './csv.utils'
 
 import {
   ImportMapper,
@@ -136,31 +135,33 @@ export class FathomMapper implements ImportMapper {
     let fileType: FathomFileType | null = null
     let headerChecked = false
 
-    const parser = fs.createReadStream(filePath).pipe(
-      parse({
-        bom: true,
-        columns: (headers) => {
-          const result = detectFileType(headers)
-          fileType = result.type
-          headerChecked = true
-          return result.normalized
-        },
-        skip_empty_lines: true,
-        trim: true,
-        relax_quotes: true,
-        relax_column_count: true,
-      }),
-    )
+    const parser = readCsvRows(filePath, {
+      bom: true,
+      columns: (headers) => {
+        const result = detectFileType(headers)
+        fileType = result.type
+        headerChecked = true
+        return result.normalized
+      },
+      skip_empty_lines: true,
+      trim: true,
+      relax_quotes: true,
+      relax_column_count: true,
+    })
 
     for await (const row of parser) {
       const datetime = normalizeNull(row.datetime)
       if (!datetime || !DATETIME_REGEX.test(datetime)) continue
 
-      const count = parseInt(
-        fileType === 'pageviews' ? row.pageviews : row.completions,
-        10,
-      )
-      if (!count || count <= 0) continue
+      const rawCount =
+        fileType === 'pageviews' ? row.pageviews : row.completions
+      const count = /^\d+$/.test(rawCount || '') ? Number(rawCount) : NaN
+      if (!Number.isSafeInteger(count) || count > 100_000_000) {
+        throw new ImportError(
+          'Fathom export contains an invalid or excessive event count.',
+        )
+      }
+      if (count === 0) continue
 
       const device = mapDevice(normalizeNull(row.device_type))
       const browser = mapBrowser(normalizeNull(row.browser), device)

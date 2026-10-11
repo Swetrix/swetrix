@@ -1,5 +1,4 @@
-import * as fs from 'fs'
-import { parse } from 'csv-parse'
+import { readCsvRows } from './csv.utils'
 
 import {
   ImportMapper,
@@ -99,19 +98,17 @@ export class SimpleAnalyticsMapper implements ImportMapper {
   ): AsyncIterable<AnalyticsImportRow> {
     let headerChecked = false
 
-    const parser = fs.createReadStream(filePath).pipe(
-      parse({
-        bom: true,
-        columns: (headers) => {
-          headerChecked = true
-          return validateHeaders(headers)
-        },
-        skip_empty_lines: true,
-        trim: true,
-        relax_quotes: true,
-        relax_column_count: true,
-      }),
-    )
+    const parser = readCsvRows(filePath, {
+      bom: true,
+      columns: (headers) => {
+        headerChecked = true
+        return validateHeaders(headers)
+      },
+      skip_empty_lines: true,
+      trim: true,
+      relax_quotes: true,
+      relax_column_count: true,
+    })
 
     for await (const row of parser) {
       if (row.is_robot === 'true') continue

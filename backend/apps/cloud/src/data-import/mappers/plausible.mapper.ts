@@ -1,8 +1,10 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import * as crypto from 'crypto'
-import { unzipSync, UnzipFileInfo } from 'fflate'
-import { parse as parseSync } from 'csv-parse/sync'
+import * as os from 'os'
+import { Unzip, UnzipInflate } from 'fflate'
+import { createInterface } from 'readline'
+import { readCsvRows } from './csv.utils'
 
 import {
   ImportMapper,
@@ -17,8 +19,8 @@ import {
 } from './mapper.utils'
 
 const MAX_PLAUSIBLE_ZIP_BYTES = 100 * 1024 * 1024
-const MAX_PLAUSIBLE_UNCOMPRESSED_BYTES = 500 * 1024 * 1024
-const MAX_CSV_BYTES = 50 * 1024 * 1024
+const MAX_PLAUSIBLE_UNCOMPRESSED_BYTES = 2 * 1024 * 1024 * 1024
+const MAX_DAILY_BYTES = 128 * 1024 * 1024
 const MIN_PAGE_GAP_SEC = 5
 const MAX_PAGE_GAP_SEC = 30 * 60
 const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/
@@ -153,7 +155,7 @@ function seedFromString(s: string): number {
 
 function toInt(value: string | undefined, fieldName = 'value'): number {
   if (value === undefined || value === null || value === '') return 0
-  const n = parseInt(value, 10)
+  const n = /^\d+$/.test(value) ? Number(value) : NaN
   if (!Number.isFinite(n) || Number.isNaN(n) || !Number.isSafeInteger(n)) {
     throw new ImportError(
       `Plausible export contains an invalid numeric ${fieldName}: ${value}`,
@@ -167,20 +169,22 @@ function toInt(value: string | undefined, fieldName = 'value'): number {
   return Math.min(n, MAX_SAFE_COUNT)
 }
 
-function parseCsv(bytes: Uint8Array): Record<string, string>[] {
-  if (bytes.length > MAX_CSV_BYTES) {
-    throw new ImportError(
-      `Plausible export contains a CSV larger than ${MAX_CSV_BYTES} bytes.`,
-    )
+async function* readDailyRows(
+  paths: string[],
+): AsyncIterable<Record<string, string>> {
+  for (const filePath of paths) {
+    const input = fs.createReadStream(filePath)
+    const lines = createInterface({ input, crlfDelay: Infinity })
+    input.on('error', (error) => lines.emit('error', error))
+    try {
+      for await (const line of lines) {
+        yield JSON.parse(line)
+      }
+    } finally {
+      lines.close()
+      input.destroy()
+    }
   }
-  return parseSync(Buffer.from(bytes), {
-    bom: true,
-    columns: true,
-    skip_empty_lines: true,
-    trim: true,
-    relax_quotes: true,
-    relax_column_count: true,
-  }) as Record<string, string>[]
 }
 
 function mapBrowser(raw: string | null, device: string | null): string | null {
@@ -413,89 +417,165 @@ export class PlausibleMapper implements ImportMapper {
   readonly provider = 'plausible'
   readonly expectedFileExtension = '.zip'
 
-  private extractCsvs(zipPath: string): Map<string, Uint8Array> {
-    const stat = fs.statSync(zipPath)
+  private async extractCsvs(
+    zipPath: string,
+    tempDir: string,
+  ): Promise<Map<string, string[]>> {
+    const stat = await fs.promises.stat(zipPath)
     if (stat.size > MAX_PLAUSIBLE_ZIP_BYTES) {
-      throw new ImportError(
-        `Plausible ZIP exceeds the ${MAX_PLAUSIBLE_ZIP_BYTES} byte limit.`,
-      )
+      throw new ImportError('Plausible ZIP exceeds the 100 MB upload limit.')
     }
 
-    const buf = fs.readFileSync(zipPath)
-
-    const matchedKeys = new Set<string>()
-    const nameToKey = new Map<string, string>()
+    const found = new Map<string, string[]>()
+    const openFiles = new Set<number>()
     let totalUncompressed = 0
-
-    const filter = (file: UnzipFileInfo): boolean => {
-      const base = path.basename(file.name).toLowerCase()
-      if (!base.endsWith('.csv')) return false
-      for (const [key, pattern] of Object.entries(FILE_PATTERNS)) {
-        if (matchedKeys.has(key)) continue
-        if (!pattern.test(file.name)) continue
-
-        const declaredSize = Number.isSafeInteger(file.originalSize)
-          ? file.originalSize
-          : -1
-        if (declaredSize < 0) {
-          throw new ImportError(
-            `Plausible ZIP entry ${file.name} reports an invalid uncompressed size.`,
-          )
-        }
-        if (declaredSize > MAX_CSV_BYTES) {
-          throw new ImportError(
-            `Plausible ZIP entry ${file.name} exceeds the ${MAX_CSV_BYTES} byte CSV limit (declared ${declaredSize}).`,
-          )
-        }
-        if (
-          totalUncompressed + declaredSize >
-          MAX_PLAUSIBLE_UNCOMPRESSED_BYTES
-        ) {
-          throw new ImportError(
-            `Plausible ZIP uncompressed size exceeds the ${MAX_PLAUSIBLE_UNCOMPRESSED_BYTES} byte limit.`,
-          )
-        }
-        totalUncompressed += declaredSize
-        matchedKeys.add(key)
-        nameToKey.set(file.name, key)
-        return true
+    let entryCount = 0
+    let pendingEntries = 0
+    const unzipper = new Unzip((file) => {
+      if (++entryCount > 1000) {
+        throw new ImportError('Plausible ZIP contains too many files.')
       }
-      return false
-    }
-
-    let entries: Record<string, Uint8Array>
-    try {
-      entries = unzipSync(
-        new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength),
-        { filter },
+      const key = Object.keys(FILE_PATTERNS).find((key) =>
+        FILE_PATTERNS[key].test(file.name),
       )
-    } catch (err) {
-      if (err instanceof ImportError) throw err
-      throw new ImportError(
-        'Could not read the uploaded file as a ZIP archive. Please upload the export ZIP from Plausible.',
-      )
-    }
-
-    const found = new Map<string, Uint8Array>()
-    for (const [name, data] of Object.entries(entries)) {
-      const key = nameToKey.get(name)
-      if (!key || found.has(key)) continue
-      if (data.byteLength > MAX_CSV_BYTES) {
+      if (file.originalSize > MAX_PLAUSIBLE_UNCOMPRESSED_BYTES) {
         throw new ImportError(
-          `Plausible ZIP entry ${name} exceeds the ${MAX_CSV_BYTES} byte CSV limit after decompression.`,
+          'Plausible ZIP exceeds the 2 GiB uncompressed limit. Please export a shorter date range.',
         )
       }
-      found.set(key, data)
-    }
+      let fd: number | undefined
+      if (key) {
+        const csvPath = path.join(tempDir, `${entryCount}.csv`)
+        fd = fs.openSync(csvPath, 'wx')
+        openFiles.add(fd)
+        found.set(key, [...(found.get(key) ?? []), csvPath])
+      }
+      pendingEntries++
+      file.ondata = (error, chunk, final) => {
+        if (error) throw error
+        totalUncompressed += chunk.length
+        if (totalUncompressed > MAX_PLAUSIBLE_UNCOMPRESSED_BYTES) {
+          throw new ImportError(
+            'Plausible ZIP exceeds the 2 GiB uncompressed limit. Please export a shorter date range.',
+          )
+        }
+        if (fd !== undefined) {
+          let offset = 0
+          while (offset < chunk.length) {
+            offset += fs.writeSync(fd, chunk, offset, chunk.length - offset)
+          }
+          if (final) {
+            fs.closeSync(fd)
+            openFiles.delete(fd)
+            fd = undefined
+          }
+        }
+        if (final) pendingEntries--
+      }
+      file.start()
+    })
+    unzipper.register(UnzipInflate)
 
+    try {
+      for await (const chunk of fs.createReadStream(zipPath, {
+        highWaterMark: 16 * 1024,
+      })) {
+        unzipper.push(chunk as Buffer)
+      }
+      unzipper.push(new Uint8Array(0), true)
+      if (pendingEntries > 0) throw new Error('Incomplete ZIP entry')
+    } catch (error) {
+      if (error instanceof ImportError) throw error
+      throw new ImportError(
+        'Could not read the uploaded ZIP archive. Please upload the full export ZIP from Plausible again.',
+      )
+    } finally {
+      for (const fd of openFiles) fs.closeSync(fd)
+    }
+    if (!found.has('visitors')) {
+      throw new ImportError(
+        'ZIP does not contain imported_visitors_*.csv. Please upload the full export ZIP from Plausible.',
+      )
+    }
     return found
   }
 
-  private buildDailyData(
-    csvs: Map<string, Uint8Array>,
-  ): Map<string, DailyData> {
-    const visitorsBytes = csvs.get('visitors')
-    if (!visitorsBytes) {
+  private async partitionCsvs(csvs: Map<string, string[]>, tempDir: string) {
+    const days = new Map<string, Map<string, string[]>>()
+    const daySizes = new Map<string, number>()
+    const buffers = new Map<string, string[]>()
+    let bufferedBytes = 0
+    const flush = async () => {
+      for (const [filePath, rows] of buffers) {
+        await fs.promises.appendFile(filePath, rows.join(''))
+      }
+      buffers.clear()
+      bufferedBytes = 0
+    }
+    const required: Record<string, string[]> = {
+      visitors: ['date', 'visits', 'pageviews'],
+      pages: ['date', 'page', 'pageviews'],
+      browsers: ['date', 'browser', 'visits'],
+      devices: ['date', 'device', 'visits'],
+      operatingSystems: ['date', 'operating_system', 'visits'],
+      locations: ['date', 'country', 'visits'],
+      sources: ['date', 'source', 'visits'],
+      entryPages: ['date', 'entry_page', 'entrances'],
+      exitPages: ['date', 'exit_page', 'exits'],
+      customEvents: ['date', 'name', 'events'],
+    }
+    for (const [key, paths] of csvs) {
+      for (const csvPath of paths) {
+        for await (const row of readCsvRows(csvPath, {
+          columns: (headers: string[]) => {
+            const missing = required[key].filter(
+              (column) => !headers.includes(column),
+            )
+            if (missing.length)
+              throw new ImportError(
+                `Plausible ${key} CSV is missing columns: ${missing.join(', ')}.`,
+              )
+            return headers
+          },
+        })) {
+          const date = normalizeNull(row.date)
+          if (!date || !DATE_REGEX.test(date)) continue
+          const parsedDate = new Date(`${date}T00:00:00Z`)
+          if (
+            !Number.isFinite(parsedDate.getTime()) ||
+            parsedDate.toISOString().slice(0, 10) !== date
+          )
+            continue
+          const line = `${JSON.stringify(row)}\n`
+          const bytes = Buffer.byteLength(line)
+          const daySize = (daySizes.get(date) ?? 0) + bytes
+          if (daySize > MAX_DAILY_BYTES)
+            throw new ImportError(
+              `Plausible data for ${date} exceeds the 128 MiB daily processing limit. Please contact support.`,
+            )
+          daySizes.set(date, daySize)
+          const dayFiles = days.get(date) ?? new Map<string, string[]>()
+          const filePath = path.join(tempDir, `${date}-${key}.jsonl`)
+          dayFiles.set(key, [filePath])
+          days.set(date, dayFiles)
+          const rows = buffers.get(filePath) ?? []
+          rows.push(line)
+          buffers.set(filePath, rows)
+          bufferedBytes += bytes
+          if (bufferedBytes >= 1024 * 1024) await flush()
+        }
+        await fs.promises.unlink(csvPath)
+      }
+    }
+    await flush()
+    return days
+  }
+
+  private async buildDailyData(
+    csvs: Map<string, string[]>,
+  ): Promise<Map<string, DailyData>> {
+    const visitorsFiles = csvs.get('visitors')
+    if (!visitorsFiles) {
       throw new ImportError(
         'ZIP does not contain imported_visitors_*.csv. Please upload the full export ZIP from Plausible.',
       )
@@ -530,20 +610,21 @@ export class PlausibleMapper implements ImportMapper {
       return d
     }
 
-    for (const row of parseCsv(visitorsBytes)) {
+    for await (const row of readDailyRows(visitorsFiles)) {
       const date = normalizeNull(row.date)
       if (!date || !DATE_REGEX.test(date)) continue
       const visits = toInt(row.visits, 'visits')
       const pageviews = toInt(row.pageviews, 'pageviews')
-      if (visits <= 0 && pageviews <= 0) continue
       const day = ensureDay(date)
       day.visitors = {
         date,
-        visitors: toInt(row.visitors, 'visitors'),
-        pageviews,
-        visits,
-        bounces: toInt(row.bounces, 'bounces'),
-        visit_duration: toInt(row.visit_duration, 'visit_duration'),
+        visitors: day.visitors.visitors + toInt(row.visitors, 'visitors'),
+        pageviews: day.visitors.pageviews + pageviews,
+        visits: day.visitors.visits + visits,
+        bounces: day.visitors.bounces + toInt(row.bounces, 'bounces'),
+        visit_duration:
+          day.visitors.visit_duration +
+          toInt(row.visit_duration, 'visit_duration'),
       }
     }
 
@@ -553,9 +634,9 @@ export class PlausibleMapper implements ImportMapper {
       )
     }
 
-    const pagesBytes = csvs.get('pages')
-    if (pagesBytes) {
-      for (const row of parseCsv(pagesBytes)) {
+    const pagesFiles = csvs.get('pages')
+    if (pagesFiles) {
+      for await (const row of readDailyRows(pagesFiles)) {
         const date = normalizeNull(row.date)
         if (!date || !days.has(date)) continue
         const pageviews = toInt(row.pageviews)
@@ -568,9 +649,9 @@ export class PlausibleMapper implements ImportMapper {
       }
     }
 
-    const browsersBytes = csvs.get('browsers')
-    if (browsersBytes) {
-      for (const row of parseCsv(browsersBytes)) {
+    const browsersFiles = csvs.get('browsers')
+    if (browsersFiles) {
+      for await (const row of readDailyRows(browsersFiles)) {
         const date = normalizeNull(row.date)
         if (!date || !days.has(date)) continue
         const visits = toInt(row.visits)
@@ -583,9 +664,9 @@ export class PlausibleMapper implements ImportMapper {
       }
     }
 
-    const devicesBytes = csvs.get('devices')
-    if (devicesBytes) {
-      for (const row of parseCsv(devicesBytes)) {
+    const devicesFiles = csvs.get('devices')
+    if (devicesFiles) {
+      for await (const row of readDailyRows(devicesFiles)) {
         const date = normalizeNull(row.date)
         if (!date || !days.has(date)) continue
         const visits = toInt(row.visits)
@@ -597,9 +678,9 @@ export class PlausibleMapper implements ImportMapper {
       }
     }
 
-    const osBytes = csvs.get('operatingSystems')
-    if (osBytes) {
-      for (const row of parseCsv(osBytes)) {
+    const osFiles = csvs.get('operatingSystems')
+    if (osFiles) {
+      for await (const row of readDailyRows(osFiles)) {
         const date = normalizeNull(row.date)
         if (!date || !days.has(date)) continue
         const visits = toInt(row.visits)
@@ -612,9 +693,9 @@ export class PlausibleMapper implements ImportMapper {
       }
     }
 
-    const locationsBytes = csvs.get('locations')
-    if (locationsBytes) {
-      for (const row of parseCsv(locationsBytes)) {
+    const locationsFiles = csvs.get('locations')
+    if (locationsFiles) {
+      for await (const row of readDailyRows(locationsFiles)) {
         const date = normalizeNull(row.date)
         if (!date || !days.has(date)) continue
         const visits = toInt(row.visits)
@@ -627,9 +708,9 @@ export class PlausibleMapper implements ImportMapper {
       }
     }
 
-    const sourcesBytes = csvs.get('sources')
-    if (sourcesBytes) {
-      for (const row of parseCsv(sourcesBytes)) {
+    const sourcesFiles = csvs.get('sources')
+    if (sourcesFiles) {
+      for await (const row of readDailyRows(sourcesFiles)) {
         const date = normalizeNull(row.date)
         if (!date || !days.has(date)) continue
         const visits = toInt(row.visits)
@@ -647,9 +728,9 @@ export class PlausibleMapper implements ImportMapper {
       }
     }
 
-    const entryPagesBytes = csvs.get('entryPages')
-    if (entryPagesBytes) {
-      for (const row of parseCsv(entryPagesBytes)) {
+    const entryPagesFiles = csvs.get('entryPages')
+    if (entryPagesFiles) {
+      for await (const row of readDailyRows(entryPagesFiles)) {
         const date = normalizeNull(row.date)
         if (!date || !days.has(date)) continue
         const entrances = toInt(row.entrances)
@@ -661,9 +742,9 @@ export class PlausibleMapper implements ImportMapper {
       }
     }
 
-    const exitPagesBytes = csvs.get('exitPages')
-    if (exitPagesBytes) {
-      for (const row of parseCsv(exitPagesBytes)) {
+    const exitPagesFiles = csvs.get('exitPages')
+    if (exitPagesFiles) {
+      for await (const row of readDailyRows(exitPagesFiles)) {
         const date = normalizeNull(row.date)
         if (!date || !days.has(date)) continue
         const exits = toInt(row.exits)
@@ -675,9 +756,9 @@ export class PlausibleMapper implements ImportMapper {
       }
     }
 
-    const customEventsBytes = csvs.get('customEvents')
-    if (customEventsBytes) {
-      for (const row of parseCsv(customEventsBytes)) {
+    const customEventsFiles = csvs.get('customEvents')
+    if (customEventsFiles) {
+      for await (const row of readDailyRows(customEventsFiles)) {
         const date = normalizeNull(row.date)
         if (!date || !days.has(date)) continue
         const name = normalizeNull(row.name)
@@ -695,22 +776,57 @@ export class PlausibleMapper implements ImportMapper {
     pid: string,
     importID: number,
   ): AsyncIterable<AnalyticsImportRow> {
-    const csvs = this.extractCsvs(filePath)
-    const days = this.buildDailyData(csvs)
-    const sortedDates = Array.from(days.keys()).sort()
-
-    let yielded = 0
-    for (const date of sortedDates) {
-      const daily = days.get(date)!
-      for (const row of this.synthesizeDay(daily, pid, importID)) {
-        yielded += 1
-        if (yielded > MAX_GENERATED_ROWS_PER_IMPORT) {
-          throw new ImportError(
-            `Plausible export would generate more than ${MAX_GENERATED_ROWS_PER_IMPORT} rows. Please split the export into smaller archives and re-import.`,
+    const tempDir = await fs.promises.mkdtemp(
+      path.join(os.tmpdir(), 'swetrix-plausible-'),
+    )
+    try {
+      const csvs = await this.extractCsvs(filePath, tempDir)
+      const partitions = await this.partitionCsvs(csvs, tempDir)
+      let yielded = 0
+      let processedDays = 0
+      for (const date of Array.from(partitions.keys()).sort()) {
+        const files = partitions.get(date)!
+        if (!files.has('visitors')) continue
+        const days = await this.buildDailyData(files)
+        for (const daily of days.values()) {
+          processedDays++
+          const events = daily.customEvents.reduce(
+            (total, event) => total + event.events,
+            0,
           )
+          if (
+            daily.visitors.visits > MAX_SESSIONS_PER_DAY ||
+            events > MAX_EVENTS_PER_DAY ||
+            daily.visitors.pageviews >
+              Math.max(daily.visitors.visits, 1) * MAX_PAGEVIEWS_PER_SESSION
+          ) {
+            throw new ImportError(
+              `Plausible data for ${date} exceeds the daily event processing limits. Please contact support.`,
+            )
+          }
+          if (
+            yielded + daily.visitors.pageviews + events >
+            MAX_GENERATED_ROWS_PER_IMPORT
+          ) {
+            throw new ImportError(
+              `Plausible export would generate more than ${MAX_GENERATED_ROWS_PER_IMPORT} rows. Please export a shorter date range.`,
+            )
+          }
+          for (const row of this.synthesizeDay(daily, pid, importID)) {
+            yielded++
+            if (yielded % 5000 === 0)
+              await new Promise<void>((resolve) => setImmediate(resolve))
+            yield row
+          }
         }
-        yield row
+        for (const paths of files.values()) {
+          for (const filePath of paths) await fs.promises.unlink(filePath)
+        }
       }
+      if (!processedDays)
+        throw new ImportError('Plausible export contains no valid daily rows.')
+    } finally {
+      await fs.promises.rm(tempDir, { recursive: true, force: true })
     }
   }
 
@@ -728,7 +844,12 @@ export class PlausibleMapper implements ImportMapper {
 
     if (pageviews === 0 && daily.customEvents.length === 0) return
 
-    const sessionCount = visits > 0 ? visits : pageviews > 0 ? 1 : 0
+    const sessionCount =
+      visits > 0
+        ? visits
+        : pageviews > 0 || daily.customEvents.length > 0
+          ? 1
+          : 0
     if (sessionCount === 0) return
 
     const pools = buildPools(daily, importID, date)
@@ -773,7 +894,7 @@ export class PlausibleMapper implements ImportMapper {
       const location = pickFromPool(pools.locations, i)
       const source = pickFromPool(pools.sources, i)
 
-      const startSec = dayStartSec + i * sessionSpacingSec
+      const startSec = dayStartSec + Math.floor((i * 86400) / sessionCount)
 
       sessions.push({
         psid,

@@ -2,7 +2,8 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as os from 'os'
 import { Unzip, UnzipInflate } from 'fflate'
-import { parse } from 'csv-parse'
+import { randomUUID } from 'crypto'
+import { readCsvRows } from './csv.utils'
 
 import {
   ImportMapper,
@@ -139,7 +140,7 @@ export class UmamiMapper implements ImportMapper {
   readonly expectedFileExtension = '.zip'
 
   private async extractCsvFromZip(zipPath: string): Promise<string> {
-    const tempCsv = path.join(os.tmpdir(), `swetrix-umami-${Date.now()}.csv`)
+    const tempCsv = path.join(os.tmpdir(), `swetrix-umami-${randomUUID()}.csv`)
 
     return new Promise((resolve, reject) => {
       const zipStream = fs.createReadStream(zipPath)
@@ -200,7 +201,25 @@ export class UmamiMapper implements ImportMapper {
       }
 
       unzipper.onfile = (file) => {
-        if (path.basename(file.name) !== WEBSITE_EVENT_CSV || foundEntry) return
+        if (path.basename(file.name) !== WEBSITE_EVENT_CSV || foundEntry) {
+          let ignoredBytes = 0
+          file.ondata = (error, chunk) => {
+            if (error) {
+              fail(error)
+              return
+            }
+            ignoredBytes += chunk.length
+            if (ignoredBytes > MAX_UMAMI_CSV_BYTES) {
+              fail(
+                new ImportError(
+                  'Umami ZIP contains an entry above the 512 MiB decompression limit.',
+                ),
+              )
+            }
+          }
+          file.start()
+          return
+        }
 
         foundEntry = true
 
@@ -318,15 +337,13 @@ export class UmamiMapper implements ImportMapper {
     }
 
     try {
-      const parser = fs.createReadStream(csvPath).pipe(
-        parse({
-          columns: true,
-          skip_empty_lines: true,
-          trim: true,
-          relax_quotes: true,
-          relax_column_count: true,
-        }),
-      )
+      const parser = readCsvRows(csvPath, {
+        columns: true,
+        skip_empty_lines: true,
+        trim: true,
+        relax_quotes: true,
+        relax_column_count: true,
+      })
 
       for await (const row of parser) {
         const sessionId = normalizeNull(row.session_id)
