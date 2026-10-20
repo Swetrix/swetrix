@@ -2104,6 +2104,9 @@
       "solve_time": "Solve times",
       "captcha_reason": "Auto difficulty reasons"
     },
+    "deviceLabels": {
+      "xr": "VR / AR headset"
+    },
     "mapping": {
       "cc": "Country",
       "rg": "Region",

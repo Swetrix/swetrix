@@ -17,6 +17,7 @@ import {
   SignInIcon,
   UserListIcon,
   WarningIcon,
+  VirtualRealityIcon,
 } from '@phosphor-icons/react'
 import { useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
@@ -365,6 +366,7 @@ const DeviceIcon = ({ device }: { device: string | null }) => {
   const deviceLower = device?.toLowerCase() || ''
   if (deviceLower === 'mobile') return <DeviceMobileIcon className='h-4 w-4' />
   if (deviceLower === 'tablet') return <DeviceTabletIcon className='h-4 w-4' />
+  if (deviceLower === 'xr') return <VirtualRealityIcon className='h-4 w-4' />
   return <MonitorIcon className='h-4 w-4' />
 }
 
@@ -1049,7 +1051,9 @@ export const ProfileDetails = ({
                   details.device ? (
                     <>
                       <DeviceIcon device={details.device} />
-                      {_capitalize(details.device)}
+                      {details.device.toLowerCase() === 'xr'
+                        ? t('project.deviceLabels.xr')
+                        : _capitalize(details.device)}
                     </>
                   ) : (
                     '-'

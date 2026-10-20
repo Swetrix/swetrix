@@ -2105,6 +2105,9 @@
       "solve_time": "Temps de résolution",
       "captcha_reason": "Raisons de la difficulté automatique"
     },
+    "deviceLabels": {
+      "xr": "Casque VR / AR"
+    },
     "mapping": {
       "cc": "Pays",
       "rg": "Région",

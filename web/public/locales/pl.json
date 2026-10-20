@@ -2106,6 +2106,9 @@
       "solve_time": "Czasy rozwiązywania",
       "captcha_reason": "Powody automatycznej trudności"
     },
+    "deviceLabels": {
+      "xr": "Gogle VR / AR"
+    },
     "mapping": {
       "cc": "Kraj",
       "rg": "Region",

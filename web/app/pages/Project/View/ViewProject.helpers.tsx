@@ -39,6 +39,7 @@ import {
   DevicesIcon,
   TelevisionIcon,
   WatchIcon,
+  VirtualRealityIcon,
   TranslateIcon,
   ArrowCircleRightIcon,
 } from '@phosphor-icons/react'
@@ -2391,6 +2392,7 @@ export const deviceIconMapping = {
   console: <GameControllerIcon className='size-5' />,
   wearable: <WatchIcon className='size-5' />,
   embedded: <CpuIcon className='size-5' />,
+  xr: <VirtualRealityIcon className='size-5' />,
 }
 
 // This function return date using the same format as the backend
@@ -2535,7 +2537,7 @@ export const getDeviceRowMapper = (
         <>
           {icon}
           &nbsp;
-          {entryName}
+          {entryName === 'xr' ? t('project.deviceLabels.xr') : entryName}
         </>
       )
     }

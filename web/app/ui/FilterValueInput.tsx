@@ -34,6 +34,7 @@ import {
   TelevisionIcon,
   WarningIcon,
   WatchIcon,
+  VirtualRealityIcon,
 } from '@phosphor-icons/react'
 import {
   useState,
@@ -98,6 +99,7 @@ const deviceIconMapping: Record<string, ReactNode> = {
   console: <GameControllerIcon className='size-4' />,
   wearable: <WatchIcon className='size-4' />,
   embedded: <CpuIcon className='size-4' />,
+  xr: <VirtualRealityIcon className='size-4' />,
 }
 
 // Special separator for combined version values (e.g., "Chrome|||120.5")
@@ -170,6 +172,9 @@ const FilterValueInput = ({
     (item: string) => {
       if (column === 'country') {
         return countries.getName(item, language) || item
+      }
+      if (column === 'device' && item === 'xr') {
+        return t('project.deviceLabels.xr')
       }
       // Handle combined version values (e.g., "Chrome|||120.5" -> "Chrome 120.5")
       if (column === 'browser_version' || column === 'os_version') {
