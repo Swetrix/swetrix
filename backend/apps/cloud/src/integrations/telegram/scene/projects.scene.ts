@@ -1,4 +1,4 @@
-import { Ctx, Hears, On, Scene, SceneEnter } from 'nestjs-telegraf'
+import { Injectable } from '@nestjs/common'
 import { Markup } from 'telegraf'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
@@ -7,14 +7,13 @@ import { ProjectService } from '../../../project/project.service'
 import { UserService } from '../../../user/user.service'
 import { AnalyticsService } from '../../../analytics/analytics.service'
 import { Context } from '../interface/context.interface'
-import { START_SCENE_ID } from './start.scene'
+import { START_SCENE_ID } from '../telegram.constants'
 import { TelegramService } from '../telegram.service'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
 
-export const PROJECTS_SCENE_ID = 'projects'
-@Scene(PROJECTS_SCENE_ID)
+@Injectable()
 export class ProjectsScene {
   constructor(
     private readonly userService: UserService,
@@ -23,8 +22,7 @@ export class ProjectsScene {
     private readonly telegramService: TelegramService,
   ) {}
 
-  @SceneEnter()
-  async onSceneEnter(@Ctx() context: Context) {
+  async onSceneEnter(context: Context) {
     const user = await this.userService.getUserByTelegramId(context.from.id)
 
     if (!user) {
@@ -53,8 +51,7 @@ export class ProjectsScene {
     )
   }
 
-  @On('text')
-  async onText(@Ctx() context: Context & { message: { text: string } }) {
+  async onText(context: Context & { message: { text: string } }) {
     if (context.message.text === '🔙 Back') {
       await context.scene.enter(START_SCENE_ID)
       return
@@ -119,8 +116,7 @@ export class ProjectsScene {
     await context.replyWithMarkdown(text)
   }
 
-  @Hears('🔙 Back')
-  async onBack(@Ctx() context: Context) {
+  async onBack(context: Context) {
     await context.scene.enter(START_SCENE_ID)
   }
 }

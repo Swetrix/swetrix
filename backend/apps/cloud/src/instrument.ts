@@ -9,7 +9,8 @@ if (process.env.SENTRY_ENABLED === 'true') {
   Sentry.init({
     dsn: process.env.SENTRY_DSN,
     environment: process.env.NODE_ENV || 'development',
-    profilesSampleRate: isProduction ? 0.2 : 1,
+    profileSessionSampleRate: isProduction ? 0.2 : 1,
+    profileLifecycle: 'trace',
     integrations: [nodeProfilingIntegration()],
     tracesSampler: ({ name, attributes, parentSampled }) => {
       // Do not sample Telegram webhook-related traces

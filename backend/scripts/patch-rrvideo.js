@@ -5,7 +5,7 @@ const packagePath = require.resolve('rrvideo/package.json')
 const packageDir = path.dirname(packagePath)
 const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8'))
 
-if (packageJson.version !== '2.1.1') {
+if (packageJson.version !== '2.1.7') {
   throw new Error(`Unsupported rrvideo version: ${packageJson.version}`)
 }
 

@@ -1,20 +1,18 @@
-import { Ctx, Hears, Scene, SceneEnter } from 'nestjs-telegraf'
+import { Injectable } from '@nestjs/common'
 import { Markup } from 'telegraf'
 import { UserService } from '../../../user/user.service'
 import { Context } from '../interface/context.interface'
-import { START_SCENE_ID } from './start.scene'
+import { START_SCENE_ID } from '../telegram.constants'
 import { TelegramService } from '../telegram.service'
 
-export const UNLINK_ACCOUNT_SCENE_ID = 'unlink-account'
-@Scene(UNLINK_ACCOUNT_SCENE_ID)
+@Injectable()
 export class UnlinkAccountScene {
   constructor(
     private readonly telegramService: TelegramService,
     private readonly userService: UserService,
   ) {}
 
-  @SceneEnter()
-  async onSceneEnter(@Ctx() context: Context) {
+  async onSceneEnter(context: Context) {
     const user = await this.userService.getUserByTelegramId(context.from.id)
 
     if (!user) {
@@ -30,8 +28,7 @@ export class UnlinkAccountScene {
     )
   }
 
-  @Hears('✅ Yes')
-  async onYes(@Ctx() context: Context) {
+  async onYes(context: Context) {
     const user = await this.userService.getUserByTelegramId(context.from.id)
 
     if (!user) {
@@ -44,8 +41,7 @@ export class UnlinkAccountScene {
     await context.scene.enter(START_SCENE_ID)
   }
 
-  @Hears('❌ No')
-  async onNo(@Ctx() context: Context) {
+  async onNo(context: Context) {
     const user = await this.userService.getUserByTelegramId(context.from.id)
 
     if (!user) {

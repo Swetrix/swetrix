@@ -1,19 +1,18 @@
 import { forwardRef, Inject, Injectable, Optional } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { InjectBot } from 'nestjs-telegraf'
 import { Markup, Telegraf } from 'telegraf'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { Context } from './interface/context.interface'
 import { Message } from './entities/message.entity'
 import { UserService } from '../../user/user.service'
-import { ExtraReplyMessage } from 'telegraf/typings/telegram-types'
+import type { Convenience } from 'telegraf/types'
 import { NotificationChannelService } from '../../notification-channel/notification-channel.service'
 
 @Injectable()
 export class TelegramService {
   constructor(
-    @Optional() @InjectBot() private readonly bot: Telegraf<Context>,
+    @Optional() @Inject(Telegraf) private readonly bot: Telegraf<Context>,
     private readonly userService: UserService,
     private readonly configService: ConfigService,
     @InjectRepository(Message)
@@ -29,7 +28,7 @@ export class TelegramService {
     )
 
     let text = ''
-    let extra: ExtraReplyMessage = {}
+    let extra: Convenience.ExtraReplyMessage = {}
 
     if (!user) {
       text =
@@ -135,7 +134,11 @@ export class TelegramService {
     return this.notificationChannelService
   }
 
-  async addMessage(chatId: string, text: string, extra?: ExtraReplyMessage) {
+  async addMessage(
+    chatId: string,
+    text: string,
+    extra?: Convenience.ExtraReplyMessage,
+  ) {
     await this.messageRepository.save({ chatId, text, extra })
   }
 
@@ -167,7 +170,7 @@ export class TelegramService {
     messageId: string,
     chatId: string,
     text: string,
-    extra?: ExtraReplyMessage,
+    extra?: Convenience.ExtraReplyMessage,
   ) {
     if (
       this.configService.get<string>('ENABLE_INTEGRATIONS') !== 'true' &&
