@@ -74,7 +74,6 @@
     "vaul": "^1.1.2"
   },
   "devDependencies": {
-    "@crowdin/crowdin-api-client": "^1.59.1",
     "@google/genai": "^2.30.0",
     "@react-router/dev": "^8.5.0",
     "@rrweb/types": "^2.1.7",

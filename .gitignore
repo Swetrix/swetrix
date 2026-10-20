@@ -61,6 +61,7 @@ backend/.yarnrc.yml
 web/build
 web/public/build
 crowdin.yml
+web/scripts/translation-state.json.lock
 .cache
 web/vite.config.ts.timestamp*
 web/.react-router/

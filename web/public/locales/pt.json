@@ -1504,6 +1504,7 @@
     "totalConversions": "Total de conversões",
     "variantsCount": "Variantes",
     "variantsCountLabel_one": "1 variante",
+    "variantsCountLabel_many": "{{count}} variantes",
     "variantsCountLabel_other": "{{count}} variantes",
     "confidenceLevel": "Nível de confiança",
     "winner": "Vencedor",
@@ -2557,6 +2558,7 @@
       },
       "botProtectionReport": {
         "subtitle_one": "requisição de bot bloqueada",
+        "subtitle_many": "requisições de bot bloqueadas",
         "subtitle_other": "requisições de bot bloqueadas",
         "loading": "Carregando relatório de proteção contra bots",
         "classification": "Classificação",
@@ -2881,6 +2883,7 @@
         "getProfilesOverview": "Visão geral dos perfis obtida"
       },
       "howIGotThis_one": "Como cheguei aqui · 1 passo",
+      "howIGotThis_many": "Como cheguei a isso · {{count}} etapas",
       "howIGotThis_other": "Como cheguei aqui · {{count}} passos",
       "noParameters": "Sem parâmetros",
       "params": {
@@ -3263,8 +3266,10 @@
     "selectedPlanWithEvents": "{{plan}}, {{events}} eventos",
     "eventsWithReplay": "eventos, {{replayQuota}}",
     "websiteCount_one": "{{count}} site",
+    "websiteCount_many": "{{count}} sites",
     "websiteCount_other": "{{count}} sites",
     "teamMemberCount_one": "{{count}} membro",
+    "teamMemberCount_many": "{{count}} membros",
     "teamMemberCount_other": "{{count}} membros",
     "intervals": {
       "month": "mês",
@@ -3772,6 +3777,7 @@
     "searchProjects": "Pesquisar projetos",
     "noProjects": "Nenhum projeto encontrado",
     "projectsSelected_one": "{{count}} projeto selecionado",
+    "projectsSelected_many": "{{count}} projetos selecionados",
     "projectsSelected_other": "{{count}} projetos selecionados",
     "allProjectsHint": "Inclui todos os projetos de sua propriedade agora e qualquer um que você criar depois.",
     "permissions": "Permissões",
@@ -3801,6 +3807,7 @@
     "revoke": "Revogar",
     "fullAccess": "Acesso total à API",
     "scopeCount_one": "{{count}} grupo de permissões",
+    "scopeCount_many": "{{count}} grupos de permissões",
     "scopeCount_other": "{{count}} grupos de permissão",
     "unrestrictedHint": "Esta chave retém seu acesso original a todos os recursos ativados por API. Edite suas permissões para limitar o acesso.",
     "rotateTitle": "Rotacionar “{{name}}”?",

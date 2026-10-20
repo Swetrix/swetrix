@@ -1836,7 +1836,7 @@
       "filterNoKV": "Für das Aggregat \"{{customEventName}}\" gilt \"{{metricKey}}\"",
       "filterK": "Für das Aggregat \"{{customEventName}}\" gilt \"{{metricKey}}\", wobei jeder Schlüssel \"{{metaKey}}\" ist",
       "filterV": "Für das Aggregat \"{{customEventName}}\" gilt \"{{metricKey}}\", wobei jeder Wert \"{{metaValue}}\" ist",
-      "filterKV": "Der Wert für das Aggregat \"{{customEventName}}\" mit dem Schlüssel \"{{metaKey}}\" ist \"{{metaValue}}\""
+      "filterKV": "Für \"{{customEventName}}\" aggregiere \"{{metricKey}}\", wo Schlüssel \"{{metaKey}}\" \"{{metaValue}}\" ist"
     },
     "noSegmentsYet": "Noch keine Segmente",
     "metaValueType": {
