@@ -32,9 +32,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   redirectIfNotAuthenticated(request)
   const origin = request.headers.get('origin')
+  const fetchSite = request.headers.get('sec-fetch-site')
   if (
-    request.headers.get('sec-fetch-site') === 'cross-site' ||
-    (origin && origin !== new URL(request.url).origin) ||
+    fetchSite === 'cross-site' ||
+    (fetchSite !== 'same-origin' &&
+      origin &&
+      origin !== new URL(request.url).origin) ||
     !request.headers.get('content-type')?.startsWith('application/json')
   ) {
     return data(
