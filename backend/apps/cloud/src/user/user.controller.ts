@@ -99,6 +99,10 @@ const formatUsageInfo = (
 
   return {
     ...usage,
+    outboundLinks: usage.outboundLinks || 0,
+    outboundLinksPerc: usage.total
+      ? _round(((usage.outboundLinks || 0) / usage.total) * 100, 2)
+      : 0,
     trafficPerc: usage.total
       ? _round((usage.traffic / usage.total) * 100, 2)
       : 0,

@@ -14,6 +14,7 @@ export interface V2DimensionDef {
   extraFields?: V2DimensionExtraField[]
   excludeNull?: boolean
   filterOnly?: boolean
+  breakdownOnly?: boolean
   virtual?: 'entry_page' | 'exit_page'
   extraWhere?: string
   description: string

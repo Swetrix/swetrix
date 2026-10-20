@@ -13,6 +13,7 @@ import { PID_REGEX } from '../../common/constants'
 export const DATA_DELETION_EVENT_TYPES = [
   'pageview',
   'custom_event',
+  'outbound',
   'error',
   'performance',
   'captcha',

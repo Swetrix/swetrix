@@ -75,6 +75,31 @@ describe.each([
     expect(rows.every((row) => row.data.importID === 7)).toBe(true)
   })
 
+  it('imports Plausible outbound destinations separately without losing counts', async () => {
+    const file = archive({
+      'imported_visitors.csv': visitors,
+      'imported_custom_events.csv':
+        'date,name,link_url,events\n2024-01-01,Outbound Link: Click,https://tickets.example.com/event,3\n2024-01-01,Outbound Link: Click,,2\n2024-01-01,Signup,,1\n',
+    })
+    const rows = await collect(
+      new Plausible().createRowStream(file, 'testproject1', 7),
+    )
+    const outbound = rows.filter((row) => row.type === 'outbound')
+    expect(outbound).toHaveLength(5)
+    expect(
+      outbound.filter(
+        (row) => row.data.outbound_url === 'https://tickets.example.com/event',
+      ),
+    ).toHaveLength(3)
+    expect(
+      outbound.filter((row) => row.data.outbound_url === null),
+    ).toHaveLength(2)
+    expect(
+      outbound.every((row) => row.data.importID === 7 && !row.data.event_name),
+    ).toBe(true)
+    expect(rows.filter((row) => row.type === 'custom_event')).toHaveLength(1)
+  })
+
   it('handles a 57 MiB ZIP containing a CSV above the former 50 MiB limit', async () => {
     const padding = 'x'.repeat(2000)
     const record = `2024-01-01,example.com,/large,1,${padding}\n`

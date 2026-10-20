@@ -843,6 +843,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const result = await serverFetch(request, `data-import/${id}/upload`, {
         method: 'POST',
         body: proxyForm,
+        timeoutMs: 240000,
       })
 
       if (result.error) {

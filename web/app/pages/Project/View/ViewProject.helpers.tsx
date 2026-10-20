@@ -2330,6 +2330,7 @@ const typeNameMapping = (t: typeof i18next.t) => ({
   city: t('project.mapping.ct'),
   page: t('project.mapping.pg'),
   title: t('project.mapping.title'),
+  outbound_link: t('project.outboundLinks'),
   query: t('project.seo.query'),
   entry_page: t('project.entryPages'),
   exit_page: t('project.exitPages'),

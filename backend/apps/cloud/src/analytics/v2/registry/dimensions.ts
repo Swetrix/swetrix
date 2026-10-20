@@ -10,6 +10,13 @@ const GEO_TYPES: V2DimensionDef['types'] = ['traffic', 'performance', 'errors']
 
 export const V2_DIMENSIONS: V2DimensionDef[] = [
   {
+    api: 'outbound_link',
+    column: 'outbound_url',
+    types: ['traffic'],
+    breakdownOnly: true,
+    description: 'Outbound destination URL (clicks and visitors)',
+  },
+  {
     api: 'country',
     column: 'cc',
     types: ['traffic', 'performance', 'captcha', 'errors'],

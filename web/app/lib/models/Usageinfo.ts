@@ -2,6 +2,8 @@ interface UsageInfoBreakdown {
   total: number
   traffic: number
   customEvents: number
+  outboundLinks?: number
+  outboundLinksPerc?: number
   captcha: number
   errors: number
   trafficPerc: number

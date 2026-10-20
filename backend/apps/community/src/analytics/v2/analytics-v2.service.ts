@@ -58,6 +58,7 @@ import {
 dayjs.extend(utc)
 
 type EventsAllTimeType =
+  | 'outbound'
   | 'pageview'
   | 'custom_event'
   | 'performance'
@@ -278,10 +279,25 @@ export class AnalyticsV2Service {
     measure?: PerfMeasure,
   ): Promise<V2Envelope<Record<string, unknown>[]>> {
     const dimension = getBreakdownDimension(dto.dimension, dataType)
-    const metrics =
-      dimension.virtual && !dto.metrics
+    const isOutbound = dimension.api === 'outbound_link'
+    const metrics = isOutbound
+      ? parseMetricsParam(dto.metrics || 'clicks,visitors', dataType)
+      : dimension.virtual && !dto.metrics
         ? [getMetric('visitors', dataType)]
         : parseMetricsParam(dto.metrics, dataType)
+    if (
+      isOutbound &&
+      metrics.some((metric) => !['clicks', 'visitors'].includes(metric.api))
+    ) {
+      throw new UnprocessableEntityException(
+        'Outbound links support the clicks and visitors metrics',
+      )
+    }
+    if (!isOutbound && metrics.some((metric) => metric.api === 'clicks')) {
+      throw new UnprocessableEntityException(
+        'The clicks metric is only supported for outbound_link',
+      )
+    }
     const filters = this.prepareFilters(
       dto.filters,
       dataType,
@@ -294,16 +310,19 @@ export class AnalyticsV2Service {
       from: dto.from,
       to: dto.to,
       timezone: dto.timezone,
+      ...(isOutbound ? { allTimeEventTypes: ['outbound'] as const } : {}),
     })
 
     const limit = dto.limit ?? DEFAULT_BREAKDOWN_LIMIT
     const offset = dto.offset ?? 0
     const sort = parseSortParam(dto.sort, dimension, metrics)
-    const subQuery = this.buildSubQuery(
-      dataType,
-      filters.filtersQuery,
-      filters.customEVFilterApplied,
-    )
+    const subQuery = isOutbound
+      ? `FROM events WHERE pid = {pid:FixedString(12)} AND type = 'outbound' ${filters.filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
+      : this.buildSubQuery(
+          dataType,
+          filters.filtersQuery,
+          filters.customEVFilterApplied,
+        )
 
     const meta: Record<string, unknown> = {
       ...this.baseMeta(pid, timeframe, filters.appliedFilters),
@@ -341,7 +360,7 @@ export class AnalyticsV2Service {
       metrics,
       subQuery,
       ctx: {
-        customEVFilterApplied: filters.customEVFilterApplied,
+        customEVFilterApplied: !isOutbound && filters.customEVFilterApplied,
         measure,
       },
       sort,
@@ -1919,6 +1938,7 @@ export class AnalyticsV2Service {
       name: dimension.api,
       description: dimension.description,
       filterOnly: Boolean(dimension.filterOnly),
+      breakdownOnly: Boolean(dimension.breakdownOnly),
       extraFields: (dimension.extraFields ?? []).map((field) => field.api),
     }))
 

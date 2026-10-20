@@ -66,7 +66,7 @@ const resolveColumn = (
 
   const def = findDimension(dimension, type)
 
-  if (!def) {
+  if (!def || def.breakdownOnly) {
     if (lenient) {
       return null
     }

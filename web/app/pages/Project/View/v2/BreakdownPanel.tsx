@@ -19,6 +19,12 @@ export interface BreakdownSubTab {
   id: string
   label: string
   dimension?: string
+  primaryMetric?: string
+  metrics?: string[]
+  valuesHeaderName?: string
+  disableRowClick?: boolean
+  emptyMessage?: string
+  detailsExtraColumns?: PanelProps['detailsExtraColumns']
   render?: () => React.ReactNode
   versionsDimension?: 'browser_version' | 'os_version'
   versionsParentField?: 'browser' | 'os'
@@ -111,11 +117,15 @@ export const BreakdownPanel = ({
 
   const isSentinel = !activeSubTab.dimension
 
-  const resolvedSort = sort ?? `${primaryMetric}:desc`
+  const resolvedPrimaryMetric = activeSubTab.primaryMetric ?? primaryMetric
+  const resolvedMetrics = activeSubTab.metrics ?? metrics
+  const resolvedSort = activeSubTab.primaryMetric
+    ? `${resolvedPrimaryMetric}:desc`
+    : (sort ?? `${primaryMetric}:desc`)
 
   const query = useBreakdownDetailsQuery(dataType, {
     dimension: activeSubTab.dimension || '',
-    metrics,
+    metrics: resolvedMetrics,
     measure,
     sort: resolvedSort,
     enabled: hasBeenInView && !isSentinel,
@@ -123,7 +133,7 @@ export const BreakdownPanel = ({
 
   const versionsQuery = useBreakdownDetailsQuery(dataType, {
     dimension: activeSubTab.versionsDimension || '',
-    metrics,
+    metrics: resolvedMetrics,
     measure,
     sort: resolvedSort,
     enabled: hasBeenInView && Boolean(activeSubTab.versionsDimension),
@@ -131,12 +141,21 @@ export const BreakdownPanel = ({
 
   const entries = useMemo(() => {
     const mapped = mapBreakdownRows(
-      query.data?.pages.flatMap((page) => page.data),
-      primaryMetric,
-      metrics,
+      query.isPlaceholderData
+        ? undefined
+        : query.data?.pages.flatMap((page) => page.data),
+      resolvedPrimaryMetric,
+      resolvedMetrics,
     )
     return transformEntries ? transformEntries(mapped, activeSubTabId) : mapped
-  }, [query.data, primaryMetric, metrics, transformEntries, activeSubTabId])
+  }, [
+    query.data,
+    query.isPlaceholderData,
+    resolvedPrimaryMetric,
+    resolvedMetrics,
+    transformEntries,
+    activeSubTabId,
+  ])
 
   const versionData = useMemo(() => {
     if (!activeSubTab.versionsDimension || !versionsQuery.data) {
@@ -175,7 +194,10 @@ export const BreakdownPanel = ({
 
   // Panels below the fold only start fetching once scrolled into view, which
   // leaves the query pending rather than loading — both mean "no rows yet".
-  const isLoading = query.isLoading || (!hasBeenInView && !query.data)
+  const isLoading =
+    query.isLoading ||
+    query.isPlaceholderData ||
+    (!hasBeenInView && !query.data)
 
   const renderError = () => (
     <div className='flex h-full flex-1 flex-col items-center justify-center px-4 py-8 text-center'>
@@ -206,7 +228,19 @@ export const BreakdownPanel = ({
         name={name}
         data={entries}
         isLoading={isLoading}
-        customRenderer={query.isError ? renderError : undefined}
+        customRenderer={
+          query.isError
+            ? renderError
+            : !isLoading && entries.length === 0 && activeSubTab.emptyMessage
+              ? () => (
+                  <div className='flex flex-1 items-center justify-center px-6 py-8 text-center'>
+                    <Text size='sm' colour='secondary'>
+                      {activeSubTab.emptyMessage}
+                    </Text>
+                  </div>
+                )
+              : undefined
+        }
         tabs={containerTabs}
         onTabChange={onSubTabChange}
         activeTabId={activeSubTabId}
@@ -231,13 +265,15 @@ export const BreakdownPanel = ({
                 getVersionFilterLink(parent, version, activeSubTabId)
             : undefined
         }
-        valuesHeaderName={valuesHeaderName}
+        valuesHeaderName={activeSubTab.valuesHeaderName ?? valuesHeaderName}
         highlightColour={highlightColour}
-        detailsExtraColumns={detailsExtraColumns}
+        detailsExtraColumns={
+          activeSubTab.detailsExtraColumns ?? detailsExtraColumns
+        }
         rowTooltipRenderer={rowTooltipRenderer}
         rowTooltipFollowCursor={rowTooltipFollowCursor}
         hidePercentageInDetails={hidePercentageInDetails}
-        disableRowClick={disableRowClick}
+        disableRowClick={activeSubTab.disableRowClick ?? disableRowClick}
         dataLoading={query.isFetching && !query.isFetchingNextPage}
         isRefetching={
           query.isFetching && !query.isLoading && !query.isFetchingNextPage

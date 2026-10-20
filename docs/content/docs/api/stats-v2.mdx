@@ -251,6 +251,17 @@ Notes:
 - `session_duration` and `bounce_rate` are not computable per dimension value; request them on the timeseries or summary endpoints.
 - When a custom-event filter (`event`, `event_metadata`) is applied, the base event set becomes custom events and `visitors` counts matched events (v1 semantics preserved).
 
+### Outbound links breakdown
+
+Use the traffic breakdown endpoint with `dimension=outbound_link`. The supported metrics are `clicks` and `visitors` (both returned by default). This reads native outbound events, preserving pageview and custom-event totals.
+
+```bash
+curl 'https://api.swetrix.com/v2/projects/YOUR_PROJECT_ID/traffic/breakdown?dimension=outbound_link&metrics=clicks,visitors&period=7d&sort=clicks:desc' \
+  -H 'X-API-Key: YOUR_API_KEY'
+```
+
+Each row contains `value` (the destination URL, or `null` for an imported unknown destination), `clicks`, and `visitors`. Common date, traffic filters, sorting, limit, and offset parameters apply. The dimension is for breakdowns only; it cannot be used as a dashboard filter. The dimensions endpoint marks it with `breakdownOnly: true`.
+
 ### GET /v2/projects/:pid/traffic/custom-events
 
 Counts of custom events in the selected period: `data: [{ "event": "signup", "count": 10 }, ...]` with `meta.total`, `limit`, `offset`.

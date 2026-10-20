@@ -329,3 +329,16 @@ Contributions are welcome — feel free to [open an issue](https://github.com/sw
 ## License
 
 MIT
+
+## Outbound links
+
+Automatic outbound link tracking is opt-in:
+
+```javascript
+swetrix.init('YOUR_PROJECT_ID', {
+  events: { outboundLinks: true },
+})
+swetrix.trackViews()
+```
+
+External HTTP(S) links appear in Traffic → Pages → Outbound links. Query strings and fragments are excluded by default. Pass `{ search: true, hash: true, ignoreDomains: ['app.example.com'] }` instead of `true` to customize capture. Add `data-swetrix-ignore` to links or their containers to exclude them. `swetrix.stopAutoCapture()` stops capture immediately. See the [tracking script reference](https://swetrix.com/docs/swetrix-js-reference#automatic-outbound-link-tracking) for details.

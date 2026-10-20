@@ -400,3 +400,9 @@ Make sure you're uploading the correct file format for your provider. For Umami,
 ### Data not appearing in charts
 
 After a successful import, select a date range that covers the imported data's time period. The imported data indicator badge should appear to confirm it's included.
+
+### Plausible outbound links
+
+New Plausible imports convert `Outbound Link: Click` into native outbound events and preserve the export's `link_url` destination. They appear in **Traffic → Pages → Outbound links**, separately from custom events. Rows without a destination retain their click counts under **Unknown destination**. Imported visitor/session associations are reconstructed from aggregate data; click totals come directly from the export.
+
+Previously imported rows are not changed automatically. Older Swetrix importers discarded `link_url`, so the original export is required to restore destination URLs. After upgrading, remove the old import and import that export again; importing another copy without removing the original would duplicate its data.

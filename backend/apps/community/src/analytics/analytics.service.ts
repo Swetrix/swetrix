@@ -677,6 +677,7 @@ export enum DataType {
 
 type AnalyticsEventType = 'pageview' | 'custom_event'
 type EventsAllTimeType =
+  | 'outbound'
   | AnalyticsEventType
   | 'performance'
   | 'error'

@@ -122,6 +122,7 @@ interface ExitPageRow {
 
 interface CustomEventRow {
   name: string
+  url: string | null
   events: number
 }
 
@@ -764,7 +765,9 @@ export class PlausibleMapper implements ImportMapper {
         const name = normalizeNull(row.name)
         const events = toInt(row.events, 'events')
         if (!name || events <= 0) continue
-        days.get(date)!.customEvents.push({ name, events })
+        days
+          .get(date)!
+          .customEvents.push({ name, events, url: normalizeNull(row.link_url) })
       }
     }
 
@@ -1010,8 +1013,13 @@ export class PlausibleMapper implements ImportMapper {
             page: null,
             created,
           })
-          data.event_name = truncate(ev.name, 256) || ''
-          yield { type: 'custom_event', data }
+          if (ev.name === 'Outbound Link: Click') {
+            data.outbound_url = truncate(ev.url, 2048)
+            yield { type: 'outbound', data }
+          } else {
+            data.event_name = truncate(ev.name, 256) || ''
+            yield { type: 'custom_event', data }
+          }
         }
       }
     }

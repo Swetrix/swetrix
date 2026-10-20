@@ -1,5 +1,6 @@
 import {
   CheckIcon,
+  ArrowSquareOutIcon,
   CursorClickIcon,
   EyeIcon,
   GaugeIcon,
@@ -54,6 +55,11 @@ const EVENT_TYPES: EventType[] = [
     key: 'custom_event',
     labelKey: 'project.settings.deleteData.types.custom_event',
     Icon: CursorClickIcon,
+  },
+  {
+    key: 'outbound',
+    labelKey: 'project.outboundLinks',
+    Icon: ArrowSquareOutIcon,
   },
   {
     key: 'error',
