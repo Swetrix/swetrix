@@ -294,6 +294,11 @@ export class AnalyticsV2Service {
         'Outbound links support the clicks and visitors metrics',
       )
     }
+    if (!isOutbound && metrics.some((metric) => metric.api === 'clicks')) {
+      throw new UnprocessableEntityException(
+        'The clicks metric is only supported for outbound_link',
+      )
+    }
     const filters = this.prepareFilters(
       dto.filters,
       dataType,

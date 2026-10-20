@@ -2139,6 +2139,7 @@ export class AdminService {
       FROM events
       WHERE pid IN ({pids:Array(FixedString(12))})
         AND type IN ('pageview', 'custom_event', 'error', 'captcha', 'outbound')
+        AND importID IS NULL
         AND created >= {from:String}
       GROUP BY pid
     `

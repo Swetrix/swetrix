@@ -57,6 +57,28 @@ describe('Outbound link capture', () => {
   })
 
   it.each([
+    ['', undefined],
+    ['?q=short', 'q=short'],
+    [`?${'x'.repeat(2048)}`, 'x'.repeat(2048)],
+    [`?${'x'.repeat(2049)}`, 'x'.repeat(2048)],
+  ])('limits the source query string (%#)', (search, qs) => {
+    setLocation({ search })
+    create({ events: { outboundLinks: true } })
+    click('https://tickets.example.org/event')
+    expect(request).toHaveBeenCalledWith('outbound', expect.objectContaining({ qs }))
+  })
+
+  it('preserves campaign fields beyond the query string limit', () => {
+    setLocation({ search: `?q=${'x'.repeat(2048)}&utm_source=newsletter&utm_campaign=launch` })
+    create({ events: { outboundLinks: true } })
+    click('https://tickets.example.org/event')
+    expect(request).toHaveBeenCalledWith(
+      'outbound',
+      expect.objectContaining({ qs: `q=${'x'.repeat(2046)}`, so: 'newsletter', ca: 'launch' }),
+    )
+  })
+
+  it.each([
     '/inside',
     '#section',
     'https://example.com/inside',

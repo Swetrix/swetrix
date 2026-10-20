@@ -1,3 +1,4 @@
+import { UnprocessableEntityException } from '@nestjs/common'
 import { plainToInstance } from 'class-transformer'
 import { validate } from 'class-validator'
 import { AnalyticsService } from '../../analytics.service'
@@ -117,6 +118,19 @@ describe('Outbound links', () => {
       ),
     ).rejects.toThrow('clicks and visitors')
   })
+
+  it.each(['page', 'entry_page', 'exit_page'])(
+    'rejects clicks for the %s dimension',
+    async (dimension) => {
+      const analytics = Object.create(AnalyticsService.prototype)
+      const service = new AnalyticsV2Service(analytics, {} as never)
+      for (const metrics of ['clicks', 'visitors,clicks']) {
+        await expect(
+          service.getBreakdown(pid, { dimension, metrics }, 'traffic'),
+        ).rejects.toThrow(UnprocessableEntityException)
+      }
+    },
+  )
 
   it('keeps normal traffic queries on pageviews', async () => {
     const analytics = Object.create(AnalyticsService.prototype)

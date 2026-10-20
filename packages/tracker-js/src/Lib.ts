@@ -450,6 +450,7 @@ export class Lib {
 
       void this.sendRequest('outbound', {
         ...this.getEventContext(),
+        qs: getQueryString()?.slice(0, 2048),
         url: url.href,
         title: document.title?.slice(0, 2048) || undefined,
       }).catch(() => undefined)
