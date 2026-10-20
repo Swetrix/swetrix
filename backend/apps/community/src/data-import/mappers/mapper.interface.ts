@@ -6,7 +6,7 @@ export class ImportError extends Error {
 }
 
 export interface AnalyticsImportRow {
-  type: 'pageview' | 'custom_event'
+  type: 'pageview' | 'custom_event' | 'outbound'
   data: Record<string, unknown>
 }
 

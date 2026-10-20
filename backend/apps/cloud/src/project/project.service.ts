@@ -767,7 +767,7 @@ export class ProjectService {
     to: string,
   ): Promise<void> {
     const queries = [
-      "ALTER TABLE events DELETE WHERE pid = {pid:FixedString(12)} AND type IN ('pageview', 'custom_event', 'performance', 'error', 'captcha') AND created BETWEEN {from:String} AND {to:String}",
+      "ALTER TABLE events DELETE WHERE pid = {pid:FixedString(12)} AND type IN ('pageview', 'custom_event', 'performance', 'error', 'captcha', 'outbound') AND created BETWEEN {from:String} AND {to:String}",
       'ALTER TABLE error_statuses DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}',
     ]
 
@@ -898,7 +898,7 @@ export class ProjectService {
             countIf(created < {monthStart:DateTime}) AS previous
           FROM events
           WHERE pid IN ({pids:Array(FixedString(12))})
-            AND (type IN ('pageview', 'custom_event', 'error') OR (${CAPTCHA_PASS_CONDITION}))
+            AND (type IN ('pageview', 'custom_event', 'error', 'outbound') OR (${CAPTCHA_PASS_CONDITION}))
             AND importID IS NULL
             AND created >= {previousMonthStart:DateTime}
             AND created < {nextMonthStart:DateTime}
@@ -1006,6 +1006,7 @@ export class ProjectService {
       const pids = _map(projects, 'id')
       let totalPageviews = 0
       let totalCustomEvents = 0
+      let totalOutboundLinks = 0
       let totalCaptcha = 0
       let totalErrors = 0
 
@@ -1022,12 +1023,13 @@ export class ProjectService {
           SELECT
             countIf(type = 'pageview') AS pageviews,
             countIf(type = 'custom_event') AS customEvents,
+            countIf(type = 'outbound') AS outboundLinks,
             countIf(${CAPTCHA_PASS_CONDITION}) AS captcha,
             countIf(type = 'error') AS errors
           FROM events
           WHERE created BETWEEN {monthStart:String} AND {monthEnd:String}
             AND pid IN ({pids:Array(FixedString(12))})
-            AND type IN ('pageview', 'custom_event', 'captcha', 'error')
+            AND type IN ('pageview', 'custom_event', 'captcha', 'error', 'outbound')
             AND importID IS NULL
         `
 
@@ -1040,6 +1042,7 @@ export class ProjectService {
             resultSet.json<{
               pageviews: string | number
               customEvents: string | number
+              outboundLinks: string | number
               captcha: string | number
               errors: string | number
             }>(),
@@ -1048,11 +1051,17 @@ export class ProjectService {
         const row = counts[0]
         totalPageviews += Number(row?.pageviews) || 0
         totalCustomEvents += Number(row?.customEvents) || 0
+        totalOutboundLinks += Number(row?.outboundLinks) || 0
         totalCaptcha += Number(row?.captcha) || 0
         totalErrors += Number(row?.errors) || 0
       }
 
-      count = totalPageviews + totalCustomEvents + totalCaptcha + totalErrors
+      count =
+        totalPageviews +
+        totalCustomEvents +
+        totalOutboundLinks +
+        totalCaptcha +
+        totalErrors
 
       await redis.set(countKey, `${count}`, 'EX', redisProjectCountCacheTimeout)
     } else {
@@ -1104,6 +1113,7 @@ export class ProjectService {
       const pids = _map(projects, 'id')
       let totalTraffic = 0
       let totalCustomEvents = 0
+      let totalOutboundLinks = 0
       let totalCaptcha = 0
       let totalErrors = 0
 
@@ -1120,12 +1130,13 @@ export class ProjectService {
           SELECT
             countIf(type = 'pageview') AS traffic,
             countIf(type = 'custom_event') AS customEvents,
+            countIf(type = 'outbound') AS outboundLinks,
             countIf(${CAPTCHA_PASS_CONDITION}) AS captcha,
             countIf(type = 'error') AS errors
           FROM events
           WHERE pid IN ({pids:Array(FixedString(12))})
             AND created BETWEEN {periodStart:String} AND {periodEnd:String}
-            AND type IN ('pageview', 'custom_event', 'captcha', 'error')
+            AND type IN ('pageview', 'custom_event', 'captcha', 'error', 'outbound')
             AND importID IS NULL
         `
 
@@ -1138,6 +1149,7 @@ export class ProjectService {
             resultSet.json<{
               traffic: string | number
               customEvents: string | number
+              outboundLinks: string | number
               captcha: string | number
               errors: string | number
             }>(),
@@ -1146,17 +1158,23 @@ export class ProjectService {
         const row = counts[0]
         totalTraffic += Number(row?.traffic) || 0
         totalCustomEvents += Number(row?.customEvents) || 0
+        totalOutboundLinks += Number(row?.outboundLinks) || 0
         totalCaptcha += Number(row?.captcha) || 0
         totalErrors += Number(row?.errors) || 0
       }
 
       const total =
-        totalTraffic + totalCustomEvents + totalCaptcha + totalErrors
+        totalTraffic +
+        totalCustomEvents +
+        totalOutboundLinks +
+        totalCaptcha +
+        totalErrors
 
       info = {
         total,
         traffic: totalTraffic,
         customEvents: totalCustomEvents,
+        outboundLinks: totalOutboundLinks,
         captcha: totalCaptcha,
         errors: totalErrors,
       }
@@ -1281,7 +1299,7 @@ export class ProjectService {
       SELECT DISTINCT pid
       FROM events
       WHERE pid IN (${pids})
-        AND type IN ('pageview', 'custom_event')
+        AND type IN ('pageview', 'custom_event', 'outbound')
     `
 
     const { data } = await clickhouse

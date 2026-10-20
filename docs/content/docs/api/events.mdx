@@ -191,6 +191,19 @@ curl -i -X POST https://api.swetrix.com/log/custom \
 {}
 ```
 
+### POST /log/outbound
+
+Records a native outbound link click. Use `events: { outboundLinks: true }` in the browser tracker's `init()` options for automatic capture.
+
+```bash title="Request"
+curl -i -X POST https://api.swetrix.com/log/outbound \
+  -H "Content-Type: application/json" \
+  -H "Origin: https://example.com" \
+  -d '{"pid":"YOUR_PROJECT_ID","url":"https://tickets.example.org/event","pg":"/article"}'
+```
+
+`url` is required: an absolute HTTP(S) destination, without URL credentials, at most 2,048 characters. `pid` and the optional page, locale, timezone, referrer, campaign, profile, and metadata fields follow `/log/custom`. `title` is an optional source-page title (at most 2,048 characters). No `ev` or `unique` field is needed; every click is counted. API keys use the `events:write` scope. Success returns `{}`.
+
 ### POST /log/hb
 
 This endpoint is used for heartbeat events. Heartbeat events are used to determine if the user session is still active. This allows you to see the 'Live Visitors' counter in the Dashboard panel.

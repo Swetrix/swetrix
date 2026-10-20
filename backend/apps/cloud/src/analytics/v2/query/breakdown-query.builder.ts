@@ -100,7 +100,7 @@ export const buildBreakdownQuery = (opts: BreakdownQueryOptions): string => {
     ${subQuery}
     ${whereParts.join(' ')}
     GROUP BY ${groupBy.join(', ')}
-    ORDER BY ${sort.field} ${sort.direction}
+    ORDER BY ${sort.field} ${sort.direction}${dimension.api === 'outbound_link' && sort.field !== 'value' ? ', value ASC' : ''}
     LIMIT {v2_limit:UInt32} OFFSET {v2_offset:UInt32}
   `
 }

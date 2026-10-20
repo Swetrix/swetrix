@@ -52,8 +52,10 @@ describe('registry <-> v1 column allowlist lockstep', () => {
 
 describe('V2_VIEW_FILTER_DIMENSIONS <-> registry parity', () => {
   const expected = [
-    ...V2_DIMENSIONS.filter((dimension) =>
-      dimension.types.some((type) => type !== 'captcha'),
+    ...V2_DIMENSIONS.filter(
+      (dimension) =>
+        !dimension.breakdownOnly &&
+        dimension.types.some((type) => type !== 'captcha'),
     ).map((dimension) => dimension.api),
     ...Object.keys(V2_KEYED_FILTER_DIMENSIONS),
   ]

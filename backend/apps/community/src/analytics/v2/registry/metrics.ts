@@ -18,6 +18,13 @@ const perfExpr =
 
 export const V2_METRICS: V2MetricDef[] = [
   {
+    api: 'clicks',
+    types: ['traffic'],
+    sqlExpr: () => "countIf(type = 'outbound')",
+    format: 'integer',
+    description: 'Outbound link clicks',
+  },
+  {
     api: 'visitors',
     types: ['traffic'],
     sqlExpr: ({ customEVFilterApplied }) =>

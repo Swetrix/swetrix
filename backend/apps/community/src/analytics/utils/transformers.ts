@@ -63,6 +63,12 @@ interface CustomEventOptions extends CommonOptions {
   ev: string
 }
 
+interface OutboundEventOptions extends CommonOptions {
+  type: 'outbound'
+  url: string
+  title?: string | null
+}
+
 interface ErrorEventOptions extends CommonOptions {
   type: 'error'
   eid: string
@@ -103,6 +109,7 @@ interface CaptchaOptions {
 type EventTransformerOptions =
   | PageviewOptions
   | CustomEventOptions
+  | OutboundEventOptions
   | ErrorEventOptions
   | PerformanceOptions
   | CaptchaOptions
@@ -158,6 +165,16 @@ export const eventTransformer = (opts: EventTransformerOptions) => {
       type: 'custom_event' as const,
       ...buildCommon(opts),
       event_name: opts.ev,
+      created,
+    }
+  }
+
+  if (opts.type === 'outbound') {
+    return {
+      type: 'outbound' as const,
+      ...buildCommon(opts),
+      outbound_url: opts.url,
+      title: opts.title || null,
       created,
     }
   }

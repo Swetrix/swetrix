@@ -1,5 +1,9 @@
 jest.mock('../common/constants', () => ({
-  redis: { del: jest.fn() },
+  redis: {
+    del: jest.fn(),
+    get: jest.fn().mockResolvedValue(null),
+    set: jest.fn(),
+  },
   getRedisUserCountKey: (uid: string) => `count:${uid}`,
   getRedisUserUsageInfoKey: (uid: string) => `usage:${uid}`,
 }))
@@ -86,8 +90,41 @@ describe('usage after traffic cleanup', () => {
       nextMonthStart: '2026-10-01 00:00:00',
     })
     expect(query.query).toContain('importID IS NULL')
-    expect(query.query).toContain("'pageview', 'custom_event', 'error'")
+    expect(query.query).toContain(
+      "'pageview', 'custom_event', 'error', 'outbound'",
+    )
     expect(query.query).toContain("= 'pass'")
+  })
+
+  it('counts native outbound clicks in cached usage without treating them as custom events', async () => {
+    service.find = jest.fn().mockResolvedValue([{ id: 'project00001' }])
+    jest.mocked(clickhouse.query).mockResolvedValue({
+      json: async () => ({
+        data: [
+          {
+            traffic: 10,
+            pageviews: 10,
+            customEvents: 3,
+            outboundLinks: 7,
+            captcha: 2,
+            errors: 1,
+          },
+        ],
+      }),
+    } as never)
+    expect(await service.getRedisCount('owner')).toBe(23)
+    expect(await service.getRedisUsageInfo('owner')).toMatchObject({
+      total: 23,
+      traffic: 10,
+      customEvents: 3,
+      outboundLinks: 7,
+    })
+    for (const [query] of jest.mocked(clickhouse.query).mock.calls) {
+      expect(query.query).toContain('importID IS NULL')
+      expect(query.query).toContain(
+        "countIf(type = 'outbound') AS outboundLinks",
+      )
+    }
   })
 
   it('does not resolve usage restrictions when the usage query fails', async () => {

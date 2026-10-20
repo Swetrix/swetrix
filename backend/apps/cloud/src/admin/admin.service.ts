@@ -29,6 +29,7 @@ import { UserFeedback } from '../user/entities/user-feedback.entity'
 const ACTIVITY_EVENT_TYPES = [
   'pageview',
   'custom_event',
+  'outbound',
   'error',
   'captcha',
   'performance',
@@ -38,7 +39,7 @@ const ACTIVITY_EVENT_TYPES = [
 const CAPTCHA_PASS_CONDITION =
   "type = 'captcha' AND if(indexOf(`meta.key`, 'captcha_event') = 0, 'pass', arrayElement(`meta.value`, indexOf(`meta.key`, 'captcha_event'))) = 'pass'"
 
-const BILLABLE_COUNT_IF = `countIf(type IN ('pageview', 'custom_event', 'error') OR (${CAPTCHA_PASS_CONDITION}))`
+const BILLABLE_COUNT_IF = `countIf(type IN ('pageview', 'custom_event', 'error', 'outbound') OR (${CAPTCHA_PASS_CONDITION}))`
 
 const FREE_PLAN_CODES = [PlanCode.none, PlanCode.free, PlanCode.trial]
 
@@ -2137,7 +2138,7 @@ export class AdminService {
         ${BILLABLE_COUNT_IF} AS count
       FROM events
       WHERE pid IN ({pids:Array(FixedString(12))})
-        AND type IN ('pageview', 'custom_event', 'error', 'captcha')
+        AND type IN ('pageview', 'custom_event', 'error', 'captcha', 'outbound')
         AND created >= {from:String}
       GROUP BY pid
     `

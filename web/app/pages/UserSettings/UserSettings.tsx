@@ -2099,6 +2099,20 @@ const UserSettings = () => {
                           </Text>
                         </div>
                         <div className='flex items-center'>
+                          <div className='size-2 rounded-full bg-teal-600 dark:bg-teal-500' />
+                          <Text
+                            as='span'
+                            size='sm'
+                            colour='secondary'
+                            className='ml-2'
+                          >
+                            {t('billing.outboundLinks', {
+                              quantity: usageInfo.outboundLinks || 0,
+                              percentage: usageInfo.outboundLinksPerc || 0,
+                            })}
+                          </Text>
+                        </div>
+                        <div className='flex items-center'>
                           <div className='size-2 rounded-full bg-lime-600 dark:bg-lime-500' />
                           <Text
                             as='span'
@@ -2174,6 +2188,18 @@ const UserSettings = () => {
                               ),
                               lightColour: '#c026d3',
                               darkColour: '#a21caf',
+                            },
+                            {
+                              value: maxEventsCount
+                                ? Math.min(
+                                    100,
+                                    ((usageInfo.outboundLinks || 0) /
+                                      maxEventsCount) *
+                                      100,
+                                  )
+                                : 0,
+                              lightColour: '#0d9488',
+                              darkColour: '#0f766e',
                             },
                             {
                               value: Math.min(

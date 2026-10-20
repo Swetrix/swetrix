@@ -27,6 +27,7 @@ swetrix.init("YOUR_PROJECT_ID", {
   apiURL: "https://api.swetrix.com/log",
   profileId: "user-123",
   preloadSessionReplay: true,
+  events: { outboundLinks: true },
 });
 ```
 
@@ -38,6 +39,45 @@ swetrix.init("YOUR_PROJECT_ID", {
 | apiURL               | If you use Swetrix Cloud, you don't need to change this parameter. If you're self-hosting Swetrix CE, you should put the URL of your API instance here, like `[BASE_URL]/backend/v1/log`.                                                                                                                            | `'https://api.swetrix.com/log'` |
 | profileId            | Optional profile ID for long-term user tracking (MAU/DAU). If set, it will be used for all pageviews and events unless overridden per-call. This allows you to track users across sessions and devices. To also link the visitor's previous anonymous activity to this profile, use [identify()](#identify) instead. | `undefined`                     |
 | preloadSessionReplay | Set to `true` to preload the session replay recorder after `init()`, or pass `{ rrwebUrl: "https://example.com/rrweb.min.js" }` to load it from a custom URL. Recording only starts after you call `startSessionReplay()`.                                                                                           | `undefined`                     |
+
+## Automatic outbound link tracking
+
+Outbound link tracking is **disabled by default**. Enable it in `init()`:
+
+```javascript
+swetrix.init("YOUR_PROJECT_ID", {
+  events: { outboundLinks: true },
+});
+swetrix.trackViews();
+```
+
+Clicks on external HTTP(S) links appear under **Traffic → Pages → Outbound links**. The report shows click counts; its expanded view also shows visitors and supports search. Date, source-page, and traffic filters apply. Outbound clicks are stored separately from pageviews and custom events. On Swetrix Cloud, each native click counts as one event towards your plan; imported clicks do not count towards usage.
+
+The tracker handles nested elements, links added after initialization, keyboard activation, modified clicks, and middle-clicks without delaying navigation. Links on the current hostname (including its `www` equivalent) are ignored. Other subdomains are external unless you exclude them. Non-web links such as `mailto:`, `tel:`, and `javascript:` are ignored.
+
+Destination query strings and fragments are excluded by default. URL credentials are always removed. You can customize capture:
+
+```javascript
+swetrix.init("YOUR_PROJECT_ID", {
+  events: {
+    outboundLinks: {
+      search: true,
+      hash: false,
+      ignoreDomains: ["app.example.com", "checkout.example.com"],
+    },
+  },
+});
+```
+
+`ignoreDomains` matches exact hostnames, case-insensitively, treating `www` as equivalent. Only enable `search` or `hash` when those parts of your destination URLs are appropriate to collect. Destination URLs longer than 2,048 characters after normalization are skipped.
+
+To exclude a link or a container of links, add `data-swetrix-ignore`:
+
+```html
+<a href="https://example.org/private" data-swetrix-ignore>Open link</a>
+```
+
+Set `events.outboundLinks` to `false` or omit it to disable capture on the next page load. Call `swetrix.stopAutoCapture()` to remove the automatic capture listeners immediately. The existing `disabled`, `devMode`, and `respectDNT` options also apply. Set the options on your first `init()` call; subsequent calls reuse the same tracker instance.
 
 ## track()
 
@@ -341,6 +381,7 @@ Call `startSessionReplay()` after `init()`. If you set `preloadSessionReplay: tr
 ```javascript
 swetrix.init("YOUR_PROJECT_ID", {
   preloadSessionReplay: true,
+  events: { outboundLinks: true },
 });
 
 const replay = await swetrix.startSessionReplay({
@@ -359,6 +400,7 @@ import { init, startSessionReplay } from "swetrix";
 
 init("YOUR_PROJECT_ID", {
   preloadSessionReplay: true,
+  events: { outboundLinks: true },
 });
 
 const replay = await startSessionReplay({

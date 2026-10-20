@@ -547,10 +547,10 @@ export class TaskManagerService {
     for (let i = 0; i < pids.length; i += CHUNK_SIZE) {
       const pidChunk = pids.slice(i, i + CHUNK_SIZE)
       const query = `
-        SELECT countIf(type IN ('pageview', 'custom_event', 'error', 'performance') OR (${CAPTCHA_PASS_CONDITION})) AS totalEvents
+        SELECT countIf(type IN ('pageview', 'custom_event', 'error', 'performance', 'outbound') OR (${CAPTCHA_PASS_CONDITION})) AS totalEvents
         FROM events
         WHERE pid IN ({pids:Array(FixedString(12))})
-          AND type IN ('pageview', 'custom_event', 'error', 'captcha', 'performance')
+          AND type IN ('pageview', 'custom_event', 'error', 'captcha', 'performance', 'outbound')
       `
 
       const { data } = await clickhouse
@@ -2000,7 +2000,7 @@ export class TaskManagerService {
           return
         }
 
-        const queryEvents = `SELECT 1 FROM events WHERE pid IN ({pids:Array(FixedString(12))}) AND type IN ('pageview', 'captcha', 'custom_event', 'error', 'performance') AND created BETWEEN {nineWeeksAgo:String} AND {now:String} LIMIT 1`
+        const queryEvents = `SELECT 1 FROM events WHERE pid IN ({pids:Array(FixedString(12))}) AND type IN ('pageview', 'captcha', 'custom_event', 'error', 'performance', 'outbound') AND created BETWEEN {nineWeeksAgo:String} AND {now:String} LIMIT 1`
 
         // Process project IDs in chunks to avoid ClickHouse field value limit
         let totalEvents = 0

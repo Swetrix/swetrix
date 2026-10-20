@@ -161,7 +161,7 @@ export class DataImportService {
     importId: number,
   ): Promise<void> {
     await clickhouse.command({
-      query: `ALTER TABLE ${CLICKHOUSE_DB}.events DELETE WHERE pid = {pid:FixedString(12)} AND importID = {importID:UInt8} AND type IN ('pageview', 'custom_event')`,
+      query: `ALTER TABLE ${CLICKHOUSE_DB}.events DELETE WHERE pid = {pid:FixedString(12)} AND importID = {importID:UInt8} AND type IN ('pageview', 'custom_event', 'outbound')`,
       query_params: { pid: projectId, importID: importId },
       clickhouse_settings: { mutations_sync: '2' },
     })

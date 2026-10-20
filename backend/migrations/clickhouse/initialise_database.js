@@ -61,6 +61,8 @@ const CLICKHOUSE_INIT_QUERIES = [
 
   `ALTER TABLE ${dbName}.events ADD COLUMN IF NOT EXISTS title Nullable(String) CODEC(ZSTD(3)) AFTER pg`,
 
+  `ALTER TABLE ${dbName}.events ADD COLUMN IF NOT EXISTS outbound_url Nullable(String) CODEC(ZSTD(3)) AFTER event_name`,
+
   // Error events status table
   `CREATE TABLE IF NOT EXISTS ${dbName}.error_statuses (
     eid FixedString(32),

@@ -69,19 +69,20 @@ import { Badge } from '~/ui/Badge'
 import CodeBlock from '~/ui/CodeBlock'
 import CopyButton from '~/ui/CopyButton'
 import { Text } from '~/ui/Text'
+import { Switch } from '~/ui/Switch'
 import { cn } from '~/utils/generic'
 
 const API_URL_WITHOUT_TRAILING_SLASH = API_URL.endsWith('/')
   ? API_URL.slice(0, -1)
   : API_URL
 
-const getSnippet = (pid: string) => {
+const getSnippet = (pid: string, outboundLinks = false) => {
   if (isSelfhosted) {
     return `<script src="https://swetrix.org/swetrix.js" defer></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   swetrix.init('${pid}', {
-    apiURL: '${API_URL_WITHOUT_TRAILING_SLASH}/v1/log',
+    apiURL: '${API_URL_WITHOUT_TRAILING_SLASH}/v1/log',${outboundLinks ? '\n    events: { outboundLinks: true },' : ''}
   })
   swetrix.trackViews()
 })
@@ -99,7 +100,7 @@ document.addEventListener('DOMContentLoaded', function() {
   return `<script src="https://swetrix.org/swetrix.js" defer></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  swetrix.init('${pid}')
+  swetrix.init('${pid}'${outboundLinks ? ', { events: { outboundLinks: true } }' : ''})
   swetrix.trackViews()
 })
 </script>
@@ -400,19 +401,29 @@ const PlatformIcon = ({
   </svg>
 )
 
-const getNpmSnippet = (pid: string) =>
+const getInitOptions = (outboundLinks: boolean) => {
+  const options = [
+    ...(isSelfhosted
+      ? [`apiURL: '${API_URL_WITHOUT_TRAILING_SLASH}/v1/log'`]
+      : []),
+    ...(outboundLinks ? ['events: { outboundLinks: true }'] : []),
+  ]
+  return options.length ? `, { ${options.join(', ')} }` : ''
+}
+
+const getNpmSnippet = (pid: string, outboundLinks = false) =>
   `import * as Swetrix from 'swetrix'
 
-Swetrix.init('${pid}'${isSelfhosted ? `, {\n  apiURL: '${API_URL_WITHOUT_TRAILING_SLASH}/v1/log',\n}` : ''})
+Swetrix.init('${pid}'${getInitOptions(outboundLinks)})
 Swetrix.trackViews()`
 
-const getGtmSnippet = (pid: string) =>
+const getGtmSnippet = (pid: string, outboundLinks = false) =>
   `<script>
   (function () {
     var el = document.createElement("script");
     el.src = "https://swetrix.org/swetrix.js";
     el.onload = function () {
-      swetrix.init("${pid}"${isSelfhosted ? `, {\n        apiURL: "${API_URL_WITHOUT_TRAILING_SLASH}/v1/log",\n      }` : ''});
+      swetrix.init("${pid}"${getInitOptions(outboundLinks)});
       swetrix.trackViews();
     };
     document.head.appendChild(el);
@@ -586,6 +597,7 @@ interface TrackingSetupProps {
 const TrackingSetup = ({ projectId }: TrackingSetupProps) => {
   const { t } = useTranslation('common')
   const [activeTab, setActiveTab] = useState<TrackingTab>('script')
+  const [outboundLinks, setOutboundLinks] = useState(false)
 
   return (
     <div>
@@ -615,6 +627,18 @@ const TrackingSetup = ({ projectId }: TrackingSetupProps) => {
         })}
       </div>
 
+      {['script', 'npm', 'gtm'].includes(activeTab) ? (
+        <div className='mb-4'>
+          <Switch
+            checked={outboundLinks}
+            onChange={setOutboundLinks}
+            label={t('project.outboundLinksSetup')}
+          />
+          <Text as='p' size='xs' colour='secondary' className='mt-1'>
+            {t('project.outboundLinksSetupHint')}
+          </Text>
+        </div>
+      ) : null}
       <div className='rounded-lg border border-gray-200 bg-gray-50 p-5 dark:border-slate-700 dark:bg-slate-950'>
         {activeTab === 'script' && (
           <div>
@@ -638,7 +662,7 @@ const TrackingSetup = ({ projectId }: TrackingSetupProps) => {
               </div>
             </div>
 
-            <CodeBlock code={getSnippet(projectId)} />
+            <CodeBlock code={getSnippet(projectId, outboundLinks)} />
           </div>
         )}
 
@@ -669,7 +693,7 @@ const TrackingSetup = ({ projectId }: TrackingSetupProps) => {
                 <Text as='p' size='xs' weight='semibold' className='mb-2'>
                   {t('onboarding.installTracking.npm.step2')}
                 </Text>
-                <CodeBlock code={getNpmSnippet(projectId)} />
+                <CodeBlock code={getNpmSnippet(projectId, outboundLinks)} />
               </div>
             </div>
 
@@ -729,7 +753,7 @@ const TrackingSetup = ({ projectId }: TrackingSetupProps) => {
                 <Text as='p' size='xs' weight='semibold' className='mb-2'>
                   {t('onboarding.installTracking.gtm.step2')}
                 </Text>
-                <CodeBlock code={getGtmSnippet(projectId)} />
+                <CodeBlock code={getGtmSnippet(projectId, outboundLinks)} />
               </div>
 
               <div>

@@ -87,6 +87,7 @@ import {
   GetErrorOverviewOptions,
 } from './dto/get-error-overview.dto'
 import { PatchStatusDto } from './dto/patch-status.dto'
+import { OutboundDto } from './dto/outbound.dto'
 import { eventTransformer } from './utils/transformers'
 import { enrichTrafficSource } from './utils/clickIdSources'
 import { MAX_METRICS_IN_VIEW } from '../project/dto/create-project-view.dto'
@@ -1324,6 +1325,35 @@ export class AnalyticsController {
     @Headers() headers,
     @Ip() reqIP,
   ) {
+    return this.logInteraction(eventsDTO, headers, reqIP)
+  }
+
+  @Post('outbound')
+  @ApiKeyCollection()
+  @ApiKeyAccess('events:write', 'body', 'pid')
+  @Public()
+  async logOutbound(
+    @Body() outboundDTO: OutboundDto,
+    @Headers() headers,
+    @Ip() reqIP,
+  ) {
+    return this.logInteraction(
+      { ...outboundDTO, ev: '', unique: false },
+      headers,
+      reqIP,
+      outboundDTO.url,
+      outboundDTO.title,
+    )
+  }
+
+  private async logInteraction(
+    eventsDTO: EventsDto,
+    headers,
+    reqIP,
+    outboundUrl?: string,
+    outboundTitle?: string | null,
+  ) {
+    const isOutbound = outboundUrl !== undefined
     const { 'user-agent': userAgent, origin } = headers
 
     const ip = getIPFromHeaders(headers) || reqIP || ''
@@ -1344,7 +1374,7 @@ export class AnalyticsController {
 
     const project = await this.analyticsService.validate(eventsDTO, origin, ip)
 
-    if (eventsDTO.unique) {
+    if (!isOutbound && eventsDTO.unique) {
       const [unique] = await this.analyticsService.generateAndStoreSessionId(
         `${eventsDTO.pid}-${eventsDTO.ev}`,
         userAgent,
@@ -1372,7 +1402,7 @@ export class AnalyticsController {
     this.analyticsService.checkCountryBlacklist(project, country)
 
     this.logger.log(
-      `pid: ${eventsDTO.pid}, ev: ${eventsDTO.ev}, pg: ${eventsDTO.pg}`,
+      `pid: ${eventsDTO.pid}, event: ${isOutbound ? outboundUrl : eventsDTO.ev}, pg: ${eventsDTO.pg}`,
       'POST /analytics/custom',
     )
 
@@ -1404,13 +1434,14 @@ export class AnalyticsController {
     enrichTrafficSource(eventsDTO)
 
     const transformed = eventTransformer({
-      type: 'custom_event',
+      ...(isOutbound
+        ? { type: 'outbound' as const, url: outboundUrl, title: outboundTitle }
+        : { type: 'custom_event' as const, ev: eventsDTO.ev }),
       psid,
       sid,
       profileId,
       pid: eventsDTO.pid,
       host: this.analyticsService.getHostFromOrigin(headers.origin),
-      ev: eventsDTO.ev,
       pg: eventsDTO.pg,
       dv: deviceType,
       br: browserName,
@@ -1443,16 +1474,17 @@ export class AnalyticsController {
         clickhouse_settings: { async_insert: 1 },
       })
 
-      void this.trackCustomEventExperimentExposures(
-        eventsDTO.pid,
-        eventsDTO.ev,
-        profileId,
-        transformed.created,
-      )
+      if (!isOutbound)
+        void this.trackCustomEventExperimentExposures(
+          eventsDTO.pid,
+          eventsDTO.ev,
+          profileId,
+          transformed.created,
+        )
     } catch (e) {
       this.logger.error(e)
       throw new InternalServerErrorException(
-        'Error occured while saving the custom event',
+        'Error occurred while saving the event',
       )
     }
 

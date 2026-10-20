@@ -251,7 +251,7 @@ export class ProjectService {
       SELECT DISTINCT pid
       FROM events
       WHERE pid IN (${pids})
-        AND type IN ('pageview', 'custom_event')
+        AND type IN ('pageview', 'custom_event', 'outbound')
     `
 
     const { data } = await clickhouse
@@ -342,7 +342,7 @@ export class ProjectService {
     to: string,
   ): Promise<void> {
     const queries = [
-      "ALTER TABLE events DELETE WHERE pid = {pid:FixedString(12)} AND type IN ('pageview', 'custom_event', 'performance', 'error', 'captcha') AND created BETWEEN {from:String} AND {to:String}",
+      "ALTER TABLE events DELETE WHERE pid = {pid:FixedString(12)} AND type IN ('pageview', 'custom_event', 'performance', 'error', 'captcha', 'outbound') AND created BETWEEN {from:String} AND {to:String}",
       'ALTER TABLE error_statuses DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}',
     ]
 

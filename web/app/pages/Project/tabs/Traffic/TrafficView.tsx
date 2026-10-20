@@ -8,7 +8,12 @@ import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import _some from 'lodash/some'
-import { ProhibitIcon, EyeIcon, DownloadIcon } from '@phosphor-icons/react'
+import {
+  ProhibitIcon,
+  EyeIcon,
+  DownloadIcon,
+  ArrowSquareOutIcon,
+} from '@phosphor-icons/react'
 import React, {
   useState,
   useEffect,
@@ -27,6 +32,7 @@ import * as v2api from '~/api/v2/endpoints'
 import { useRevenueProxy } from '~/hooks/useAnalyticsProxy'
 import { useAnnotations } from '~/hooks/useAnnotations'
 import {
+  useBreakdownQuery,
   useCompareSummaryQuery,
   useCompareTimeseriesQuery,
   useCustomEventsQuery,
@@ -363,14 +369,34 @@ const TrafficViewInner = ({
   const summaryLoaded = Boolean(summaryQuery.data)
   const customsLoaded = Boolean(customEventsQuery.data)
 
+  const outboundPresenceQuery = useBreakdownQuery('traffic', {
+    dimension: 'outbound_link',
+    metrics: ['clicks'],
+    limit: 1,
+    enabled:
+      summaryLoaded &&
+      customsLoaded &&
+      !overall.current?.all &&
+      _isEmpty(customs),
+  })
+
   const isPanelsDataEmptyRaw =
     summaryLoaded &&
     customsLoaded &&
     !overall.current?.all &&
     !overall.current?.unique &&
-    _isEmpty(customs)
+    _isEmpty(customs) &&
+    outboundPresenceQuery.isSuccess &&
+    _isEmpty(outboundPresenceQuery.data?.data)
 
-  if (summaryLoaded && customsLoaded && !isPanelsDataEmptyRaw) {
+  if (
+    summaryLoaded &&
+    customsLoaded &&
+    (overall.current?.all ||
+      overall.current?.unique ||
+      !_isEmpty(customs) ||
+      !_isEmpty(outboundPresenceQuery.data?.data))
+  ) {
     hasShownContentRef.current = true
   }
 
@@ -755,6 +781,24 @@ const TrafficViewInner = ({
         dimension: 'exit_page',
       },
       { id: 'host', label: t('project.panelTabs.host'), dimension: 'host' },
+      {
+        id: 'outbound_link',
+        label: t('project.outboundLinks'),
+        dimension: 'outbound_link',
+        primaryMetric: 'clicks',
+        metrics: ['clicks', 'visitors'],
+        valuesHeaderName: t('project.outboundClicks'),
+        detailsExtraColumns: [
+          {
+            header: t('project.visitors'),
+            sortLabel: t('project.visitors'),
+            render: (entry) => Number(entry.visitors || 0).toLocaleString(),
+            getSortValue: (entry) => Number(entry.visitors || 0),
+          },
+        ],
+        disableRowClick: true,
+        emptyMessage: t('project.outboundLinksEmpty'),
+      },
     ],
     [t],
   )
@@ -883,10 +927,34 @@ const TrafficViewInner = ({
       if (!entryName) {
         return (
           <span className='italic'>
-            {subTabId === 'host'
-              ? t('project.unknownHost')
-              : t('common.notSet')}
+            {subTabId === 'outbound_link'
+              ? t('project.unknownDestination')
+              : subTabId === 'host'
+                ? t('project.unknownHost')
+                : t('common.notSet')}
           </span>
+        )
+      }
+
+      if (subTabId === 'outbound_link') {
+        let url: URL
+        try {
+          url = new URL(entryName)
+        } catch {
+          return entryName
+        }
+        if (!['http:', 'https:'].includes(url.protocol)) return entryName
+        return (
+          <a
+            href={url.href}
+            target='_blank'
+            rel='noopener noreferrer'
+            className='flex min-w-0 items-center gap-1.5 hover:underline'
+            onClick={(event) => event.stopPropagation()}
+          >
+            <ArrowSquareOutIcon className='size-3.5 shrink-0 text-gray-400' />
+            <span className='truncate'>{entryName}</span>
+          </a>
         )
       }
 
@@ -989,6 +1057,7 @@ const TrafficViewInner = ({
             'locale',
             'page',
             'title',
+            'outbound_link',
             'entry_page',
             'exit_page',
             'host',
@@ -1017,7 +1086,10 @@ const TrafficViewInner = ({
                     ...common,
                     dimension,
                     limit: 100,
-                    sort: 'visitors:desc',
+                    sort:
+                      dimension === 'outbound_link'
+                        ? 'clicks:desc'
+                        : 'visitors:desc',
                   })
                   .catch(() => null),
               ),
@@ -1027,7 +1099,10 @@ const TrafficViewInner = ({
             dimensions.forEach((dimension, index) => {
               const result = results[index]
               if (result && result.data.length > 0) {
-                data[dimension] = mapBreakdownRows(result.data)
+                data[dimension] = mapBreakdownRows(
+                  result.data,
+                  dimension === 'outbound_link' ? 'clicks' : 'visitors',
+                )
               }
             })
 

@@ -60,7 +60,19 @@ declare global {
  */
 export type Traits = Record<string, string | number | boolean | null>
 
+export interface OutboundLinksOptions {
+  search?: boolean
+  hash?: boolean
+  ignoreDomains?: readonly string[]
+}
+
+export interface AutoCaptureOptions {
+  outboundLinks?: boolean | OutboundLinksOptions
+}
+
 export interface LibOptions {
+  events?: AutoCaptureOptions
+
   /**
    * When set to `true`, localhost events will be sent to server.
    */
@@ -393,10 +405,55 @@ export class Lib {
     this.trackPathChange = this.trackPathChange.bind(this)
     this.heartbeat = this.heartbeat.bind(this)
     this.captureError = this.captureError.bind(this)
+    this.captureOutboundLink = this.captureOutboundLink.bind(this)
+
+    if (this.options?.events?.outboundLinks && this.canTrack()) {
+      document.addEventListener('click', this.captureOutboundLink, true)
+      document.addEventListener('auxclick', this.captureOutboundLink, true)
+    }
 
     if (this.getSessionReplayPreloadOption()) {
       void this.preloadSessionReplay().catch(() => undefined)
     }
+  }
+
+  stopAutoCapture(): void {
+    if (!isInBrowser()) return
+    document.removeEventListener('click', this.captureOutboundLink, true)
+    document.removeEventListener('auxclick', this.captureOutboundLink, true)
+  }
+
+  private captureOutboundLink(event: MouseEvent): void {
+    if (!this.canTrack() || (event.type === 'click' ? event.button !== 0 : event.button !== 1)) return
+
+    const path = event.composedPath?.() || [event.target]
+    const link = path.find((node) => node instanceof Element && node.matches('a[href], area[href]')) as
+      | Element
+      | undefined
+    if (!link || path.some((node) => node instanceof Element && node.hasAttribute('data-swetrix-ignore'))) return
+
+    const option = this.options?.events?.outboundLinks
+    const config = typeof option === 'object' ? option : {}
+
+    try {
+      const url = new URL(link.getAttribute('href')!, document.baseURI)
+      const hostname = url.hostname.replace(/^www\./, '')
+      if (!['http:', 'https:'].includes(url.protocol) || hostname === window.location.hostname.replace(/^www\./, ''))
+        return
+      if (config.ignoreDomains?.some((domain) => hostname === domain.toLowerCase().replace(/^www\./, ''))) return
+
+      url.username = ''
+      url.password = ''
+      if (!config.search) url.search = ''
+      if (!config.hash) url.hash = ''
+      if (url.href.length > 2048) return
+
+      void this.sendRequest('outbound', {
+        ...this.getEventContext(),
+        url: url.href,
+        title: document.title?.slice(0, 2048) || undefined,
+      }).catch(() => undefined)
+    } catch {}
   }
 
   captureError(event: ErrorEvent): void {
@@ -487,8 +544,15 @@ export class Lib {
       return
     }
 
-    const data = {
+    await this.sendRequest('custom', {
       ...event,
+      ...this.getEventContext(),
+      profileId: event.profileId ?? this.options?.profileId,
+    })
+  }
+
+  private getEventContext() {
+    return {
       pid: this.projectID,
       pg:
         this.activePage ||
@@ -505,9 +569,8 @@ export class Lib {
       te: getUTMTerm(),
       co: getUTMContent(),
       qs: getQueryString(),
-      profileId: event.profileId ?? this.options?.profileId,
+      profileId: this.options?.profileId,
     }
-    await this.sendRequest('custom', data)
   }
 
   trackPageViews(options?: PageViewsOptions): PageActions {
