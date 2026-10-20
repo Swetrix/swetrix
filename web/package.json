@@ -68,7 +68,7 @@
     "sanitize-html": "^2.18.1",
     "simple-icons": "^16.35.0",
     "sonner": "^2.0.8",
-    "swetrix": "^4.7.0",
+    "swetrix": "^4.8.0",
     "tailwind-merge": "^3.7.0",
     "undici": "^8.12.3",
     "vaul": "^1.1.2"
