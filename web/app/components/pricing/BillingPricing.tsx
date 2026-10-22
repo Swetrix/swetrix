@@ -183,7 +183,7 @@ const BillingPricing = ({
       })
 
       if (!opened) {
-        toast.error(t('billing.paddleStillLoading'))
+        toast.error(t('billing.checkoutPreparationError'))
         setSelectionLoading(null)
       }
 

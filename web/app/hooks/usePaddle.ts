@@ -1,16 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { PADDLE_JS_URL, PADDLE_VENDOR_ID } from '~/lib/constants'
-import { loadScript } from '~/utils/generic'
 
-const POLL_INTERVAL_MS = 200
-const MAX_ATTEMPTS = 500 // 100 seconds
+const LOAD_TIMEOUT_MS = 15_000
 
 type PaddleListener = (eventData: any) => void
 
 let initStarted = false
 let paddleReady = false
 let paddleError = false
+let initializedPaddle: any = null
 const listeners = new Set<PaddleListener>()
 const stateSubscribers = new Set<() => void>()
 
@@ -19,34 +18,60 @@ function notifyStateSubscribers() {
 }
 
 function initPaddle() {
-  if (initStarted) return
+  if (initStarted || (paddleReady && initializedPaddle === window.Paddle))
+    return
   initStarted = true
+  paddleReady = false
+  paddleError = false
+  notifyStateSubscribers()
 
-  loadScript(PADDLE_JS_URL)
+  const script = document.createElement('script')
+  script.src = PADDLE_JS_URL
+  script.async = true
 
-  let attempts = 0
-  const interval = setInterval(() => {
-    attempts += 1
+  const finish = (ready: boolean) => {
+    clearTimeout(timeout)
+    script.onload = null
+    script.onerror = null
+    initStarted = false
+    paddleReady = ready
+    paddleError = !ready
+    if (!ready) script.remove()
+    notifyStateSubscribers()
+  }
 
-    if ((window as any)?.Paddle) {
-      ;(window as any).Paddle.Setup({
+  const timeout = setTimeout(() => finish(false), LOAD_TIMEOUT_MS)
+
+  script.onload = () => {
+    try {
+      const paddle = window.Paddle
+      if (
+        typeof paddle?.Setup !== 'function' ||
+        typeof paddle?.Checkout?.open !== 'function'
+      ) {
+        finish(false)
+        return
+      }
+
+      paddle.Setup({
         vendor: PADDLE_VENDOR_ID,
         eventCallback: (eventData: any) => {
           for (const listener of listeners) listener(eventData)
         },
       })
-      paddleReady = true
-      notifyStateSubscribers()
-      clearInterval(interval)
-      return
+      initializedPaddle = paddle
+      finish(true)
+    } catch {
+      finish(false)
     }
+  }
+  script.onerror = () => finish(false)
 
-    if (attempts >= MAX_ATTEMPTS) {
-      paddleError = true
-      notifyStateSubscribers()
-      clearInterval(interval)
-    }
-  }, POLL_INTERVAL_MS)
+  try {
+    document.body.appendChild(script)
+  } catch {
+    finish(false)
+  }
 }
 
 interface UsePaddleOptions {
@@ -77,7 +102,6 @@ export function usePaddle(options: UsePaddleOptions = {}): UsePaddleResult {
     }
     stateSubscribers.add(stateSubscriber)
 
-    // Sync state in case init already completed before this effect ran
     stateSubscriber()
 
     initPaddle()
@@ -90,10 +114,32 @@ export function usePaddle(options: UsePaddleOptions = {}): UsePaddleResult {
 
   const openCheckout = useCallback(
     (checkoutOptions: Record<string, any>): boolean => {
-      if (!(window as any)?.Paddle) return false
+      if (typeof window === 'undefined') return false
 
       try {
-        ;(window as any).Paddle.Checkout.open(checkoutOptions)
+        if (paddleReady && initializedPaddle === window.Paddle) {
+          initializedPaddle.Checkout.open(checkoutOptions)
+          return true
+        }
+      } catch {
+        paddleReady = false
+        paddleError = true
+        notifyStateSubscribers()
+      }
+
+      try {
+        const url = new URL(checkoutOptions.override)
+        if (
+          url.protocol !== 'https:' ||
+          (url.hostname !== 'paddle.com' &&
+            !url.hostname.endsWith('.paddle.com')) ||
+          url.username ||
+          url.password
+        ) {
+          return false
+        }
+
+        window.location.assign(url.href)
         return true
       } catch {
         return false

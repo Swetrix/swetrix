@@ -162,7 +162,7 @@ const Subscribe = () => {
       })
 
       if (!opened) {
-        toast.error(t('billing.paddleStillLoading'))
+        toast.error(t('billing.checkoutPreparationError'))
         checkoutInProgressRef.current = false
         setSelectionLoading(null)
       }
@@ -216,18 +216,6 @@ const Subscribe = () => {
 
     if (!selectedPrice?.paddlePlanId) {
       toast.error(t('billing.planNotConfiguredForCheckout'))
-      checkoutInProgressRef.current = false
-      return
-    }
-
-    if (paddleLoadError) {
-      toast.error(t('billing.paddleLoadError'))
-      checkoutInProgressRef.current = false
-      return
-    }
-
-    if (!isPaddleLoaded || !(window as any).Paddle) {
-      toast.error(t('billing.paddleStillLoading'))
       checkoutInProgressRef.current = false
       return
     }
