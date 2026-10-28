@@ -497,6 +497,40 @@ export class BigQueryService {
     signal?: AbortSignal,
     allowIncomplete = false,
   ) {
+    let target: URL
+    try {
+      target = new URL(url)
+    } catch {
+      throw new WarehouseExportError('Invalid BigQuery request URL.', 400)
+    }
+    const isUpload =
+      target.pathname.startsWith('/upload/bigquery/v2/') ||
+      target.pathname.startsWith('/resumable/upload/bigquery/v2/')
+    if (
+      target.protocol !== 'https:' ||
+      (target.hostname !== 'bigquery.googleapis.com' &&
+        target.hostname !== 'www.googleapis.com') ||
+      target.port ||
+      target.username ||
+      target.password ||
+      target.hash ||
+      !/^[\x21-\x7e]+$/.test(url) ||
+      url.includes('\\') ||
+      !/^\/[A-Za-z0-9_/-]+$/.test(target.pathname) ||
+      (!isUpload &&
+        (target.hostname !== 'bigquery.googleapis.com' ||
+          !target.pathname.startsWith('/bigquery/v2/')))
+    ) {
+      throw new WarehouseExportError('Invalid BigQuery request URL.', 400)
+    }
+    const requestUrl = new URL(
+      target.hostname === 'bigquery.googleapis.com'
+        ? 'https://bigquery.googleapis.com'
+        : 'https://www.googleapis.com',
+    )
+    requestUrl.pathname = target.pathname
+    requestUrl.search = target.search
+
     let headers: Headers
     try {
       headers = await auth.getRequestHeaders()
@@ -510,7 +544,7 @@ export class BigQueryService {
       headers.set('content-type', 'application/json')
     let response: Response
     try {
-      response = await fetch(url, {
+      response = await fetch(requestUrl, {
         ...init,
         headers,
         redirect: 'error',

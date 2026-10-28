@@ -289,6 +289,93 @@ describe('BigQueryService', () => {
     }
   })
 
+  it.each([
+    'https://attacker.invalid/bigquery/v2/projects/test/jobs',
+    'http://bigquery.googleapis.com/bigquery/v2/projects/test/jobs',
+    'https://bigquery.googleapis.com.attacker.invalid/bigquery/v2/test',
+    'https://bigquery.googleapis.com@attacker.invalid/bigquery/v2/test',
+    'https://attacker@bigquery.googleapis.com/bigquery/v2/test',
+    'https://bigquery.googleapis.com:8443/bigquery/v2/test',
+    'http://169.254.169.254/latest/meta-data/',
+    'https://127.0.0.1/bigquery/v2/test',
+    'https://[::1]/bigquery/v2/test',
+    '//bigquery.googleapis.com/bigquery/v2/test',
+    'file:///etc/passwd',
+    'https://www.googleapis.com/storage/v1/b',
+    'https://bigquery.googleapis.com/bigquery/v2/../../../other-api',
+    'https://bigquery.googleapis.com/bigquery/v2/%2f%2fattacker.invalid',
+    'https://bigquery.googleapis.com/bigquery/v2/%252f%252fattacker.invalid',
+    'https://bigquery.googleapis.com/bigquery/v2/test#fragment',
+    'https://bigquery.googleapis.com\n/bigquery/v2/test',
+    'https://bigquery.googleapis.com\\bigquery\\v2\\test',
+    'not-a-url',
+  ])(
+    'rejects unsafe request targets before authentication: %s',
+    async (url) => {
+      const fetch = jest
+        .spyOn(global, 'fetch')
+        .mockResolvedValue(new Response('{}'))
+      const auth = {
+        getRequestHeaders: jest
+          .fn()
+          .mockResolvedValue(new Headers({ authorization: 'Bearer secret' })),
+      }
+      await expect(service.request(auth, url, {})).rejects.toThrow(
+        'Invalid BigQuery request URL',
+      )
+      expect(auth.getRequestHeaders).not.toHaveBeenCalled()
+      expect(fetch).not.toHaveBeenCalled()
+    },
+  )
+
+  it.each([
+    'https://bigquery.googleapis.com/bigquery/v2/projects/example-project/datasets/analytics',
+    'https://bigquery.googleapis.com/bigquery/v2/projects/example-project/datasets/analytics/tables/swetrix_pageviews',
+    'https://bigquery.googleapis.com/bigquery/v2/projects/example-project/jobs/swetrix_123?location=EU',
+    'https://bigquery.googleapis.com/upload/bigquery/v2/projects/example-project/jobs?uploadType=resumable',
+    'https://www.googleapis.com/upload/bigquery/v2/projects/example-project/jobs?upload_id=opaque%2Btoken%2Fid&upload_protocol=resumable',
+    'https://bigquery.googleapis.com/resumable/upload/bigquery/v2/projects/example-project/jobs?upload_id=opaque%3D',
+  ])(
+    'keeps supported API and upload requests on fixed Google origins: %s',
+    async (url) => {
+      const fetch = jest
+        .spyOn(global, 'fetch')
+        .mockResolvedValue(new Response('{}'))
+      const auth = {
+        getRequestHeaders: jest
+          .fn()
+          .mockResolvedValue(new Headers({ authorization: 'Bearer secret' })),
+      }
+      await service.request(auth, url, { redirect: 'follow' })
+      const [target, options] = fetch.mock.calls[0]
+      expect(target).toBeInstanceOf(URL)
+      expect(String(target)).toBe(url)
+      expect(new Headers(options.headers).get('authorization')).toBe(
+        'Bearer secret',
+      )
+      expect(options.redirect).toBe('error')
+    },
+  )
+
+  it('does not follow redirects to an external host', async () => {
+    const fetch = jest.spyOn(global, 'fetch').mockResolvedValue(
+      new Response(null, {
+        status: 302,
+        headers: { location: 'https://attacker.invalid/token' },
+      }),
+    )
+    const auth = { getRequestHeaders: async () => new Headers() }
+    await expect(
+      service.request(
+        auth,
+        'https://bigquery.googleapis.com/bigquery/v2/test',
+        {},
+      ),
+    ).rejects.toThrow('BigQuery could not complete the request')
+    expect(fetch).toHaveBeenCalledTimes(1)
+    expect(fetch.mock.calls[0][1].redirect).toBe('error')
+  })
+
   it('uploads large files as bounded chunks aligned to Google requirements', async () => {
     const directory = await mkdtemp(join(tmpdir(), 'swetrix-export-test-'))
     const path = join(directory, 'rows.ndjson')
