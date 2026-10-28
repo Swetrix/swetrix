@@ -42,8 +42,6 @@ import { CreateGoalDto, UpdateGoalDto } from './dto/goal.dto'
 import { GoalService } from './goal.service'
 import { clickhouse } from '../common/integrations/clickhouse'
 
-const GOALS_MAXIMUM = 50 // Maximum goals per project
-
 const timeBucketConversion: Record<string, string> = Object.assign(
   Object.create(null),
   {
@@ -211,14 +209,6 @@ export class GoalController {
       uid,
       'You are not allowed to add goals to this project',
     )
-
-    const goalsCount = await this.goalService.count(goalDto.pid)
-
-    if (goalsCount >= GOALS_MAXIMUM) {
-      throw new BadRequestException(
-        `You cannot create more than ${GOALS_MAXIMUM} goals per project.`,
-      )
-    }
 
     try {
       const newGoal = await this.goalService.create({
