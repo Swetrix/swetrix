@@ -515,7 +515,7 @@
       "items": [
         {
           "q": "What plan should I choose?",
-          "a": "Standard plans are best if you need privacy-first analytics, funnels, error tracking, bot filtering, email reports and API access. Plus plans include everything in Standard and add session replays, feature flags, A/B testing, higher API rate limits, more websites, more team members and priority support.\n\nOnce you've picked a plan type, choose the event volume based on your traffic. You can start with the {{lowestPlanEventsAmount}} events per month plan. If you already have some traffic, you can start with the {{moderatePlanEventsAmount}} events per month plan.\n\nIn any case, you can upgrade or downgrade your plan anytime, and we will pro-rate your subscription if you change your plan so it would be fair for you."
+          "a": "Standard plans are best if you need privacy-first analytics, funnels, error tracking, bot filtering, email reports and Stats and Events API access. Plus plans include everything in Standard and add session replays, feature flags, A/B testing, data warehouse integrations, higher API rate limits, more websites, more team members and priority support.\n\nOnce you've picked a plan type, choose the event volume based on your traffic. You can start with the {{lowestPlanEventsAmount}} events per month plan. If you already have some traffic, you can start with the {{moderatePlanEventsAmount}} events per month plan.\n\nIn any case, you can upgrade or downgrade your plan anytime, and we will pro-rate your subscription if you change your plan so it would be fair for you."
         },
         {
           "q": "What happens if I exceed my plan's limit?",
@@ -2401,6 +2401,10 @@
         "upgradeCta": "Go to billing"
       },
       "warehouse": {
+        "upgradeTitle": "Available on Plus and Enterprise",
+        "upgradeDescription": "Upgrade to Plus to enable scheduled BigQuery exports and the raw export API for your data pipelines.",
+        "askOwner": "Ask the project owner to upgrade to Plus to enable scheduled BigQuery exports and the raw export API.",
+        "upgrade": "Upgrade to Plus",
         "description": "Send your Swetrix pageviews and custom events to Google BigQuery every day. Exports cover complete UTC days through yesterday, including outbound clicks. Data imported from Google Analytics or other providers is not included.",
         "setupGuide": "Setup guide and export API",
         "destination": "BigQuery destination",
@@ -2443,13 +2447,14 @@
         "disconnectTitle": "Disconnect BigQuery?",
         "disconnectMessage": "This removes the saved credentials and stops future exports. A day already in progress may finish. Data already exported to BigQuery stays in your dataset.",
         "otherWarehouses": "Snowflake, Redshift, and other destinations",
-        "otherWarehousesHint": "Use the export API with your own pipeline to load other warehouses. The setup guide includes the API format and examples.",
+        "otherWarehousesHint": "On Plus and Enterprise, use the export API with your own pipeline to load other warehouses. The setup guide includes the API format and examples.",
         "status": {
           "idle": "Daily exports enabled",
           "queued": "Export queued",
           "syncing": "Export in progress",
           "error": "Export needs attention",
-          "paused": "Exports paused"
+          "paused": "Exports paused",
+          "planRequired": "Plus or Enterprise is required to export"
         }
       },
       "dataImport": {
@@ -3369,6 +3374,7 @@
       "sessionReplays": "Session replays",
       "featureFlags": "Feature flags",
       "abTesting": "A/B testing",
+      "dataWarehouse": "Data warehouse integrations",
       "twentyXHigherApiRateLimits": "20x higher API rate limits",
       "prioritySupport": "Priority support",
       "dedicatedAccountManager": "Dedicated account manager for ongoing support",
@@ -3400,6 +3406,7 @@
         },
         "featureFlags": "Roll features out gradually, target cohorts or individual users, and turn changes off without another deploy.",
         "abTesting": "Run experiments against goals, split visitors across variants, and compare conversion results before shipping a change to everyone.",
+        "dataWarehouse": "Export pageviews and custom events to Google BigQuery daily, with historical backfill. Use the raw export API with your own pipeline for Snowflake, Redshift, or other warehouses.",
         "twentyXHigherApiRateLimits": "Standard plans include 300 API requests per hour. Plus plans include 6,000 API requests per hour, which is 20x higher.",
         "teamMembers": {
           "projects": "Members are people you invite to your projects, such as teammates or clients. Give them admin or viewer access to collaborate on your analytics.",
@@ -3508,7 +3515,7 @@
     },
     "included": {
       "title": "What's included",
-      "subtitle": "The event allowance below follows the volume selected above. Standard includes the complete analytics toolkit; Plus raises workspace limits and adds replays and experiments.",
+      "subtitle": "The event allowance below follows the volume selected above. Standard includes the complete analytics toolkit; Plus raises workspace limits and adds replays, experiments and data warehouse integrations.",
       "cards": {
         "events": {
           "title": "events per month",
@@ -3575,7 +3582,7 @@
         },
         {
           "q": "Should I choose Standard or Plus?",
-          "a": "Choose Standard for the core analytics suite, including traffic, funnels, performance monitoring, error tracking, reports and API access. Choose Plus if you also need session replays, feature flags, A/B testing, higher workspace limits or priority support."
+          "a": "Choose Standard for the core analytics suite, including traffic, funnels, performance monitoring, error tracking, reports and Stats and Events API access. Choose Plus if you also need session replays, feature flags, A/B testing, data warehouse integrations, higher workspace limits or priority support."
         },
         {
           "q": "What happens if I exceed my event limit?",

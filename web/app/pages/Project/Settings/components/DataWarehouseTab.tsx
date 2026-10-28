@@ -14,6 +14,7 @@ import { Link } from '~/ui/Link'
 import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
 import { Text } from '~/ui/Text'
+import routes from '~/utils/routes'
 
 const DOCS_URL = 'https://swetrix.com/docs/integrations/data-warehouse'
 const MAX_CREDENTIAL_BYTES = 20000
@@ -50,7 +51,15 @@ const connectionForm = (
   startDate: connection.startDate,
 })
 
-export default function DataWarehouseTab({ projectId }: { projectId: string }) {
+export default function DataWarehouseTab({
+  projectId,
+  hasAccess,
+  isOwner,
+}: {
+  projectId: string
+  hasAccess: boolean
+  isOwner: boolean
+}) {
   const { t } = useTranslation('common')
   const [connection, setConnection] = useState<DataWarehouseConnection | null>(
     null,
@@ -80,7 +89,7 @@ export default function DataWarehouseTab({ projectId }: { projectId: string }) {
   const syncing =
     connection?.status === 'syncing' || connection?.status === 'queued'
   const busy = actionFetcher.state !== 'idle'
-  const editingDisabled = busy || syncing
+  const editingDisabled = busy || syncing || !hasAccess
 
   const fetchConnection = useCallback(() => {
     submitList(
@@ -184,6 +193,7 @@ export default function DataWarehouseTab({ projectId }: { projectId: string }) {
   const submitConfiguration = (
     intent: 'save-data-warehouse' | 'test-data-warehouse',
   ) => {
+    if (!hasAccess) return
     if (!formRef.current?.reportValidity()) return
     const raw = credentials.trim()
     if (raw) {
@@ -223,13 +233,14 @@ export default function DataWarehouseTab({ projectId }: { projectId: string }) {
   const submitAction = (
     intent: 'sync-data-warehouse' | 'delete-data-warehouse',
   ) => {
+    if (intent === 'sync-data-warehouse' && !hasAccess) return
     setActionError(null)
     actionMode.current = intent === 'delete-data-warehouse' ? 'delete' : 'sync'
     actionFetcher.submit({ intent }, { method: 'post', action: settingsAction })
   }
 
   const toggleEnabled = () => {
-    if (!connection) return
+    if (!connection || (!connection.enabled && !hasAccess)) return
     setActionError(null)
     actionMode.current = 'toggle'
     actionFetcher.submit(
@@ -261,6 +272,28 @@ export default function DataWarehouseTab({ projectId }: { projectId: string }) {
         </Link>
       </div>
 
+      {!hasAccess ? (
+        <Alert
+          variant='info'
+          title={t('project.settings.warehouse.upgradeTitle')}
+        >
+          <div className='flex flex-col items-start gap-3'>
+            <span>
+              {t(
+                isOwner
+                  ? 'project.settings.warehouse.upgradeDescription'
+                  : 'project.settings.warehouse.askOwner',
+              )}
+            </span>
+            {isOwner ? (
+              <Button to={routes.billing_choose_plan} size='sm'>
+                {t('project.settings.warehouse.upgrade')}
+              </Button>
+            ) : null}
+          </div>
+        </Alert>
+      ) : null}
+
       {loadError ? (
         <Alert variant='error'>
           <div className='flex flex-wrap items-center justify-between gap-3'>
@@ -287,7 +320,13 @@ export default function DataWarehouseTab({ projectId }: { projectId: string }) {
               <Text weight='semibold'>Google BigQuery</Text>
               <Text size='sm' colour='secondary' aria-live='polite'>
                 {t(
-                  `project.settings.warehouse.status.${connection.enabled ? connection.status : 'paused'}`,
+                  `project.settings.warehouse.status.${
+                    !connection.enabled
+                      ? 'paused'
+                      : hasAccess
+                        ? connection.status
+                        : 'planRequired'
+                  }`,
                 )}
               </Text>
             </div>
@@ -295,7 +334,7 @@ export default function DataWarehouseTab({ projectId }: { projectId: string }) {
               <Button
                 variant='secondary'
                 size='sm'
-                disabled={busy || syncing || !connection.enabled}
+                disabled={busy || syncing || !connection.enabled || !hasAccess}
                 onClick={() => submitAction('sync-data-warehouse')}
               >
                 <ArrowClockwiseIcon
@@ -307,7 +346,7 @@ export default function DataWarehouseTab({ projectId }: { projectId: string }) {
               <Button
                 variant='secondary'
                 size='sm'
-                disabled={busy}
+                disabled={busy || (!connection.enabled && !hasAccess)}
                 onClick={toggleEnabled}
               >
                 {t(
@@ -357,13 +396,13 @@ export default function DataWarehouseTab({ projectId }: { projectId: string }) {
               </dd>
             </div>
           </dl>
-          {connection.enabled && syncing ? (
+          {hasAccess && connection.enabled && syncing ? (
             <Text size='sm' colour='secondary'>
               {t('project.settings.warehouse.nextDate', {
                 date: connection.nextDate,
               })}
             </Text>
-          ) : connection.enabled && connection.nextSyncAt ? (
+          ) : hasAccess && connection.enabled && connection.nextSyncAt ? (
             <Text size='sm' colour='secondary'>
               {t('project.settings.warehouse.nextSync', {
                 date: new Date(connection.nextSyncAt).toLocaleString(),
@@ -383,7 +422,7 @@ export default function DataWarehouseTab({ projectId }: { projectId: string }) {
 
       {actionError ? <Alert variant='error'>{actionError}</Alert> : null}
 
-      {!loadError || connection ? (
+      {hasAccess && (!loadError || connection) ? (
         <form
           ref={formRef}
           className='flex flex-col gap-5'

@@ -1,6 +1,6 @@
 # Cloud warehouse exports
 
-This module owns Cloud-only BigQuery delivery and the scoped raw-event export API. Community Edition does not register the module. Customer instructions and the schema are in `docs/content/docs/integrations/data-warehouse.mdx`.
+This module owns Cloud-only BigQuery delivery and the scoped raw-event export API. Both require the project owner's effective plan to include `PlanFeatureCode.dataWarehouse`: Plus and Enterprise qualify; Standard does not. The caller's own plan does not override the project owner's plan. Community Edition does not register the module. Customer instructions and the schema are in `docs/content/docs/integrations/data-warehouse.mdx`.
 
 ## Deployment
 
@@ -22,6 +22,8 @@ The module uses the existing Google authentication library and queue infrastruct
 - Populated partitions are replaced using load jobs; empty days remove that date's existing rows. A successful day requires both destination tables to finish.
 - Pausing or disconnecting prevents subsequent work. A request already uploading a day can finish. Disconnecting never deletes Google tables.
 - Workers recheck the current project owner and account status before each day. An ownership change disables delivery until the connection is saved with new credentials. Changes to the destination, start date, or owner reset the backfill checkpoint. Credential-only rotation preserves progress.
+- Plan checks apply to raw exports, connection tests, creation, configuration or credential changes, resume, manual sync, scheduled dispatch, and each day's background export. Losing warehouse access disables delivery and clears its next scheduled run while preserving credentials and checkpoints. A day already in flight may finish. Upgrading requires an explicit resume.
+- Viewing status, pausing an existing connection without changing its configuration, and disconnecting remain available after a downgrade. The ordinary aggregated Statistics API is unchanged.
 - Deletion in Swetrix does not guarantee deletion from old BigQuery partitions, derived tables, or other exported copies. Customers manage warehouse retention and erasure.
 
 ## Verification before customer rollout
@@ -37,5 +39,7 @@ Local mocked tests cannot establish Google IAM, upload, or production scheduling
 5. Check automatic scheduling across multiple workers, pause/resume, credential rotation, disconnection, project deletion, and project ownership changes.
 6. Call the raw export endpoint with a project-restricted key granting Analytics and Events read access. Verify wrong-project keys, missing scopes, public visitors, and read-only project users cannot export.
 7. Verify download cancellation closes the source query and failed/incomplete downloads are not published by the example pipeline.
+8. Verify a Standard project owner cannot create, edit, test, resume, manually sync, or use raw exports, even when the collaborator making the request has Plus. Repeat with Plus and Enterprise project owners to confirm access. Verify trial, free, and no-plan owners do not gain access.
+9. Downgrade a project with a queued or running export and verify no new day starts after the next plan check. Status, pause, and disconnect must still work. Upgrade again and confirm Resume preserves progress and restarts delivery. Verify the ordinary Statistics API still works on Standard.
 
 Keep service-account JSON, access tokens, and raw event contents out of logs and incident reports. Diagnose failures from the safe error status, the destination's Google job history, and queue state.

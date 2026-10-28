@@ -15,6 +15,7 @@ import { Queue } from 'bullmq'
 import { In, LessThanOrEqual, Repository } from 'typeorm'
 import { ProjectService } from '../project/project.service'
 import { Project } from '../project/entity/project.entity'
+import { PlanFeatureCode } from '../user/entities/user.entity'
 import { DataExport } from './entity/data-export.entity'
 import { BigQueryService } from './bigquery.service'
 import {
@@ -81,6 +82,10 @@ export class DataExportService {
 
   async authorizeExport(projectId: string, uid: string) {
     const project = await this.authorize(projectId, uid)
+    this.projects.assertProjectOwnerFeatureAccess(
+      project,
+      PlanFeatureCode.dataWarehouse,
+    )
     this.assertAccountActive(project)
     return project
   }
@@ -182,6 +187,12 @@ export class DataExportService {
       previous.ownerId !== project.admin.id ||
       configKeys.some((key) => previous[key] !== dto[key])
     const changed = resetHistory || Boolean(dto.credentials)
+    if (changed || dto.enabled) {
+      this.projects.assertProjectOwnerFeatureAccess(
+        project,
+        PlanFeatureCode.dataWarehouse,
+      )
+    }
     const credentials = changed
       ? this.credentials(dto, previous, project.admin.id)
       : null
@@ -350,6 +361,12 @@ export class DataExportService {
     })
     for (const connection of due) {
       try {
+        const project = await this.projects.getFullProject(connection.projectId)
+        if (
+          !project ||
+          (await this.pauseIfPlanUnavailable(connection, project))
+        )
+          continue
         await this.enqueue(connection)
       } catch {
         this.logger.warn(
@@ -357,6 +374,31 @@ export class DataExportService {
         )
       }
     }
+  }
+
+  private async pauseIfPlanUnavailable(
+    connection: DataExport,
+    project: Project,
+  ) {
+    if (
+      this.projects.projectOwnerHasFeature(
+        project,
+        PlanFeatureCode.dataWarehouse,
+      )
+    ) {
+      return false
+    }
+    await this.connections.update(
+      { id: connection.id, revision: connection.revision },
+      {
+        enabled: false,
+        status: 'error',
+        nextSyncAt: null,
+        lastError:
+          'Data warehouse integrations require the project owner to have a Plus or Enterprise plan. Upgrade and resume the connection.',
+      },
+    )
+    return true
   }
 
   async process(data: DataExportJob) {
@@ -371,7 +413,10 @@ export class DataExportService {
     if (!connection) return
     const criteria = { id: connection.id, revision: connection.revision }
     if (!connection.enabled) {
-      await this.connections.update(criteria, { status: 'idle' })
+      await this.connections.update(
+        { ...criteria, enabled: false, status: In(['queued', 'syncing']) },
+        { status: 'idle' },
+      )
       return
     }
     try {
@@ -386,11 +431,15 @@ export class DataExportService {
         })
         return
       }
+      if (await this.pauseIfPlanUnavailable(connection, project)) return
       this.assertAccountActive(project)
-      await this.connections.update(criteria, {
-        status: 'syncing',
-        lastError: null,
-      })
+      await this.connections.update(
+        { ...criteria, enabled: true },
+        {
+          status: 'syncing',
+          lastError: null,
+        },
+      )
       const credentials = this.credentials(
         {} as SaveDataExportDto,
         connection,
@@ -409,7 +458,14 @@ export class DataExportService {
         const current = await this.connections.findOneBy(criteria)
         if (!current || !current.enabled) {
           if (current)
-            await this.connections.update(criteria, { status: 'idle' })
+            await this.connections.update(
+              {
+                ...criteria,
+                enabled: false,
+                status: In(['queued', 'syncing']),
+              },
+              { status: 'idle' },
+            )
           return
         }
         const currentProject = await this.projects.getFullProject(
@@ -427,6 +483,8 @@ export class DataExportService {
           })
           return
         }
+        if (await this.pauseIfPlanUnavailable(connection, currentProject))
+          return
         this.assertAccountActive(currentProject)
         rows += await this.bigQuery.exportDay(
           connection,
@@ -452,18 +510,36 @@ export class DataExportService {
           : new Date() < todayMorning
             ? todayMorning
             : tomorrowMorning
-      await this.connections.update(criteria, {
-        status: 'idle',
-        nextSyncAt,
-        lastError: null,
-      })
+      const completed = await this.connections.update(
+        { ...criteria, enabled: true },
+        {
+          status: 'idle',
+          nextSyncAt,
+          lastError: null,
+        },
+      )
+      if (!completed.affected) {
+        await this.connections.update(
+          { ...criteria, enabled: false, status: In(['queued', 'syncing']) },
+          { status: 'idle' },
+        )
+      }
     } catch (error) {
       const message = this.safeError(error)
-      await this.connections.update(criteria, {
-        status: 'error',
-        lastError: message,
-        nextSyncAt: new Date(Date.now() + 6 * 60 * 60 * 1000),
-      })
+      const failed = await this.connections.update(
+        { ...criteria, enabled: true },
+        {
+          status: 'error',
+          lastError: message,
+          nextSyncAt: new Date(Date.now() + 6 * 60 * 60 * 1000),
+        },
+      )
+      if (!failed.affected) {
+        await this.connections.update(
+          { ...criteria, enabled: false, status: In(['queued', 'syncing']) },
+          { status: 'idle' },
+        )
+      }
       throw new Error(message)
     }
   }

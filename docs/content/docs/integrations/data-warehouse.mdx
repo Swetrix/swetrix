@@ -2,16 +2,16 @@
 id: data-warehouse
 title: Data warehouse connectors
 sidebar_label: Data warehouse connectors
-description: "Export Swetrix Cloud pageviews and custom events to BigQuery, or use the raw export API to build pipelines for other data warehouses."
+description: "Export Swetrix Cloud pageviews and custom events to BigQuery on Plus or Enterprise, or use the raw export API to build pipelines for other data warehouses."
 ---
 
 Connect Swetrix Cloud to BigQuery to keep a daily copy of your pageviews and custom events in your own Google Cloud project. Use these tables in SQL queries, Looker Studio, or another BI tool that supports BigQuery.
 
 For Snowflake, Redshift, and other destinations, use the [raw export API](#export-api-for-other-warehouses) in your own pipeline. BigQuery is the built-in destination; Swetrix does not provide a native Snowflake, Redshift, Airbyte, or Fivetran connector.
 
-<Callout type="info" title="Cloud Edition only">
+<Callout type="info" title="Plus and Enterprise · Cloud Edition">
 
-Warehouse settings and the raw export API are available in Swetrix Cloud. They are not included in Community Edition. You need permission to manage the project to configure a connection or export raw data.
+The BigQuery connector and raw warehouse export API require the project owner's **Plus** or **Enterprise** plan. They are not included in Standard or Community Edition. A collaborator's subscription does not change the project's access. You also need permission to manage the project to configure a connection or export raw data.
 
 </Callout>
 
@@ -74,6 +74,12 @@ Use **Sync now** to request another sync. Pausing or disconnecting stops subsequ
 Swetrix manages the contents and schema of its export tables. Keep your derived metrics, joins, and manually inserted data in separate tables or views. A refreshed partition replaces its existing rows.
 
 Changing destination settings or the start date restarts backfill from the configured start date. Rotating only the service account key preserves progress. Wait for the current export to finish before making these changes. A change of project ownership disables the saved connection; the new owner must save it with a new service account key to resume delivery and restart backfill.
+
+### After a plan downgrade
+
+When the project owner's plan no longer includes warehouse exports, Swetrix disables scheduled delivery. Queued jobs and running syncs recheck plan access before exporting each day; a day already being uploaded can finish. The saved connection, credentials, and backfill progress are retained, and previously exported BigQuery data stays in your account.
+
+You can still view the connection's status, pause it, or disconnect it. Creating or editing a connection, testing it, resuming delivery, syncing manually, and using the raw export API require Plus or Enterprise. After upgrading, choose **Resume** to continue from the saved progress.
 
 ## Query the exported data
 
@@ -141,7 +147,7 @@ Deleting data in Swetrix does not automatically delete every previously exported
 
 ## Export API for other warehouses
 
-Use the raw export API to load Snowflake, Redshift, object storage, or another destination from your own scheduled job. A BigQuery connection is not required.
+Use the raw export API to load Snowflake, Redshift, object storage, or another destination from your own scheduled job. A BigQuery connection is not required, but the project owner must have Plus or Enterprise.
 
 From the project owner's account, create a [scoped API key](/settings/api-keys) with **Analytics: Read only**, **Events: Read only**, and access to the selected project. Scoped keys currently select projects owned by that account. Public dashboard access, a dashboard password, or read-only sharing does not grant raw export access.
 
@@ -178,9 +184,9 @@ For a reliable pipeline:
 4. Advance your checkpoint only after both loads succeed. Re-fetch the three most recent completed days to pick up late arrivals.
 5. Retry transient errors and `429` responses with backoff. API requests share the account's API rate limit.
 
-Invalid dates or event types return a client error. Missing or invalid credentials return `401`; insufficient permissions return `403`. If the connection closes during a streamed response, treat the entire download as incomplete even if some valid JSON lines were received.
+Invalid dates or event types return a client error. Missing or invalid credentials return `401`; insufficient permissions return `403`. A project owner's plan without warehouse access returns `402`. If the connection closes during a streamed response, treat the entire download as incomplete even if some valid JSON lines were received.
 
-For aggregated reports rather than individual events, use the [Statistics API v2](/statistics-api-v2).
+For aggregated reports rather than individual events, use the [Statistics API v2](/statistics-api-v2). Its existing availability on Standard is unchanged; the Plus requirement applies to the warehouse connector and raw export API.
 
 ## Troubleshooting
 
@@ -194,3 +200,4 @@ For aggregated reports rather than individual events, use the [Statistics API v2
 | Missing recent data             | Exports contain completed UTC days and run asynchronously. Check progress and the last error in project settings. |
 | Quota or temporary Google error | Correct any quota issue, then use Sync now. Retrying replaces the affected daily partition.                       |
 | Daily export size limit         | Use the streaming export API if a day's combined uncompressed export exceeds 10 GiB.                              |
+| Plan access error               | The project owner needs Plus or Enterprise. After upgrading, resume the saved connection.                         |

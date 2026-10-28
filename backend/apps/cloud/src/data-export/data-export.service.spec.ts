@@ -1,4 +1,4 @@
-import { ForbiddenException } from '@nestjs/common'
+import { ForbiddenException, HttpException, HttpStatus } from '@nestjs/common'
 import { generateKeyPairSync } from 'crypto'
 
 jest.mock('../project/project.service', () => ({ ProjectService: class {} }))
@@ -13,6 +13,12 @@ import { DataExportService } from './data-export.service'
 import { DataExport } from './entity/data-export.entity'
 import { SaveDataExportDto, validateExportDate } from './data-export.dto'
 import { WarehouseExportError } from './data-export.schema'
+import {
+  PlanCode,
+  PlanFeatureCode,
+  PlanType,
+  userHasPlanFeature,
+} from '../user/entities/user.entity'
 
 const key = generateKeyPairSync('rsa', { modulusLength: 2048 })
   .privateKey.export({ format: 'pem', type: 'pkcs8' })
@@ -61,14 +67,19 @@ function setup(initial: DataExport | null = makeConnection()) {
     findOne: jest.fn(async () => record && { ...record }),
     find: jest.fn(async () => (record ? [{ ...record }] : [])),
     update: jest.fn(async (where, value) => {
-      if (
+      const matches =
         record &&
         (!where.id || where.id === record.id) &&
-        (!where.revision || where.revision === record.revision)
-      ) {
+        (!where.revision || where.revision === record.revision) &&
+        (where.enabled === undefined || where.enabled === record.enabled) &&
+        (!where.status ||
+          (typeof where.status === 'string'
+            ? where.status === record.status
+            : where.status.value.includes(record.status)))
+      if (matches) {
         record = { ...record, ...value }
       }
-      return { affected: record ? 1 : 0 }
+      return { affected: matches ? 1 : 0 }
     }),
     save: jest.fn(async (value) => {
       record = { ...record, ...value }
@@ -90,10 +101,28 @@ function setup(initial: DataExport | null = makeConnection()) {
   repository.manager = {
     transaction: async (fn: any) => fn({ getRepository: () => repository }),
   }
-  const project = { id: 'abcdefghijkl', admin: { id: 'owner-id' } }
+  const project = {
+    id: 'abcdefghijkl',
+    admin: {
+      id: 'owner-id',
+      planCode: PlanCode['100k'],
+      planType: PlanType.plus,
+    },
+  }
   const projects: any = {
     getFullProject: jest.fn(async () => project),
     allowedToManage: jest.fn(),
+    projectOwnerHasFeature: jest.fn((project, feature) =>
+      userHasPlanFeature(project?.admin, feature),
+    ),
+    assertProjectOwnerFeatureAccess: jest.fn((project, feature) => {
+      if (!userHasPlanFeature(project?.admin, feature)) {
+        throw new HttpException(
+          'This feature is not available on the current project owner plan.',
+          HttpStatus.PAYMENT_REQUIRED,
+        )
+      }
+    }),
   }
   const bigQuery: any = {
     validate: jest.fn(async () => {}),
@@ -158,6 +187,223 @@ describe('warehouse orchestration', () => {
       service.authorizeExport('abcdefghijkl', 'viewer'),
     ).rejects.toThrow(ForbiddenException)
     expect(bigQuery.validate).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    [PlanCode['100k'], PlanType.plus, true],
+    [PlanCode['100k'], PlanType.enterprise, true],
+    [PlanCode['100k'], PlanType.standard, false],
+    [PlanCode['100k'], null, false],
+    [PlanCode.trial, PlanType.plus, false],
+    [PlanCode.free, PlanType.plus, false],
+    [PlanCode.none, PlanType.enterprise, false],
+  ])(
+    'uses the existing plan policy for %s / %s (warehouse access: %s)',
+    async (planCode, planType, allowed) => {
+      const { service, project, projects } = setup()
+      Object.assign(project.admin, { planCode, planType })
+      expect(
+        userHasPlanFeature(project.admin, PlanFeatureCode.dataWarehouse),
+      ).toBe(allowed)
+      if (allowed) {
+        await expect(
+          service.authorizeExport(project.id, 'owner-id'),
+        ).resolves.toBe(project)
+      } else {
+        await expect(
+          service.authorizeExport(project.id, 'owner-id'),
+        ).rejects.toMatchObject({ status: HttpStatus.PAYMENT_REQUIRED })
+      }
+      expect(projects.assertProjectOwnerFeatureAccess).toHaveBeenCalledWith(
+        project,
+        PlanFeatureCode.dataWarehouse,
+      )
+    },
+  )
+
+  it.each([
+    'raw export',
+    'test connection',
+    'sync now',
+    'create enabled',
+    'create paused',
+    'change destination while paused',
+    'rotate credentials while paused',
+    'resume',
+    'save enabled',
+  ])('rejects %s for a Standard owner before external work', async (action) => {
+    const initial = action.startsWith('create')
+      ? null
+      : makeConnection({ enabled: action !== 'resume' })
+    const { service, project, bigQuery, queue, repository, dto } =
+      setup(initial)
+    project.admin.planType = PlanType.standard
+    let operation: Promise<unknown>
+    switch (action) {
+      case 'raw export':
+        operation = service.authorizeExport(project.id, 'owner-id')
+        break
+      case 'test connection':
+        operation = service.test(project.id, 'owner-id', dto())
+        break
+      case 'sync now':
+        operation = service.sync(project.id, 'owner-id')
+        break
+      default:
+        operation = service.save(
+          project.id,
+          'owner-id',
+          dto({
+            ...(action.startsWith('create') ? { credentials } : {}),
+            ...(action === 'change destination while paused'
+              ? { datasetId: 'another_dataset' }
+              : {}),
+            ...(action === 'rotate credentials while paused'
+              ? { credentials }
+              : {}),
+            enabled: !action.includes('paused'),
+          }),
+        )
+    }
+    await expect(operation).rejects.toMatchObject({
+      status: HttpStatus.PAYMENT_REQUIRED,
+    })
+    expect(bigQuery.validate).not.toHaveBeenCalled()
+    expect(bigQuery.exportDay).not.toHaveBeenCalled()
+    expect(queue.add).not.toHaveBeenCalled()
+    expect(repository.save).not.toHaveBeenCalled()
+  })
+
+  it('keeps status, unchanged pause and disconnect available after a downgrade', async () => {
+    const { service, project, dto, bigQuery, queue, record, projects } = setup()
+    project.admin.planType = PlanType.standard
+    await expect(service.get(project.id, 'owner-id')).resolves.toHaveProperty(
+      'connection.id',
+      'connection-id',
+    )
+    await service.save(project.id, 'owner-id', dto({ enabled: false }))
+    expect(record().enabled).toBe(false)
+    await service.remove(project.id, 'owner-id')
+    expect(record()).toBeNull()
+    expect(projects.assertProjectOwnerFeatureAccess).not.toHaveBeenCalled()
+    expect(bigQuery.validate).not.toHaveBeenCalled()
+    expect(bigQuery.exportDay).not.toHaveBeenCalled()
+    expect(queue.add).not.toHaveBeenCalled()
+  })
+
+  it('uses the billed project owner plan rather than the requesting manager plan', async () => {
+    const { service, project, projects } = setup()
+    await expect(
+      service.authorizeExport(project.id, 'standard-manager'),
+    ).resolves.toBe(project)
+    expect(projects.allowedToManage).toHaveBeenLastCalledWith(
+      project,
+      'standard-manager',
+    )
+    project.admin.planType = PlanType.standard
+    await expect(
+      service.authorizeExport(project.id, 'plus-manager'),
+    ).rejects.toMatchObject({ status: HttpStatus.PAYMENT_REQUIRED })
+    expect(projects.allowedToManage).toHaveBeenLastCalledWith(
+      project,
+      'plus-manager',
+    )
+    expect(projects.assertProjectOwnerFeatureAccess).toHaveBeenLastCalledWith(
+      project,
+      PlanFeatureCode.dataWarehouse,
+    )
+  })
+
+  it('disables a scheduled export after downgrade without adding a queue job', async () => {
+    const { service, project, queue, bigQuery, record } = setup()
+    project.admin.planType = PlanType.standard
+    await service.schedule()
+    expect(queue.add).not.toHaveBeenCalled()
+    expect(bigQuery.exportDay).not.toHaveBeenCalled()
+    expect(record()).toMatchObject({
+      enabled: false,
+      status: 'error',
+      nextSyncAt: null,
+      nextDate: '2026-10-27',
+      lastSyncedDate: '2026-10-26',
+    })
+    expect(record().lastError).toContain('Plus')
+  })
+
+  it('disables an already queued export after downgrade without losing its checkpoint', async () => {
+    const { service, project, bigQuery, job, record } = setup(
+      makeConnection({ status: 'queued' }),
+    )
+    project.admin.planType = PlanType.standard
+    await service.process(job)
+    expect(bigQuery.exportDay).not.toHaveBeenCalled()
+    expect(record()).toMatchObject({
+      enabled: false,
+      status: 'error',
+      nextSyncAt: null,
+      nextDate: '2026-10-27',
+      lastSyncedDate: '2026-10-26',
+    })
+    expect(record().lastError).toContain('Plus')
+  })
+
+  it('preserves the plan error when a queued job or retry runs after the scheduler disabled it', async () => {
+    const { service, project, bigQuery, job, record } = setup(
+      makeConnection({ status: 'queued' }),
+    )
+    project.admin.planType = PlanType.standard
+    await service.schedule()
+    await service.process(job)
+    await service.process(job)
+    expect(bigQuery.exportDay).not.toHaveBeenCalled()
+    expect(record()).toMatchObject({
+      enabled: false,
+      status: 'error',
+      nextSyncAt: null,
+    })
+    expect(record().lastError).toContain('Plus')
+  })
+
+  it('preserves a scheduler downgrade during the final day instead of reporting success', async () => {
+    const { service, project, bigQuery, job, record } = setup(
+      makeConnection({ startDate: '2026-10-26', nextDate: '2026-10-26' }),
+    )
+    bigQuery.exportDay.mockImplementationOnce(async () => {
+      project.admin.planType = PlanType.standard
+      await service.schedule()
+      return 10
+    })
+    await service.process(job)
+    expect(bigQuery.exportDay).toHaveBeenCalledTimes(1)
+    expect(record()).toMatchObject({
+      enabled: false,
+      status: 'error',
+      nextSyncAt: null,
+      nextDate: '2026-10-27',
+      lastSyncedDate: '2026-10-26',
+    })
+    expect(record().lastError).toContain('Plus')
+  })
+
+  it('stops between days after downgrade and preserves the completed day checkpoint', async () => {
+    const { service, project, bigQuery, job, record } = setup(
+      makeConnection({ nextDate: '2026-10-01', lastSyncedDate: null }),
+    )
+    bigQuery.exportDay.mockImplementationOnce(async () => {
+      project.admin.planType = PlanType.standard
+      return 10
+    })
+    await service.process(job)
+    expect(bigQuery.exportDay).toHaveBeenCalledTimes(1)
+    expect(record()).toMatchObject({
+      enabled: false,
+      status: 'error',
+      nextSyncAt: null,
+      nextDate: '2026-10-02',
+      lastSyncedDate: '2026-10-01',
+      lastRowCount: 10,
+    })
+    expect(record().lastError).toContain('Plus')
   })
 
   it('refreshes the latest three completed days without moving the high-water mark backwards', async () => {
@@ -250,6 +496,20 @@ describe('warehouse orchestration', () => {
     await service.process(job)
     expect(bigQuery.exportDay).toHaveBeenCalledTimes(1)
     expect(record().status).toBe('idle')
+  })
+
+  it('clears syncing status when manually paused during the final day', async () => {
+    const { service, bigQuery, job, repository, record } = setup(
+      makeConnection({ startDate: '2026-10-26', nextDate: '2026-10-26' }),
+    )
+    bigQuery.exportDay.mockImplementationOnce(async () => {
+      await repository.update({}, { enabled: false })
+      return 10
+    })
+    await service.process(job)
+    expect(record().enabled).toBe(false)
+    expect(record().status).toBe('idle')
+    expect(record().nextDate).toBe('2026-10-27')
   })
 
   it('disables the connector after an ownership transfer before exporting data', async () => {

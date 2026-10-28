@@ -1197,7 +1197,14 @@ const ProjectSettings = () => {
                   description={activeTabConfig.description}
                   iconColorClass={activeTabConfig.iconColor}
                 />
-                <DataWarehouseTab key={id} projectId={id} />
+                <DataWarehouseTab
+                  key={id}
+                  projectId={id}
+                  hasAccess={
+                    initialProject.featureAccess?.dataWarehouse === true
+                  }
+                  isOwner={initialProject.role === 'owner'}
+                />
               </>
             ) : null}
             {activeTab === 'proxy' && activeTabConfig ? (
