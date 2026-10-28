@@ -166,14 +166,14 @@ The response is `application/x-ndjson`: one JSON object per line, using the sche
 curl --fail --show-error \
   'https://api.swetrix.com/v1/data-export/YOUR_PROJECT_ID/events?date=2026-10-01&type=pageviews' \
   -H "X-Api-Key: $SWETRIX_API_KEY" \
-  --output pageviews-2026-10-01.ndjson.part && \
-  mv pageviews-2026-10-01.ndjson.part pageviews-2026-10-01.ndjson
+  --output pageviews-2026-10-01.ndjson.part || exit 1
+mv pageviews-2026-10-01.ndjson.part pageviews-2026-10-01.ndjson || exit 1
 
 curl --fail --show-error \
   'https://api.swetrix.com/v1/data-export/YOUR_PROJECT_ID/events?date=2026-10-01&type=custom_events' \
   -H "X-Api-Key: $SWETRIX_API_KEY" \
-  --output custom-events-2026-10-01.ndjson.part && \
-  mv custom-events-2026-10-01.ndjson.part custom-events-2026-10-01.ndjson
+  --output custom-events-2026-10-01.ndjson.part || exit 1
+mv custom-events-2026-10-01.ndjson.part custom-events-2026-10-01.ndjson || exit 1
 ```
 
 For a reliable pipeline:

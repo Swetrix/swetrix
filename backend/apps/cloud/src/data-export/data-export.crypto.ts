@@ -30,10 +30,17 @@ export const decryptWarehouseCredentials = (
   projectId: string,
   connectionId: string,
 ) => {
-  const [iv, tag, encrypted] = credentials
-    .split('.')
-    .map((part) => Buffer.from(part, 'base64'))
-  const decipher = createDecipheriv('aes-256-gcm', encryptionKey(), iv)
+  const parts = credentials.split('.')
+  if (parts.length !== 3) {
+    throw new Error('Invalid warehouse credential payload')
+  }
+  const [iv, tag, encrypted] = parts.map((part) => Buffer.from(part, 'base64'))
+  if (tag.length !== 16) {
+    throw new Error('Invalid warehouse credential authentication tag')
+  }
+  const decipher = createDecipheriv('aes-256-gcm', encryptionKey(), iv, {
+    authTagLength: 16,
+  })
   decipher.setAAD(Buffer.from(`${projectId}:${connectionId}`))
   decipher.setAuthTag(tag)
   return Buffer.concat([decipher.update(encrypted), decipher.final()]).toString(

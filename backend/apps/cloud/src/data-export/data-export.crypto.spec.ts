@@ -69,4 +69,34 @@ describe('warehouse credential storage', () => {
       encryptWarehouseCredentials('key', 'project', 'connection'),
     ).toThrow('SECRET_KEY_BASE')
   })
+
+  it.each([0, 1, 2, 4])('rejects payloads with %i parts', (count) => {
+    const parts = encryptWarehouseCredentials(
+      'private-key',
+      'project',
+      'connection',
+    ).split('.')
+    const payload = [...parts, 'extra'].slice(0, count).join('.')
+    expect(() =>
+      decryptWarehouseCredentials(payload, 'project', 'connection'),
+    ).toThrow()
+  })
+
+  it.each([0, 4, 8, 12, 15, 17])(
+    'rejects %i-byte authentication tags',
+    (length) => {
+      const parts = encryptWarehouseCredentials(
+        'private-key',
+        'project',
+        'connection',
+      ).split('.')
+      const tag = Buffer.from(parts[1], 'base64')
+      parts[1] = Buffer.concat([tag, Buffer.alloc(1)])
+        .subarray(0, length)
+        .toString('base64')
+      expect(() =>
+        decryptWarehouseCredentials(parts.join('.'), 'project', 'connection'),
+      ).toThrow()
+    },
+  )
 })
