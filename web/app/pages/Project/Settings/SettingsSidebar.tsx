@@ -218,6 +218,7 @@ const SettingsSidebar = <TabId extends string>({
           'revenue',
           'sessionReplays',
           'import',
+          'warehouse',
         ] as TabId[],
       },
       {

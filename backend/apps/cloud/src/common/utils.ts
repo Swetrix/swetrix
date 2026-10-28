@@ -38,7 +38,8 @@ export const deriveKey = (
     | 'gsc-token'
     | 'ga4-token'
     | 'revenue'
-    | 'api-key',
+    | 'api-key'
+    | 'data-export',
   length = 32,
 ) => {
   const baseStr = process.env.SECRET_KEY_BASE

@@ -36,6 +36,7 @@ import { BullModule } from '@nestjs/bullmq'
 import { ToolsModule } from './tools/tools.module'
 import { PendingInvitationModule } from './pending-invitation/pending-invitation.module'
 import { DataImportModule } from './data-import/data-import.module'
+import { DataExportModule } from './data-export/data-export.module'
 import { NotificationChannelModule } from './notification-channel/notification-channel.module'
 import { AdminModule } from './admin/admin.module'
 
@@ -105,6 +106,7 @@ const modules = [
   ToolsModule,
   PendingInvitationModule,
   DataImportModule,
+  DataExportModule,
   NotificationChannelModule,
   AdminModule,
 ]

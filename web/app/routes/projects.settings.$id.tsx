@@ -7,7 +7,8 @@ import type {
 import { data, redirect } from 'react-router'
 
 import { serverFetch } from '~/api/api.server'
-import { getOgImageUrl } from '~/lib/constants'
+import { getOgImageUrl, isSelfhosted } from '~/lib/constants'
+import type { DataWarehouseConnection } from '~/lib/models/DataExport'
 import { Project, DataImport, ProxyDomain } from '~/lib/models/Project'
 import { Subscriber } from '~/lib/models/Subscriber'
 import ProjectSettings from '~/pages/Project/Settings'
@@ -105,6 +106,7 @@ export interface ProjectSettingsActionData {
   shareId?: string
   role?: string
   revenueCurrencyRequestId?: string
+  warehouseConnection?: DataWarehouseConnection | null
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
@@ -115,6 +117,86 @@ export async function action({ request, params }: ActionFunctionArgs) {
   const intent = formData.get('intent')?.toString()
 
   switch (intent) {
+    case 'get-data-warehouse':
+    case 'save-data-warehouse':
+    case 'test-data-warehouse':
+    case 'sync-data-warehouse':
+    case 'delete-data-warehouse': {
+      if (isSelfhosted) {
+        return data<ProjectSettingsActionData>(
+          {
+            intent,
+            error: 'Data warehouse connections are available on Swetrix Cloud.',
+          },
+          { status: 404 },
+        )
+      }
+
+      if (!id) {
+        return data<ProjectSettingsActionData>(
+          { intent, error: 'Project ID is required' },
+          { status: 400 },
+        )
+      }
+
+      const hasConfiguration =
+        intent === 'save-data-warehouse' || intent === 'test-data-warehouse'
+      const credentials = formData.get('credentials')?.toString().trim()
+      const body = hasConfiguration
+        ? {
+            gcpProjectId: formData.get('gcpProjectId')?.toString().trim(),
+            datasetId: formData.get('datasetId')?.toString().trim(),
+            location: formData.get('location')?.toString().trim(),
+            tablePrefix: formData.get('tablePrefix')?.toString().trim(),
+            startDate: formData.get('startDate')?.toString(),
+            enabled: formData.get('enabled') === 'true',
+            ...(credentials ? { credentials } : {}),
+          }
+        : undefined
+      const suffix =
+        intent === 'test-data-warehouse'
+          ? '/test'
+          : intent === 'sync-data-warehouse'
+            ? '/sync'
+            : ''
+      const method =
+        intent === 'get-data-warehouse'
+          ? 'GET'
+          : intent === 'delete-data-warehouse'
+            ? 'DELETE'
+            : intent === 'save-data-warehouse'
+              ? 'PUT'
+              : 'POST'
+      const result = await serverFetch<{
+        connection?: DataWarehouseConnection | null
+      }>(request, `data-export/${encodeURIComponent(id)}${suffix}`, {
+        method,
+        body,
+        timeoutMs: hasConfiguration ? 60000 : 15000,
+      })
+
+      return data<ProjectSettingsActionData>(
+        result.error
+          ? {
+              intent,
+              error: Array.isArray(result.error)
+                ? result.error.join('. ')
+                : result.error,
+            }
+          : {
+              intent,
+              success: true,
+              ...(result.data && 'connection' in result.data
+                ? { warehouseConnection: result.data.connection }
+                : {}),
+            },
+        {
+          status: result.error ? result.status || 400 : 200,
+          headers: createHeadersWithCookies(result.cookies),
+        },
+      )
+    }
+
     case 'update-project': {
       const name = formData.get('name')?.toString()
       const isPublic = formData.has('public')

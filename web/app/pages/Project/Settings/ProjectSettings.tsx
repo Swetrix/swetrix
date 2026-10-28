@@ -23,6 +23,7 @@ import {
   BellRingingIcon,
   GlobeIcon,
   VideoCameraIcon,
+  DatabaseIcon,
 } from '@phosphor-icons/react'
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
@@ -68,6 +69,7 @@ import BotProtectionReport from './components/BotProtectionReport'
 import DeleteDataModal from './components/DeleteDataModal'
 import DataImportTab from './components/DataImportTab'
 import ProxyDomainsTab from './components/ProxyDomainsTab'
+import DataWarehouseTab from './components/DataWarehouseTab'
 import SettingsSidebar, { SettingsTabConfig } from './SettingsSidebar'
 
 const MAX_NAME_LENGTH = 50
@@ -244,6 +246,7 @@ const ProjectSettings = () => {
     | 'people'
     | 'annotations'
     | 'import'
+    | 'warehouse'
     | 'proxy'
     | 'danger'
 
@@ -350,6 +353,16 @@ const ProjectSettings = () => {
             icon: DownloadIcon,
             iconColor: 'text-cyan-500',
             visible: true,
+          },
+          {
+            id: 'warehouse',
+            label: t('project.settings.tabs.warehouse'),
+            description: t('project.settings.tabs.warehouseDesc'),
+            icon: DatabaseIcon,
+            iconColor: 'text-blue-500',
+            visible:
+              !isSelfhosted &&
+              (project?.role === 'owner' || project?.role === 'admin'),
           },
           {
             id: 'proxy',
@@ -1174,6 +1187,17 @@ const ProjectSettings = () => {
                   iconColorClass={activeTabConfig.iconColor}
                 />
                 <DataImportTab projectId={id} />
+              </>
+            ) : null}
+            {activeTab === 'warehouse' && !isSelfhosted && activeTabConfig ? (
+              <>
+                <TabHeader
+                  icon={activeTabConfig.icon}
+                  label={activeTabConfig.label}
+                  description={activeTabConfig.description}
+                  iconColorClass={activeTabConfig.iconColor}
+                />
+                <DataWarehouseTab key={id} projectId={id} />
               </>
             ) : null}
             {activeTab === 'proxy' && activeTabConfig ? (
