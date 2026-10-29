@@ -515,7 +515,7 @@
       "items": [
         {
           "q": "Qual plano devo escolher?",
-          "a": "Os planos Standard são ideais se você precisa de analytics focado em privacidade, funis, rastreamento de erros, filtragem de bots, relatórios por e-mail e acesso à API. Os planos Plus incluem tudo do Standard e adicionam replays de sessão, feature flags, testes A/B, maiores limites de taxa de API, mais sites, mais membros da equipe e suporte prioritário.\n\nDepois de escolher um tipo de plano, escolha o volume de eventos com base no seu tráfego. Você pode começar com o plano de {{lowestPlanEventsAmount}} eventos por mês. Se você já tem algum tráfego, pode começar com o plano de {{moderatePlanEventsAmount}} eventos por mês.\n\nDe qualquer forma, você pode fazer upgrade ou downgrade do seu plano a qualquer momento, e nós faremos o rateio da sua assinatura caso você mude de plano para que seja justo para você."
+          "a": "Os planos Standard são ideais se você precisa de análises com foco em privacidade, funis, rastreamento de erros, filtragem de bots, relatórios por e-mail e acesso à API de Estatísticas e Eventos. Os planos Plus incluem tudo do Standard e adicionam gravações de sessão, feature flags, testes A/B, integrações com data warehouse, limites de taxa de API mais altos, mais sites, mais membros na equipe e suporte prioritário.\n\nDepois de escolher um tipo de plano, escolha o volume de eventos com base no seu tráfego. Você pode começar com o plano de {{lowestPlanEventsAmount}} eventos por mês. Se você já tem algum tráfego, pode começar com o plano de {{moderatePlanEventsAmount}} eventos por mês.\n\nDe qualquer forma, você pode fazer upgrade ou downgrade do seu plano a qualquer momento, e nós calcularemos sua assinatura de forma proporcional se você mudar de plano, para que seja justo com você."
         },
         {
           "q": "O que acontece se eu exceder o limite do meu plano?",
@@ -2346,6 +2346,8 @@
         "sessionReplaysDesc": "Configure a retenção de replays e as configurações de replay do projeto.",
         "import": "Importar dados",
         "importDesc": "Importar dados de analytics de outras plataformas",
+        "warehouse": "Data warehouse",
+        "warehouseDesc": "Exporte suas métricas para o Google BigQuery e outros pipelines de dados.",
         "proxy": "Proxy gerenciado",
         "proxyDesc": "Roteie o script de rastreamento e eventos analíticos pelo seu próprio domínio para contornar bloqueadores de anúncios."
       },
@@ -2398,6 +2400,63 @@
         "upgradeTitle": "Precisa de mais capacidade de replay?",
         "upgradeDescription": "Maior retenção e maior capacidade de replay estão disponíveis por meio de upgrades nos direitos de replay.",
         "upgradeCta": "Ir para faturamento"
+      },
+      "warehouse": {
+        "upgradeTitle": "Disponível nos planos Plus e Enterprise",
+        "upgradeDescription": "Faça o upgrade para o Plus para habilitar exportações agendadas do BigQuery e a API de exportação bruta para os seus pipelines de dados.",
+        "askOwner": "Peça ao dono do projeto para fazer o upgrade para o Plus para habilitar as exportações agendadas do BigQuery e a API de exportação bruta.",
+        "upgrade": "Fazer upgrade para o Plus",
+        "description": "Envie suas visualizações de página e eventos personalizados do Swetrix para o Google BigQuery todos os dias. As exportações cobrem dias UTC completos até ontem, incluindo cliques de saída. Dados importados do Google Analytics ou de outros provedores não estão incluídos.",
+        "setupGuide": "Guia de configuração e API de exportação",
+        "destination": "Destino do BigQuery",
+        "destinationHint": "Crie um dataset no Google Cloud, depois conceda à sua conta de serviço os papéis de BigQuery Job User no projeto do Google Cloud e BigQuery Data Editor nesse dataset. Os testes criam as tabelas de exportação, se necessário. Cobranças de armazenamento e consulta do Google Cloud se aplicam.",
+        "googleProject": "ID do projeto no Google Cloud",
+        "dataset": "ID do dataset",
+        "location": "Localização do dataset",
+        "locationHint": "Use a localização exata do dataset, como EU, US ou europe-west2.",
+        "tablePrefix": "Prefixo da tabela",
+        "tablePrefixHint": "Cria tabelas separadas de pageviews e custom_events para este projeto do Swetrix.",
+        "startDate": "Exportar dados históricos de",
+        "startDateHint": "Escolha o primeiro dia UTC para exportar. Apenas os dados ainda retidos no Swetrix estão disponíveis.",
+        "credentials": "JSON da conta de serviço",
+        "credentialsHint": "Cole a chave JSON da conta de serviço ou escolha o arquivo abaixo. As credenciais são armazenadas de forma criptografada.",
+        "credentialsSavedHint": "Uma chave já está salva. Deixe isso em branco para mantê-la ou forneça uma nova chave JSON para substituí-la.",
+        "credentialsFile": "Ou escolha um arquivo de chave JSON",
+        "credentialsRequired": "Forneça uma chave JSON da conta de serviço para conectar ao BigQuery.",
+        "invalidCredentials": "Escolha uma chave JSON de conta de serviço válida não maior que 20 KB.",
+        "connect": "Conectar BigQuery",
+        "save": "Salvar alterações",
+        "saved": "Conexão do warehouse salva",
+        "test": "Testar conexão",
+        "testPassed": "Conexão verificada. Salve as alterações para usar estas configurações.",
+        "connectionStatus": "Status da conexão do warehouse",
+        "serviceAccount": "Conta de serviço",
+        "exportedThrough": "Exportado até (UTC)",
+        "lastSync": "Última exportação bem-sucedida",
+        "lastRows": "Linhas no último dia exportado",
+        "nextDate": "Próximo dia de exportação: {{date}} (UTC)",
+        "nextSync": "Próxima exportação programada: {{date}}",
+        "notYet": "Ainda não exportado",
+        "syncNow": "Sincronizar agora",
+        "syncQueued": "Exportação na fila",
+        "pause": "Pausar",
+        "resume": "Retomar",
+        "inFlight": "Pausar impede a exportação do próximo dia. Um dia já em andamento pode ser concluído.",
+        "retry": "Tentar novamente",
+        "disconnect": "Desconectar",
+        "disconnected": "Warehouse desconectado",
+        "disconnectTitle": "Desconectar BigQuery?",
+        "disconnectMessage": "Isso remove as credenciais salvas e interrompe exportações futuras. Um dia já em andamento pode ser concluído. Os dados já exportados para o BigQuery permanecem no seu conjunto de dados.",
+        "otherWarehouses": "Snowflake, Redshift e outros destinos",
+        "otherWarehousesHint": "Nos planos Plus e Enterprise, use a API de exportação com seu próprio pipeline para carregar outros warehouses. O guia de configuração inclui o formato da API e exemplos.",
+        "status": {
+          "idle": "Exportações diárias ativadas",
+          "queued": "Exportação na fila",
+          "syncing": "Exportação em andamento",
+          "error": "Exportação precisa de atenção",
+          "paused": "Exportações pausadas",
+          "planRequired": "Plus ou Enterprise é necessário para exportar"
+        }
       },
       "dataImport": {
         "importFrom": "Importar de",
@@ -3320,6 +3379,7 @@
       "sessionReplays": "Replays de sessão",
       "featureFlags": "Feature flags",
       "abTesting": "Teste A/B",
+      "dataWarehouse": "Integrações de data warehouse",
       "twentyXHigherApiRateLimits": "Limites de taxa de API 20x maiores",
       "prioritySupport": "Suporte prioritário",
       "dedicatedAccountManager": "Gerente de contas dedicado para suporte contínuo",
@@ -3351,6 +3411,7 @@
         },
         "featureFlags": "Lance recursos gradualmente, direcione a grupos ou usuários individuais e desative alterações sem a necessidade de um novo deploy.",
         "abTesting": "Execute experimentos com base em metas, divida os visitantes entre variantes e compare os resultados de conversão antes de lançar uma mudança para todos.",
+        "dataWarehouse": "Exporte visualizações de página e eventos personalizados para o Google BigQuery diariamente, com preenchimento de dados históricos. Use a API de exportação de dados brutos com seu próprio pipeline para Snowflake, Redshift ou outros data warehouses.",
         "twentyXHigherApiRateLimits": "Os planos Standard incluem 300 requisições de API por hora. Os planos Plus incluem 6.000 requisições de API por hora, o que é 20x maior.",
         "teamMembers": {
           "projects": "Membros são pessoas que você convida para seus projetos, como colegas de equipe ou clientes. Dê a eles acesso de administrador ou visualizador para colaborarem no seu analytics.",
@@ -3459,7 +3520,7 @@
     },
     "included": {
       "title": "O que está incluído",
-      "subtitle": "A franquia de eventos abaixo segue o volume selecionado acima. O plano Standard inclui o kit completo de ferramentas de análise; o Plus aumenta os limites do workspace e adiciona gravações e experimentos.",
+      "subtitle": "A franquia de eventos abaixo acompanha o volume selecionado acima. O Standard inclui o kit completo de ferramentas de analytics; o Plus aumenta os limites do workspace e adiciona replays, experimentos e integrações de data warehouse.",
       "cards": {
         "events": {
           "title": "eventos por mês",
@@ -3526,7 +3587,7 @@
         },
         {
           "q": "Devo escolher Standard ou Plus?",
-          "a": "Escolha o Standard para a suíte de analytics principal, incluindo tráfego, funis, monitoramento de performance, rastreamento de erros, relatórios e acesso à API. Escolha o Plus se você também precisar de replays de sessão, feature flags, testes A/B, maiores limites de workspace ou suporte prioritário."
+          "a": "Escolha o Standard para a suíte principal de analytics, incluindo tráfego, funis, monitoramento de desempenho, rastreamento de erros, relatórios e acesso à API de Stats e Events. Escolha o Plus se você também precisar de replays de sessão, feature flags, testes A/B, integrações de data warehouse, limites maiores de workspace ou suporte prioritário."
         },
         {
           "q": "O que acontece se eu ultrapassar meu limite de eventos?",
