@@ -515,7 +515,7 @@
       "items": [
         {
           "q": "Jaki plan wybrać?",
-          "a": "Plany Standard są najlepsze, jeśli potrzebujesz analityki chroniącej prywatność, lejków, śledzenia błędów, filtrowania botów, raportów e-mail i dostępu do API. Plany Plus obejmują wszystko, co Standard, i dodatkowo odtwarzanie sesji, flagi funkcji, testy A/B, wyższe limity zapytań do API, więcej stron internetowych, więcej członków zespołu i priorytetowe wsparcie.\n\nPo wybraniu typu planu wybierz ilość zdarzeń na podstawie Twojego ruchu. Możesz zacząć od planu {{lowestPlanEventsAmount}} zdarzeń miesięcznie. Jeśli masz już jakiś ruch, możesz zacząć od planu {{moderatePlanEventsAmount}} zdarzeń miesięcznie.\n\nW każdym przypadku możesz w każdej chwili zaktualizować lub obniżyć swój plan, a my proporcjonalnie rozliczymy Twoją subskrypcję w przypadku zmiany planu, aby było to dla Ciebie uczciwe."
+          "a": "Plany Standard są najlepsze, jeśli potrzebujesz analityki chroniącej prywatność, lejków, śledzenia błędów, filtrowania botów, raportów e-mailowych oraz dostępu do API statystyk i zdarzeń. Plany Plus zawierają wszystko to, co Standard, i dodatkowo oferują powtórki sesji, flagi funkcji, testy A/B, integracje z hurtowniami danych, wyższe limity API, więcej witryn internetowych, więcej członków zespołu oraz priorytetowe wsparcie.\n\nPo wybraniu typu planu wybierz objętość zdarzeń na podstawie ruchu. Możesz zacząć od planu {{lowestPlanEventsAmount}} zdarzeń miesięcznie. Jeśli masz już pewien ruch, możesz zacząć od planu {{moderatePlanEventsAmount}} zdarzeń miesięcznie.\n\nW każdym przypadku możesz zmienić plan na wyższy lub niższy w dowolnym momencie. Zmiana zostanie proporcjonalnie rozliczona, aby było to dla Ciebie uczciwe."
         },
         {
           "q": "Co się stanie, jeśli przekroczę limit mojego planu?",
@@ -2347,6 +2347,8 @@
         "sessionReplaysDesc": "Skonfiguruj przechowywanie powtórek i ustawienia powtórek projektu.",
         "import": "Importuj dane",
         "importDesc": "Importuj dane analityczne z innych platform",
+        "warehouse": "Hurtownia danych",
+        "warehouseDesc": "Eksportuj swoje analizy do Google BigQuery i innych potoków danych.",
         "proxy": "Zarządzane proxy",
         "proxyDesc": "Kieruj skrypt śledzący i zdarzenia analityczne przez własną domenę, aby ominąć programy blokujące reklamy."
       },
@@ -2399,6 +2401,63 @@
         "upgradeTitle": "Potrzebujesz większej pojemności powtórek?",
         "upgradeDescription": "Dłuższe przechowywanie i wyższa pojemność powtórek są dostępne w ramach zaktualizowanych uprawnień do powtórek.",
         "upgradeCta": "Przejdź do płatności"
+      },
+      "warehouse": {
+        "upgradeTitle": "Dostępne w planach Plus i Enterprise",
+        "upgradeDescription": "Zaktualizuj plan do wersji Plus, aby włączyć zaplanowane eksporty do BigQuery i eksportowanie surowych danych przez API do swoich potoków danych.",
+        "askOwner": "Poproś właściciela projektu o zaktualizowanie planu do wersji Plus, aby włączyć zaplanowane eksporty do BigQuery i eksportowanie surowych danych przez API.",
+        "upgrade": "Zaktualizuj do Plus",
+        "description": "Codziennie wysyłaj swoje odsłony i zdarzenia niestandardowe ze Swetrix do Google BigQuery. Eksporty obejmują pełne dni w strefie czasowej UTC aż do wczoraj, włączając w to kliknięcia wychodzące. Dane zaimportowane z Google Analytics lub od innych dostawców nie są dołączone.",
+        "setupGuide": "Instrukcja konfiguracji i API eksportu",
+        "destination": "Miejsce docelowe BigQuery",
+        "destinationHint": "Utwórz zbiór danych w Google Cloud, a następnie przyznaj swojemu kontu usługi role BigQuery Job User w projekcie Google Cloud oraz BigQuery Data Editor w tym zbiorze danych. W razie potrzeby podczas testowania tworzone są tabele eksportu. Obowiązują opłaty za pamięć masową i zapytania w Google Cloud.",
+        "googleProject": "Identyfikator projektu Google Cloud",
+        "dataset": "Identyfikator zbioru danych",
+        "location": "Lokalizacja zbioru danych",
+        "locationHint": "Użyj dokładnej lokalizacji zbioru danych, takiej jak EU, US lub europe-west2.",
+        "tablePrefix": "Prefiks tabeli",
+        "tablePrefixHint": "Tworzy oddzielne tabele pageviews i custom_events dla tego projektu Swetrix.",
+        "startDate": "Eksportuj dane historyczne od",
+        "startDateHint": "Wybierz pierwszy dzień według UTC, od którego chcesz eksportować dane. Dostępne są tylko dane nadal przechowywane w Swetrix.",
+        "credentials": "Plik JSON konta usługi",
+        "credentialsHint": "Wklej klucz JSON konta usługi lub wybierz jego plik poniżej. Dane uwierzytelniające są przechowywane w formie zaszyfrowanej.",
+        "credentialsSavedHint": "Klucz jest już zapisany. Pozostaw to pole puste, aby go zachować, lub podaj nowy klucz JSON, aby go zastąpić.",
+        "credentialsFile": "Albo wybierz plik z kluczem JSON",
+        "credentialsRequired": "Podaj klucz JSON konta usługi, aby połączyć BigQuery.",
+        "invalidCredentials": "Wybierz prawidłowy klucz JSON konta usługi o wielkości nie większej niż 20 KB.",
+        "connect": "Połącz BigQuery",
+        "save": "Zapisz zmiany",
+        "saved": "Zapisano połączenie z hurtownią",
+        "test": "Przetestuj połączenie",
+        "testPassed": "Połączenie zweryfikowane. Zapisz zmiany, aby użyć tych ustawień.",
+        "connectionStatus": "Status połączenia z hurtownią",
+        "serviceAccount": "Konto usługi",
+        "exportedThrough": "Eksportowano do (UTC)",
+        "lastSync": "Ostatni udany eksport",
+        "lastRows": "Wiersze w ostatnim wyeksportowanym dniu",
+        "nextDate": "Następny dzień eksportu: {{date}} (UTC)",
+        "nextSync": "Następny zaplanowany eksport: {{date}}",
+        "notYet": "Jeszcze nie wyeksportowano",
+        "syncNow": "Synchronizuj teraz",
+        "syncQueued": "Eksport w kolejce",
+        "pause": "Wstrzymaj",
+        "resume": "Wznów",
+        "inFlight": "Wstrzymanie zatrzymuje eksport następnego dnia. Dzień już rozpoczęty może zostać zakończony.",
+        "retry": "Spróbuj ponownie",
+        "disconnect": "Rozłącz",
+        "disconnected": "Hurtownia rozłączona",
+        "disconnectTitle": "Rozłączyć BigQuery?",
+        "disconnectMessage": "To usunie zapisane dane uwierzytelniające i zatrzyma przyszłe eksporty. Trwający dzień może zostać zakończony. Dane już wyeksportowane do BigQuery pozostaną w Twoim zestawie danych.",
+        "otherWarehouses": "Snowflake, Redshift i inne miejsca docelowe",
+        "otherWarehousesHint": "W planach Plus i Enterprise użyj API do eksportu z własnym potokiem, aby załadować inne hurtownie. Przewodnik konfiguracji zawiera format API i przykłady.",
+        "status": {
+          "idle": "Codzienne eksporty włączone",
+          "queued": "Eksport w kolejce",
+          "syncing": "Eksport w toku",
+          "error": "Eksport wymaga uwagi",
+          "paused": "Eksporty wstrzymane",
+          "planRequired": "Do eksportu wymagany jest plan Plus lub Enterprise"
+        }
       },
       "dataImport": {
         "importFrom": "Importuj z",
@@ -3325,6 +3384,7 @@
       "sessionReplays": "Odtwarzanie sesji",
       "featureFlags": "Flagi funkcji",
       "abTesting": "Testy A/B",
+      "dataWarehouse": "Integracje z hurtowniami danych",
       "twentyXHigherApiRateLimits": "20x wyższe limity API",
       "prioritySupport": "Priorytetowe wsparcie",
       "dedicatedAccountManager": "Dedykowany opiekun konta do bieżącego wsparcia",
@@ -3356,6 +3416,7 @@
         },
         "featureFlags": "Wprowadzaj funkcje stopniowo, kieruj je do grup docelowych lub pojedynczych użytkowników i wyłączaj zmiany bez kolejnego wdrożenia.",
         "abTesting": "Przeprowadzaj eksperymenty względem celów, dzieląc odwiedzających na różne warianty i porównując wyniki konwersji, zanim udostępnisz zmianę wszystkim.",
+        "dataWarehouse": "Codziennie eksportuj odsłony i niestandardowe zdarzenia do Google BigQuery, z uzupełnianiem danych historycznych. Użyj API surowego eksportu we własnym potoku danych dla Snowflake, Redshift lub innych hurtowni.",
         "twentyXHigherApiRateLimits": "Standardowe plany obejmują 300 żądań API na godzinę. Plany Plus obejmują 6000 żądań API na godzinę, co jest 20-krotnie wyższą wartością.",
         "teamMembers": {
           "projects": "Członkowie to osoby, które zapraszasz do swoich projektów, na przykład współpracownicy lub klienci. Przyznaj im dostęp administratora lub widza, aby współpracować nad analityką.",
@@ -3464,7 +3525,7 @@
     },
     "included": {
       "title": "Co jest wliczone",
-      "subtitle": "Poniższy limit zdarzeń zależy od objętości wybranej powyżej. Plan Standard obejmuje kompletny zestaw narzędzi analitycznych; Plus zwiększa limity obszarów roboczych oraz dodaje powtórki i eksperymenty.",
+      "subtitle": "Poniższy przydział zdarzeń odpowiada wybranemu powyżej wolumenowi. Plan Standard obejmuje kompletny zestaw narzędzi analitycznych; Plus zwiększa limity przestrzeni roboczej i dodaje nagrania sesji, eksperymenty oraz integracje z hurtowniami danych.",
       "cards": {
         "events": {
           "title": "zdarzeń na miesiąc",
@@ -3531,7 +3592,7 @@
         },
         {
           "q": "Czy powinienem wybrać plan Standard czy Plus?",
-          "a": "Wybierz plan Standard dla podstawowego pakietu analitycznego, w tym ruchu, lejków, monitorowania wydajności, śledzenia błędów, raportów i dostępu do API. Wybierz plan Plus, jeśli potrzebujesz również powtórek sesji, flag funkcji, testów A/B, wyższych limitów w przestrzeni roboczej lub priorytetowego wsparcia."
+          "a": "Wybierz plan Standard, aby uzyskać podstawowy pakiet analityczny, w tym analizę ruchu, lejki, monitorowanie wydajności, śledzenie błędów, raporty oraz dostęp do Stats and Events API. Wybierz plan Plus, jeśli potrzebujesz również nagrań sesji, flag funkcji, testów A/B, integracji z hurtowniami danych, wyższych limitów przestrzeni roboczej lub priorytetowego wsparcia."
         },
         {
           "q": "Co się stanie, jeśli przekroczę mój limit zdarzeń?",

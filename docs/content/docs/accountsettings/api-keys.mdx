@@ -47,6 +47,7 @@ Some responses combine resources and require multiple read permissions:
 - Project lists and details include saved funnels, so they need **Project settings** and **Funnels**.
 - Funnel and journey session lists also need **Analytics**, **Events**, and **Errors**. Error session lists also need **Analytics**.
 - Queries that filter on custom events or event metadata also require **Events**.
+- Cloud [raw warehouse exports](/integrations/data-warehouse#export-api-for-other-warehouses) require **Analytics** and **Events**, permission to manage the project, and the project owner's **Plus** or **Enterprise** plan.
 
 Permissions apply to API-enabled endpoints. Account credentials, billing, and API-key management still require a signed-in session. Public tracking endpoints continue to accept ordinary tracker requests without a key; when a key is supplied, its permissions and project access are checked. A key does not grant any rights beyond those of its account.
 

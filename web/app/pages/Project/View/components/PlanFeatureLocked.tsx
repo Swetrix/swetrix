@@ -27,7 +27,7 @@ const featureDocsAriaLabels: Record<(typeof allowedFeatures)[number], string> =
 
 const PlanFeatureLocked = ({ feature }: PlanFeatureLockedProps) => {
   const { t } = useTranslation('common')
-  const safeFeature = allowedFeatures.includes(feature) ? feature : null
+  const safeFeature = allowedFeatures.find((allowed) => allowed === feature)
   const { isOwner } = useProjectFeatureAccess(safeFeature || 'featureFlags')
   const audience = isOwner ? 'owner' : 'viewer'
 

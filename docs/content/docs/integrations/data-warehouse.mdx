@@ -1,0 +1,203 @@
+---
+id: data-warehouse
+title: Data warehouse connectors
+sidebar_label: Data warehouse connectors
+description: "Export Swetrix Cloud pageviews and custom events to BigQuery on Plus or Enterprise, or use the raw export API to build pipelines for other data warehouses."
+---
+
+Connect Swetrix Cloud to BigQuery to keep a daily copy of your pageviews and custom events in your own Google Cloud project. Use these tables in SQL queries, Looker Studio, or another BI tool that supports BigQuery.
+
+For Snowflake, Redshift, and other destinations, use the [raw export API](#export-api-for-other-warehouses) in your own pipeline. BigQuery is the built-in destination; Swetrix does not provide a native Snowflake, Redshift, Airbyte, or Fivetran connector.
+
+<Callout type="info" title="Plus and Enterprise · Cloud Edition">
+
+The BigQuery connector and raw warehouse export API require the project owner's **Plus** or **Enterprise** plan. They are not included in Standard or Community Edition. A collaborator's subscription does not change the project's access. You also need permission to manage the project to configure a connection or export raw data.
+
+</Callout>
+
+## What is exported?
+
+Each export contains individual events recorded by Swetrix:
+
+| Table                  | Contents                                                          |
+| ---------------------- | ----------------------------------------------------------------- |
+| `PREFIX_pageviews`     | Pageviews, including page properties.                             |
+| `PREFIX_custom_events` | Custom events and their metadata, including outbound link events. |
+
+Both tables use the [same schema](#export-schema) and are partitioned by `event_date`, the UTC date of the event. The default prefix is based on your Swetrix Project ID, so projects can share a dataset without sharing tables.
+
+Exports do not contain imported historical data from Google Analytics, Plausible, or another analytics provider. They also exclude session replay recordings, errors, performance timings, revenue transactions, and Google Search Console data. Historical backfill only includes native events still stored in Swetrix.
+
+The built-in BigQuery connector supports up to 10 GiB of uncompressed export data per project per UTC day, combining both tables. For larger days, use the streaming export API in your own pipeline.
+
+Dashboard totals can differ from a warehouse query if the dashboard includes imported data, uses a different timezone, or applies filters. Visitor IDs are Swetrix's analytics identifiers; they are not Google Analytics client IDs or permanent identities across days. `profile_id` is populated only where an event was associated with a profile.
+
+## Connect BigQuery
+
+### 1. Prepare Google Cloud
+
+1. Choose a Google Cloud project and enable the **BigQuery API**.
+2. Create a dataset for Swetrix, for example `swetrix_analytics`. Note its **Dataset ID** and **Data location**. The location in Swetrix must match the dataset, for example `EU`, `US`, or `europe-west2`. See [Google's dataset location guide](https://cloud.google.com/bigquery/docs/locations).
+3. Create a dedicated service account for the integration.
+4. Grant that service account **BigQuery Job User** (`roles/bigquery.jobUser`) on the Google Cloud project and **BigQuery Data Editor** (`roles/bigquery.dataEditor`) on the destination dataset. This lets it run load jobs and manage the destination tables. You do not need to grant project-wide BigQuery Admin access. See [Google's BigQuery roles reference](https://cloud.google.com/iam/docs/roles-permissions/bigquery).
+5. Create and download a **JSON key** for the service account. See [Google's service account key instructions](https://cloud.google.com/iam/docs/keys-create-delete). If your organisation prohibits service account keys, use the export API from an approved pipeline instead.
+
+Swetrix uploads directly to BigQuery; a Cloud Storage bucket is not required. Google charges your account for applicable storage and query usage. Review [BigQuery pricing](https://cloud.google.com/bigquery/pricing) when choosing retention and BI queries.
+
+### 2. Configure the connection in Swetrix
+
+Open **Project Settings → Data warehouse** and enter:
+
+| Setting                 | Value                                                                                                                 |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Google Cloud project ID | The destination project's ID, such as `company-analytics`. Use the ID rather than the display name or project number. |
+| Dataset ID              | An existing dataset, such as `swetrix_analytics`.                                                                     |
+| Location                | The destination dataset's exact location.                                                                             |
+| Table prefix            | A unique prefix for this Swetrix project. Swetrix adds `_pageviews` and `_custom_events`.                             |
+| Start date              | The first UTC date to export. Choose a completed day, no earlier than `2000-01-01`.                                   |
+| Service account JSON    | The downloaded JSON key.                                                                                              |
+
+Test the connection, then save it. Testing checks dataset access, location, and job permissions, and creates missing export tables. It does not export event data. Swetrix creates and manages its own export tables; use a fresh prefix rather than the name of an existing business table. One BigQuery connection can be configured per Swetrix project.
+
+The saved private key is encrypted and is never returned by the settings API. When editing an existing connection, leave the credential field empty to keep its saved key. To rotate credentials, supply a new JSON key, save and verify a successful sync, then revoke the old key in Google Cloud.
+
+### 3. Follow the first sync
+
+The first sync works through completed UTC days from your start date through yesterday. The settings page shows whether it is queued, syncing, or has failed, together with its progress and last successful sync.
+
+After backfill, Swetrix schedules daily exports from 06:00 UTC and refreshes the three most recent completed days to pick up late-arriving data. Actual completion depends on queue and data volume. Today's events are available after the UTC day has ended; this is not a real-time stream.
+
+Each load replaces one day's partition in one table. Retrying a day therefore does not append another copy of its events. The two tables are loaded separately, so an interrupted sync can temporarily leave them at different dates; a successful retry completes the day.
+
+Use **Sync now** to request another sync. Pausing or disconnecting stops subsequent work, although a day already being uploaded can finish. Disconnecting removes the connection and its saved credentials from Swetrix; it leaves the exported tables in BigQuery.
+
+Swetrix manages the contents and schema of its export tables. Keep your derived metrics, joins, and manually inserted data in separate tables or views. A refreshed partition replaces its existing rows.
+
+Changing destination settings or the start date restarts backfill from the configured start date. Rotating only the service account key preserves progress. Wait for the current export to finish before making these changes. A change of project ownership disables the saved connection; the new owner must save it with a new service account key to resume delivery and restart backfill.
+
+### After a plan downgrade
+
+When the project owner's plan no longer includes warehouse exports, Swetrix disables scheduled delivery. Queued jobs and running syncs recheck plan access before exporting each day; a day already being uploaded can finish. The saved connection, credentials, and backfill progress are retained, and previously exported BigQuery data stays in your account.
+
+You can still view the connection's status, pause it, or disconnect it. Creating or editing a connection, testing it, resuming delivery, syncing manually, and using the raw export API require Plus or Enterprise. After upgrading, choose **Resume** to continue from the saved progress.
+
+## Query the exported data
+
+Replace the example project, dataset, and prefix with your settings. Include an `event_date` filter to limit the partitions scanned.
+
+```sql title="Daily pageviews and visitors"
+SELECT
+  event_date,
+  COUNT(*) AS pageviews,
+  COUNT(DISTINCT visitor_id) AS visitors
+FROM `company-analytics.swetrix_analytics.swetrix_example_pageviews`
+WHERE event_date BETWEEN DATE '2026-10-01' AND DATE '2026-10-07'
+GROUP BY event_date
+ORDER BY event_date;
+```
+
+```sql title="Custom events by name"
+SELECT
+  event_name,
+  COUNT(*) AS events
+FROM `company-analytics.swetrix_analytics.swetrix_example_custom_events`
+WHERE event_date = DATE '2026-10-01'
+GROUP BY event_name
+ORDER BY events DESC;
+```
+
+```sql title="Read a custom event property"
+SELECT
+  timestamp,
+  event_name,
+  (SELECT value FROM UNNEST(metadata) WHERE key = 'plan' LIMIT 1) AS plan
+FROM `company-analytics.swetrix_analytics.swetrix_example_custom_events`
+WHERE event_date = DATE '2026-10-01'
+  AND event_name = 'signup';
+```
+
+To build a BI dashboard, connect your tool to the dataset using its own Google credentials. Swetrix's service account is for delivering data; dashboard viewers should use the access permissions you configure in Google Cloud.
+
+## Export schema
+
+The BigQuery tables and export API use these fields. Strings can be null when no value was recorded. IDs are strings to preserve their full precision in tools that cannot safely represent large integers.
+
+| Field                                                                 | BigQuery type         | Meaning                                                                       |
+| --------------------------------------------------------------------- | --------------------- | ----------------------------------------------------------------------------- |
+| `event_date`                                                          | `DATE`, required      | Event date in UTC; partition field.                                           |
+| `timestamp`                                                           | `TIMESTAMP`, required | Event timestamp in UTC.                                                       |
+| `project_id`                                                          | `STRING`              | Swetrix Project ID.                                                           |
+| `event_type`                                                          | `STRING`              | `pageview`, `custom_event`, or `outbound`.                                    |
+| `visitor_id`                                                          | `STRING`              | Swetrix visitor identifier.                                                   |
+| `session_id`                                                          | `STRING`              | Swetrix session identifier.                                                   |
+| `profile_id`                                                          | `STRING`              | Associated profile ID, if present.                                            |
+| `hostname`, `page_path`, `page_title`                                 | `STRING`              | Recorded page details.                                                        |
+| `device`, `browser`, `browser_version`, `os`, `os_version`            | `STRING`              | Device and browser details.                                                   |
+| `language`                                                            | `STRING`              | Recorded browser locale.                                                      |
+| `referrer`                                                            | `STRING`              | Recorded referrer.                                                            |
+| `utm_source`, `utm_medium`, `utm_campaign`, `utm_term`, `utm_content` | `STRING`              | Campaign parameters.                                                          |
+| `country_code`, `region`, `region_code`, `city`                       | `STRING`              | Recorded geolocation; country uses its two-letter code.                       |
+| `event_name`                                                          | `STRING`              | Custom event name, when applicable.                                           |
+| `outbound_url`                                                        | `STRING`              | Destination of an outbound link event, when recorded.                         |
+| `metadata`                                                            | Repeated `RECORD`     | Page properties or event metadata, each with `key` and `value` string fields. |
+
+The export does not add raw IP addresses. Page paths, profile identifiers, and custom metadata retain the values you send to Swetrix, so apply your own access and retention rules to the warehouse copy.
+
+Deleting data in Swetrix does not automatically delete every previously exported copy. Recent partitions can change when refreshed; older partitions, downstream tables, backups, and exports must be removed in your warehouse when required.
+
+## Export API for other warehouses
+
+Use the raw export API to load Snowflake, Redshift, object storage, or another destination from your own scheduled job. A BigQuery connection is not required, but the project owner must have Plus or Enterprise.
+
+From the project owner's account, create a [scoped API key](/settings/api-keys) with **Analytics: Read only**, **Events: Read only**, and access to the selected project. Scoped keys currently select projects owned by that account. Public dashboard access, a dashboard password, or read-only sharing does not grant raw export access.
+
+```text
+GET https://api.swetrix.com/v1/data-export/PROJECT_ID/events?date=YYYY-MM-DD&type=pageviews
+```
+
+| Query parameter | Values                                                                             |
+| --------------- | ---------------------------------------------------------------------------------- |
+| `date`          | One completed UTC day in `YYYY-MM-DD` format, from `2000-01-01` through yesterday. |
+| `type`          | `pageviews` or `custom_events`.                                                    |
+
+The response is `application/x-ndjson`: one JSON object per line, using the schema above. An empty day produces an empty response body. The request streams the selected day's events; it is not a dashboard breakdown limited to a fixed number of rows.
+
+```bash
+curl --fail --show-error \
+  'https://api.swetrix.com/v1/data-export/YOUR_PROJECT_ID/events?date=2026-10-01&type=pageviews' \
+  -H "X-Api-Key: $SWETRIX_API_KEY" \
+  --output pageviews-2026-10-01.ndjson.part || exit 1
+mv pageviews-2026-10-01.ndjson.part pageviews-2026-10-01.ndjson || exit 1
+
+curl --fail --show-error \
+  'https://api.swetrix.com/v1/data-export/YOUR_PROJECT_ID/events?date=2026-10-01&type=custom_events' \
+  -H "X-Api-Key: $SWETRIX_API_KEY" \
+  --output custom-events-2026-10-01.ndjson.part || exit 1
+mv custom-events-2026-10-01.ndjson.part custom-events-2026-10-01.ndjson || exit 1
+```
+
+For a reliable pipeline:
+
+1. Fetch both event types for each completed UTC day, keeping the API key in your scheduler's secret store.
+2. Download into a temporary file and only publish or load it after the request completes successfully. Discard partial downloads on failure.
+3. Load into staging tables, then replace that project's destination partition for the selected day. Do not append a retry: the source does not provide a unique event ID for deduplication.
+4. Advance your checkpoint only after both loads succeed. Re-fetch the three most recent completed days to pick up late arrivals.
+5. Retry transient errors and `429` responses with backoff. API requests share the account's API rate limit.
+
+Invalid dates or event types return a client error. Missing or invalid credentials return `401`; insufficient permissions return `403`. A project owner's plan without warehouse access returns `402`. If the connection closes during a streamed response, treat the entire download as incomplete even if some valid JSON lines were received.
+
+For aggregated reports rather than individual events, use the [Statistics API v2](/statistics-api-v2). Its existing availability on Standard is unchanged; the Plus requirement applies to the warehouse connector and raw export API.
+
+## Troubleshooting
+
+| Problem                         | What to check                                                                                                     |
+| ------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Authentication fails            | The JSON is a service account key, its private key has not been revoked, and the service account is enabled.      |
+| Permission denied               | Grant Data Editor on the dataset and Job User on the destination project to the service account shown in Swetrix. |
+| Dataset or location error       | Use an existing dataset in the specified Google Cloud project and enter its matching location.                    |
+| Table conflict                  | Use a new prefix. Do not point the connector at unrelated or manually altered tables.                             |
+| No historical rows              | The start date must overlap native Swetrix data. Imported analytics history is excluded.                          |
+| Missing recent data             | Exports contain completed UTC days and run asynchronously. Check progress and the last error in project settings. |
+| Quota or temporary Google error | Correct any quota issue, then use Sync now. Retrying replaces the affected daily partition.                       |
+| Daily export size limit         | Use the streaming export API if a day's combined uncompressed export exceeds 10 GiB.                              |
+| Plan access error               | The project owner needs Plus or Enterprise. After upgrading, resume the saved connection.                         |

@@ -43,6 +43,7 @@ export enum PlanFeatureCode {
   featureFlags = 'featureFlags',
   experiments = 'experiments',
   replays = 'replays',
+  dataWarehouse = 'dataWarehouse',
 }
 
 export enum DashboardBlockReason {
@@ -115,6 +116,7 @@ const PLAN_FEATURE_REQUIRED_PLAN = {
   [PlanFeatureCode.featureFlags]: PlanType.plus,
   [PlanFeatureCode.experiments]: PlanType.plus,
   [PlanFeatureCode.replays]: PlanType.plus,
+  [PlanFeatureCode.dataWarehouse]: PlanType.plus,
 } as const
 
 interface PaddleProductIds {

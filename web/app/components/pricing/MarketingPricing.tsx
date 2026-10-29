@@ -6,6 +6,7 @@ import {
   CaretDownIcon,
   CaretUpIcon,
   CubeIcon,
+  DatabaseIcon,
   DownloadSimpleIcon,
   EnvelopeSimpleIcon,
   FlagIcon,
@@ -125,6 +126,8 @@ const captchaDocsUrl = 'https://swetrix.com/docs/captcha/introduction'
 const botProtectionDocsUrl =
   'https://swetrix.com/docs/sitesettings/bot-protection'
 const managedProxyDocsUrl = 'https://swetrix.com/docs/adblockers/managed-proxy'
+const dataWarehouseDocsUrl =
+  'https://swetrix.com/docs/integrations/data-warehouse'
 
 const formatEvents = (value: number) => value.toLocaleString('en-US')
 
@@ -327,6 +330,13 @@ const getBenefits = (planType: PlanTypeCode, t: TFunction): Benefit[] => {
         'pricing.benefits.tooltips.twentyXHigherApiRateLimits',
         t,
         statsApiDocsUrl,
+      ),
+      benefitWithTooltip(
+        DatabaseIcon,
+        'pricing.benefits.dataWarehouse',
+        'pricing.benefits.tooltips.dataWarehouse',
+        t,
+        dataWarehouseDocsUrl,
       ),
       { icon: HeadsetIcon, label: t('pricing.benefits.prioritySupport') },
     ]

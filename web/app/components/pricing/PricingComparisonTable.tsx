@@ -57,6 +57,7 @@ const docs = {
   revenue: 'https://swetrix.com/docs/analytics-dashboard/revenue-tracking',
   segments: 'https://swetrix.com/docs/analytics-dashboard/segments',
   seo: 'https://swetrix.com/docs/analytics-dashboard/seo',
+  dataWarehouse: 'https://swetrix.com/docs/integrations/data-warehouse',
 } as const
 
 const ALL: [CellValue, CellValue, CellValue] = [true, true, true]
@@ -246,6 +247,12 @@ const getCategories = (t: TFunction): FeatureCategory[] => [
   {
     title: t('pricing.comparison.categories.developer'),
     rows: [
+      {
+        label: t('pricing.benefits.dataWarehouse'),
+        tooltip: t('pricing.benefits.tooltips.dataWarehouse'),
+        tooltipHref: docs.dataWarehouse,
+        values: PLUS_UP,
+      },
       {
         label: t('pricing.benefits.restfulApiSdks'),
         tooltip: t('pricing.benefits.tooltips.restfulApiSdks'),
