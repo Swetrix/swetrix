@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { EntityManager, In, Repository } from 'typeorm'
+import { EntityManager, FindOptionsWhere, In, Repository } from 'typeorm'
 import { randomBytes } from 'crypto'
 import { isDeepStrictEqual } from 'util'
 
@@ -92,10 +92,20 @@ export class NotificationChannelService {
 
   // --- Scope helpers --------------------------------------------------------
 
+  private findChannels(where: FindOptionsWhere<NotificationChannel>) {
+    return this.channelRepository.find({
+      where,
+      loadRelationIds: {
+        relations: ['user', 'organisation', 'project'],
+        disableMixedMap: true,
+      },
+    })
+  }
+
   /** All channel ids manageable by the caller across user/orgs/projects. */
   async getVisibleChannels(userId: string): Promise<NotificationChannel[]> {
     const [userOwned, ownedProjectChannels, orgChannels] = await Promise.all([
-      this.channelRepository.find({ where: { user: { id: userId } } }),
+      this.findChannels({ user: { id: userId } }),
       this.getProjectChannelsForUserOwnedProjects(userId),
       this.getOrgChannelsForManagedOrganisations(userId),
     ])
@@ -110,9 +120,7 @@ export class NotificationChannelService {
   private async getProjectChannelsForUserOwnedProjects(userId: string) {
     const pids = await this.projectService.getProjectIdsViewableByUser(userId)
     if (pids.length === 0) return []
-    return this.channelRepository.find({
-      where: { project: { id: In(pids) } },
-    })
+    return this.findChannels({ project: { id: In(pids) } })
   }
 
   private async getOrgChannelsForManagedOrganisations(userId: string) {
@@ -128,9 +136,7 @@ export class NotificationChannelService {
       .map((m) => m.organisation?.id)
       .filter((id): id is string => !!id)
     if (orgIds.length === 0) return []
-    return this.channelRepository.find({
-      where: { organisation: { id: In(orgIds) } },
-    })
+    return this.findChannels({ organisation: { id: In(orgIds) } })
   }
 
   /** Channels manageable and usable on a given project. */
@@ -144,21 +150,21 @@ export class NotificationChannelService {
 
     const candidates: NotificationChannel[] = []
 
-    const projectChannels = await this.channelRepository.find({
-      where: { project: { id: projectId } },
+    const projectChannels = await this.findChannels({
+      project: { id: projectId },
     })
     candidates.push(...projectChannels)
 
     if (project.admin?.id) {
-      const ownerChannels = await this.channelRepository.find({
-        where: { user: { id: project.admin.id } },
+      const ownerChannels = await this.findChannels({
+        user: { id: project.admin.id },
       })
       candidates.push(...ownerChannels)
     }
 
     if (project.organisation?.id) {
-      const orgChannels = await this.channelRepository.find({
-        where: { organisation: { id: project.organisation.id } },
+      const orgChannels = await this.findChannels({
+        organisation: { id: project.organisation.id },
       })
       candidates.push(...orgChannels)
     }
@@ -186,9 +192,7 @@ export class NotificationChannelService {
         'You are not allowed to manage this organisation',
       )
     }
-    return this.channelRepository.find({
-      where: { organisation: { id: organisationId } },
-    })
+    return this.findChannels({ organisation: { id: organisationId } })
   }
 
   /** Validate channel ids the user wants to attach to a project alert. */

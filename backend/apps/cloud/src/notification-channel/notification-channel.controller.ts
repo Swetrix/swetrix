@@ -330,9 +330,9 @@ export class NotificationChannelController {
       disabledReason: channel.disabledReason,
       created: channel.created,
       updated: channel.updated,
-      scope: channel.user
+      scope: channel.user?.id
         ? 'user'
-        : channel.organisation
+        : channel.organisation?.id
           ? 'organisation'
           : 'project',
       userId: channel.user?.id,
