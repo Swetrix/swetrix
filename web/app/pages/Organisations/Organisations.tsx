@@ -311,7 +311,7 @@ const Organisations = () => {
                 colour='error'
                 className='mt-2'
               >
-                {t('apiNotifications.errorOccured', {
+                {t('common.errorOccured', {
                   error: newOrganisationError,
                 })}
               </Text>
