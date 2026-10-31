@@ -515,7 +515,7 @@
       "items": [
         {
           "q": "Quel forfait devrais-je choisir ?",
-          "a": "Les forfaits Standard sont idéaux si vous avez besoin d'analyses axées sur la confidentialité, d'entonnoirs, d'un suivi des erreurs, d'un filtrage des bots, de rapports par e-mail et d'un accès aux API Stats et Events. Les forfaits Plus incluent tout ce qui se trouve dans la version Standard et y ajoutent les rediffusions de session, les feature flags, les tests A/B, l'intégration d'entrepôts de données, des limites de requêtes API plus élevées, plus de sites web, plus de membres d'équipe et un support prioritaire.\\n\\nUne fois que vous avez choisi un type de forfait, choisissez le volume d'événements en fonction de votre trafic. Vous pouvez commencer avec le forfait à {{lowestPlanEventsAmount}} événements par mois. Si vous avez déjà un peu de trafic, vous pouvez commencer avec le forfait à {{moderatePlanEventsAmount}} événements par mois.\\n\\nDans tous les cas, vous pouvez passer à un forfait supérieur ou inférieur à tout moment, et nous calculerons votre abonnement au prorata si vous modifiez votre forfait pour que cela soit équitable pour vous."
+          "a": "Les forfaits Standard sont idéaux si vous avez besoin d'analyses axées sur la confidentialité, de tunnels de conversion, du suivi des erreurs, du filtrage des bots, de rapports par e-mail et d'un accès à l'API de statistiques et d'événements. Les forfaits Plus incluent tout ce qui est dans le Standard et ajoutent les rediffusions de session, les feature flags, les tests A/B, les intégrations d'entrepôt de données, des limites de requêtes API plus élevées, plus de sites web, plus de membres d'équipe et une assistance prioritaire.\n\nUne fois que vous avez choisi un type de forfait, choisissez le volume d'événements en fonction de votre trafic. Vous pouvez commencer avec le forfait à {{lowestPlanEventsAmount}} événements par mois. Si vous avez déjà du trafic, vous pouvez commencer avec le forfait à {{moderatePlanEventsAmount}} événements par mois.\n\nDans tous les cas, vous pouvez passer à un forfait supérieur ou inférieur à tout moment, et nous calculerons votre abonnement au prorata si vous changez de forfait, afin que ce soit équitable pour vous."
         },
         {
           "q": "Que se passe-t-il si je dépasse la limite de mon offre ?",
@@ -1126,7 +1126,7 @@
     "errors": "Erreurs",
     "events": "Événements",
     "alerts": "Alertes",
-    "alertsDesc": "Les alertes automatiques sont un outil puissant qui vous avertit lorsque certains événements se produisent sur votre site. Nous pouvons surveiller automatiquement votre projet pour détecter des pics de trafic et vous avertir via Telegram, Slack ou Discord.",
+    "alertsDesc": "Les alertes automatisées sont un outil puissant qui vous avertit lorsque certains événements se produisent sur votre site web.\nNous pouvons surveiller automatiquement votre projet pour détecter les pics de trafic et vous avertir via Telegram, Slack ou Discord.",
     "goals": "Objectifs",
     "experiments": "Expériences",
     "featureFlags": "Feature flags",
@@ -3050,7 +3050,7 @@
     "captcha": "Événements CAPTCHA : {{quantity}} ({{percentage}}%)",
     "errors": "Événements d'erreur : {{quantity}} ({{percentage}}%)",
     "confirmNewPlan": "Confirmer le changement de forfait",
-    "previewLoadingError": "Nous n'avons pas pu charger l'aperçu de la tarification. Veuillez réessayer plus tard.\\nSi le problème persiste, contactez-nous à <mail>{{email}}</mail>.\\nVous pouvez toujours changer de forfait, mais l'aperçu de la tarification n'est pas disponible pour le moment.",
+    "previewLoadingError": "Nous n'avons pas pu charger l'aperçu de la tarification. Veuillez réessayer plus tard.\nSi cela continue de se produire, contactez-nous à <mail>{{email}}</mail>.\nVous pouvez toujours changer de forfait, mais l'aperçu de la tarification n'est pas disponible pour le moment.",
     "dueNow": "À payer maintenant",
     "dueNowDescription": "Vous serez facturé au prorata pour les jours restants dans cette période de facturation.",
     "negativePayment": "Un montant négatif signifie que vous recevrez {{currency}}{{dueNowAmount}} en crédit de compte. Vous serez facturé {{currency}}0.00 le {{dueNowDate}}. Une fois le crédit utilisé, votre paiement récurrent sera de {{currency}}{{nextPaymentAmount}} à chaque cycle de facturation.",

@@ -252,6 +252,7 @@ class GeminiTranslator {
       `8. Treat the "key" path as additional context about WHERE the string is used in the UI — use it to choose the right tone (e.g. button labels vs error messages vs marketing copy).`,
       `9. If a source string is purely a placeholder/URL/email/number/code, output it unchanged.`,
       `10. Follow the plural category supplied in the context. Preserve nested i18next references such as $t(key) exactly.`,
+      `11. Preserve line breaks and blank lines exactly. Escape newline characters only once in the JSON response so that parsing the JSON produces actual line breaks, not literal backslash-n text. Preserve any literal backslash sequences in the source unchanged.`,
     ].join('\n')
   }
 

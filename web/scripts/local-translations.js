@@ -148,6 +148,11 @@ export function validateTranslation(source, translation) {
     return 'placeholder mismatch'
   if (!sameTokens(source, translation, /\$t\([^)]*\)/g))
     return 'nested translation mismatch'
+  if (
+    !sameTokens(source, translation, /(?:\r\n|\r|\n)+/g) ||
+    !sameTokens(source, translation, /\\[rn]/g)
+  )
+    return 'line break mismatch'
   if (!sameTokens(source, translation, tagPattern)) return 'tag mismatch'
   if (balancedTags(source) && !balancedTags(translation))
     return 'unbalanced tags'

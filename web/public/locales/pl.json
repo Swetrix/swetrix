@@ -1126,7 +1126,7 @@
     "errors": "Błędy",
     "events": "Zdarzenia",
     "alerts": "Alerty",
-    "alertsDesc": "Automatyczne alerty to potężne narzędzie, które powiadamia Cię, gdy w Twojej witrynie wystąpią określone zdarzenia. Możemy automatycznie monitorować Twój projekt pod kątem skoków ruchu i powiadamiać Cię przez Telegram, Slack lub Discord.",
+    "alertsDesc": "Automatyczne alerty to potężne narzędzie, które powiadamia Cię, gdy na Twojej stronie wystąpią określone zdarzenia.\nMożemy automatycznie monitorować Twój projekt pod kątem nagłych wzrostów ruchu i powiadamiać Cię przez Telegram, Slack lub Discord.",
     "goals": "Cele",
     "experiments": "Eksperymenty",
     "featureFlags": "Feature flags",
@@ -2030,7 +2030,7 @@
     },
     "waitingCaptcha": {
       "title": "Ochrona CAPTCHA nie jest jeszcze skonfigurowana",
-      "desc": "Ta witryna nie jest jeszcze chroniona przed botami przez Swetrix CAPTCHA.\\nPostępuj zgodnie z poniższymi krokami lub <guideurl>przewodnikiem po integracji</guideurl>, aby dodać ją do swoich formularzy. Kiedy CAPTCHA zacznie weryfikować odwiedzających, jej aktywność pojawi się tutaj.\\n\\nJuż ją skonfigurowałeś? Spróbuj <turl>rozwiązać problemy</turl> z integracją lub <curl>skontaktuj się z nami</curl>, aby uzyskać pomoc w konfiguracji.",
+      "desc": "Ta strona nie jest jeszcze chroniona przed botami przez Swetrix CAPTCHA.\nPostępuj zgodnie z poniższymi krokami lub <guideurl>przewodnikiem integracji</guideurl>, aby dodać ją do swoich formularzy. Gdy CAPTCHA zacznie weryfikować Twoich odwiedzających, jej aktywność pojawi się tutaj.\n\nJuż to skonfigurowano? Spróbuj <turl>rozwiązać problemy</turl> z integracją lub <curl>skontaktuj się z nami</curl>, aby uzyskać pomoc w konfiguracji.",
       "setup": {
         "tabs": {
           "script": "Skrypt",

@@ -265,6 +265,69 @@ test('validates placeholder multiplicity, tag names and nesting, and i18next ref
   assert.equal(validateTranslation('', ''), null)
 })
 
+test('validates line breaks without treating literal escape sequences as newlines', () => {
+  const source = 'First paragraph\n\nSecond paragraph\nThird line'
+  assert.equal(
+    validateTranslation(
+      source,
+      'Premier paragraphe\n\nDeuxième paragraphe\nTroisième ligne',
+    ),
+    null,
+  )
+  for (const translation of [
+    source.replaceAll('\n', '\\n'),
+    source.replaceAll('\n', ' '),
+    source.replaceAll('\n\n', '\n'),
+    `${source}\\n`,
+  ]) {
+    assert.equal(
+      validateTranslation(source, translation),
+      'line break mismatch',
+    )
+  }
+  assert.equal(validateTranslation('Literal \\n', 'Littéral \\n'), null)
+  assert.equal(
+    validateTranslation('Literal \\n', 'Littéral \n'),
+    'line break mismatch',
+  )
+  assert.equal(
+    validateTranslation('One\r\nTwo', 'Un\\r\\nDeux'),
+    'line break mismatch',
+  )
+})
+
+test('requeues broken line breaks with unchanged English and retains invalid results for retry', async (t) => {
+  const f = await fixture(t, { answer: 'First\n\nSecond' })
+  const broken = { answer: 'Premier\\n\\nDeuxième' }
+  await f.write(f.locale('fr'), broken)
+  const before = await f.snapshot()
+  assert.equal((await f.run({ check: true })).remaining, 1)
+  assert.deepEqual(await f.snapshot(), before)
+
+  const result = await f.run(
+    { languages: ['fr'] },
+    async (items) => new Map([[items[0].batchId, broken.answer]]),
+  )
+  assert.equal(result.failed, 1)
+  assert.equal(result.remaining, 1)
+  assert.equal(result.translated, 0)
+  assert.deepEqual((await f.read(f.stateFile)).pending.fr, ['answer'])
+  assert.deepEqual(await f.read(f.locale('fr')), broken)
+
+  const corrected = { answer: 'Premier\n\nDeuxième' }
+  assert.equal(
+    (
+      await f.run(
+        { languages: ['fr'] },
+        async (items) => new Map([[items[0].batchId, corrected.answer]]),
+      )
+    ).remaining,
+    0,
+  )
+  assert.deepEqual(await f.read(f.locale('fr')), corrected)
+  assert.equal((await f.run({ check: true })).remaining, 0)
+})
+
 test('missing locale files are recreated, and obsolete keys can be removed without Gemini', async (t) => {
   const f = await fixture(t)
   await fs.rm(f.locale('pt'))

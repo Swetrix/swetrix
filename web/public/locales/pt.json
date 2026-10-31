@@ -1135,7 +1135,7 @@
     "refunds": "Reembolsos",
     "webAnalytics": "Análises web",
     "productAnalytics": "Análises de produto",
-    "funnelsDesc": "Os funis ajudam você a rastrear como os visitantes se movem por uma sequência de páginas e eventos.\\nUse-os para identificar abandonos no cadastro, checkout, onboarding ou qualquer outro fluxo.\\n<docs>Saiba mais na documentação</docs>.",
+    "funnelsDesc": "Os funis ajudam você a rastrear como os visitantes se movem por uma sequência de páginas e eventos.\nUse-os para identificar abandonos em cadastros, checkout, onboarding ou qualquer outro fluxo.\n<docs>Saiba mais na documentação</docs>.",
     "frontend": "Frontend",
     "backend": "Backend",
     "network": "Rede",
@@ -1680,7 +1680,7 @@
   },
   "notFoundPage": {
     "title": "Página não encontrada",
-    "description": "Desculpe, não conseguimos encontrar a página que você está procurando.\\nVerifique o URL na barra de endereços e tente novamente.",
+    "description": "Desculpe, não conseguimos encontrar a página que você está procurando.\nPor favor, verifique a URL na barra de endereços e tente novamente.",
     "goHome": "Voltar à página inicial",
     "support": "Contatar o suporte"
   },
@@ -2029,7 +2029,7 @@
     },
     "waitingCaptcha": {
       "title": "A proteção CAPTCHA ainda não está configurada",
-      "desc": "Este site ainda não está protegido contra bots pelo Swetrix CAPTCHA.\\nSiga as etapas abaixo ou o <guideurl>guia de integração</guideurl> para adicioná-lo aos seus formulários. Assim que o CAPTCHA começar a verificar seus visitantes, sua atividade aparecerá aqui.\\n\\nJá configurou? Tente a <turl>solução de problemas</turl> da sua integração ou <curl>entre em contato conosco</curl> para obter ajuda na configuração.",
+      "desc": "Este site ainda não está protegido contra bots pelo Swetrix CAPTCHA.\nSiga as etapas abaixo ou o <guideurl>guia de integração</guideurl> para adicioná-lo aos seus formulários. Assim que o CAPTCHA começar a verificar seus visitantes, a atividade dele aparecerá aqui.\n\nJá o configurou? Tente a <turl>solução de problemas</turl> da sua integração ou <curl>entre em contato conosco</curl> para obter ajuda na configuração.",
       "setup": {
         "tabs": {
           "script": "Script",
