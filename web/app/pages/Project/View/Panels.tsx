@@ -38,6 +38,7 @@ import React, {
   useCallback,
   Fragment,
   useRef,
+  useId,
 } from 'react'
 import { useTranslation } from 'react-i18next'
 import { createPortal } from 'react-dom'
@@ -278,8 +279,7 @@ interface SortRows {
 interface KVTableContainerProps {
   data: any
   uniques: number
-  onClick: (key: string, value: string | null) => void
-  displayKeyAsHeader?: boolean
+  onClick: (key: string, value: string) => void
 }
 
 interface KVTableProps {
@@ -290,16 +290,12 @@ interface KVTableProps {
     conversion: number
   }[]
   onClick: KVTableContainerProps['onClick']
-  displayKeyAsHeader?: KVTableContainerProps['displayKeyAsHeader']
 }
 
-const KVTable = ({
-  listId,
-  data,
-  displayKeyAsHeader,
-  onClick,
-}: KVTableProps) => {
+const KVTable = ({ listId, data, onClick }: KVTableProps) => {
   const { t } = useTranslation('common')
+  const [expanded, setExpanded] = useState(true)
+  const valuesId = useId()
   const [sort, setSort] = useState<SortRows>({
     label: 'quantity',
     sortByAscend: false,
@@ -307,7 +303,7 @@ const KVTable = ({
   })
 
   const sortedData = useMemo(() => {
-    return data.sort((a: any, b: any) => {
+    return [...data].sort((a, b) => {
       if (sort.label === 'quantity') {
         return sort.sortByAscend
           ? a.quantity - b.quantity
@@ -353,90 +349,112 @@ const KVTable = ({
   }
 
   return (
-    <table className='mb-4 w-full border-separate border-spacing-y-1'>
-      <thead>
-        <tr className='text-gray-600 dark:text-gray-200'>
-          <th
-            onClick={() => onSortBy('event')}
-            className='flex w-2/5 cursor-pointer items-center pl-2 text-left sm:w-4/6'
-          >
-            {displayKeyAsHeader ? listId : t('project.value')}
-            <Sort
-              className='ml-1'
-              sortByAscend={sort.label === 'event' ? sort.sortByAscend : null}
-              sortByDescend={sort.label === 'event' ? sort.sortByDescend : null}
-            />
-          </th>
-          <th className='w-[30%] sm:w-1/6'>
-            <button
-              type='button'
-              onClick={() => onSortBy('quantity')}
-              className='flex cursor-pointer items-center justify-end'
-            >
-              {t('project.quantity')}
-              <Sort
-                className='ml-1'
-                sortByAscend={
-                  sort.label === 'quantity' ? sort.sortByAscend : null
-                }
-                sortByDescend={
-                  sort.label === 'quantity' ? sort.sortByDescend : null
-                }
-              />
-            </button>
-          </th>
-          <th className='w-[30%] pr-2 sm:w-1/6'>
-            <button
-              type='button'
-              onClick={() => onSortBy('conversion')}
-              className='flex cursor-pointer items-center justify-end'
-            >
-              {t('project.conversion')}
-              <Sort
-                className='ml-1'
-                sortByAscend={
-                  sort.label === 'conversion' ? sort.sortByAscend : null
-                }
-                sortByDescend={
-                  sort.label === 'conversion' ? sort.sortByDescend : null
-                }
-              />
-            </button>
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        {_map(sortedData, ({ event, quantity, conversion }) => (
-          <tr
-            key={event}
-            onClick={() => {
-              onClick(listId, event)
-            }}
-            className='group cursor-pointer py-3 text-gray-900 transition-colors even:bg-gray-50 hover:bg-gray-100 dark:text-gray-50 dark:even:bg-slate-900 hover:dark:bg-slate-800'
-          >
-            <td className='flex w-2/5 items-center py-1 pl-2 text-left sm:w-4/6'>
-              {event}
-              <FunnelIcon className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300' />
-              <div className='ml-2 h-4 w-4 group-hover:hidden' />
-            </td>
-            <td className='w-[30%] py-1 text-right sm:w-1/6'>
-              {quantity}
-              &nbsp;&nbsp;
-            </td>
-            <td className='w-[30%] py-1 pr-2 text-right sm:w-1/6'>
-              {conversion}%
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <div className='mb-3'>
+      <button
+        type='button'
+        aria-expanded={expanded}
+        aria-controls={valuesId}
+        onClick={() => setExpanded((value) => !value)}
+        className='flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-2 text-left font-medium text-gray-700 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-hidden dark:text-gray-200 dark:hover:bg-slate-800'
+      >
+        {expanded ? (
+          <CaretDownIcon aria-hidden className='size-4 shrink-0' />
+        ) : (
+          <CaretRightIcon aria-hidden className='size-4 shrink-0' />
+        )}
+        <span className='min-w-0 wrap-anywhere'>{listId}</span>
+      </button>
+      <div id={valuesId} hidden={!expanded} className='overflow-x-auto'>
+        <table className='w-full min-w-96 table-fixed border-separate border-spacing-x-0 border-spacing-y-1'>
+          <thead>
+            <tr className='text-gray-600 dark:text-gray-200'>
+              <th scope='col' className='w-2/5 pl-2 text-left sm:w-3/5'>
+                <button
+                  type='button'
+                  onClick={() => onSortBy('event')}
+                  className='flex w-full cursor-pointer items-center text-left'
+                >
+                  {t('project.value')}
+                  <Sort
+                    className='ml-1 shrink-0'
+                    sortByAscend={
+                      sort.label === 'event' ? sort.sortByAscend : null
+                    }
+                    sortByDescend={
+                      sort.label === 'event' ? sort.sortByDescend : null
+                    }
+                  />
+                </button>
+              </th>
+              <th scope='col' className='w-[30%] px-2 text-right sm:w-1/5'>
+                <button
+                  type='button'
+                  onClick={() => onSortBy('quantity')}
+                  className='flex w-full cursor-pointer items-center justify-end text-right'
+                >
+                  {t('project.quantity')}
+                  <Sort
+                    className='ml-1 shrink-0'
+                    sortByAscend={
+                      sort.label === 'quantity' ? sort.sortByAscend : null
+                    }
+                    sortByDescend={
+                      sort.label === 'quantity' ? sort.sortByDescend : null
+                    }
+                  />
+                </button>
+              </th>
+              <th scope='col' className='w-[30%] px-2 text-right sm:w-1/5'>
+                <button
+                  type='button'
+                  onClick={() => onSortBy('conversion')}
+                  className='flex w-full cursor-pointer items-center justify-end text-right'
+                >
+                  {t('project.conversion')}
+                  <Sort
+                    className='ml-1 shrink-0'
+                    sortByAscend={
+                      sort.label === 'conversion' ? sort.sortByAscend : null
+                    }
+                    sortByDescend={
+                      sort.label === 'conversion' ? sort.sortByDescend : null
+                    }
+                  />
+                </button>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {_map(sortedData, ({ event, quantity, conversion }) => (
+              <tr
+                key={event}
+                onClick={() => onClick(listId, event)}
+                className='group cursor-pointer text-gray-900 transition-colors even:bg-gray-50 hover:bg-gray-100 dark:text-gray-50 dark:even:bg-slate-900 hover:dark:bg-slate-800'
+              >
+                <td className='py-1 pl-2 text-left'>
+                  <div className='flex items-center'>
+                    <span className='min-w-0 wrap-anywhere'>{event}</span>
+                    <FunnelIcon className='ml-2 size-4 shrink-0 text-gray-500 opacity-0 group-hover:opacity-100 dark:text-gray-300' />
+                  </div>
+                </td>
+                <td className='px-2 py-1 text-right tabular-nums'>
+                  {quantity}
+                </td>
+                <td className='px-2 py-1 text-right tabular-nums'>
+                  {conversion}%
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
   )
 }
 
 const KVTableContainer = ({
   data,
   uniques,
-  displayKeyAsHeader,
   onClick,
 }: KVTableContainerProps) => {
   const { t } = useTranslation('common')
@@ -466,15 +484,7 @@ const KVTableContainer = ({
   }
 
   return _map(processed, (value, key) => {
-    return (
-      <KVTable
-        key={key}
-        listId={key}
-        data={value}
-        displayKeyAsHeader={displayKeyAsHeader}
-        onClick={onClick}
-      />
-    )
+    return <KVTable key={key} listId={key} data={value} onClick={onClick} />
   })
 }
 
@@ -760,28 +770,33 @@ const CustomEvents = ({
     return getFilterLink(column ? `event_metadata:${column}` : 'event', value)
   }
 
-  const CustomEventsTable = () => (
+  const renderCustomEventsTable = () => (
     <div className='overflow-y-auto'>
-      <table className='w-full border-separate border-spacing-y-1'>
+      <table className='w-full table-fixed border-separate border-spacing-x-0 border-spacing-y-1'>
         <thead>
           <tr className='text-base text-gray-900 dark:text-gray-50'>
-            <th
-              className='flex w-2/5 cursor-pointer items-center pl-2 text-left hover:opacity-90 sm:w-4/6'
-              onClick={() => onSortBy('event')}
-            >
-              {t('project.event')}
-              <Sort
-                className='ml-1'
-                sortByAscend={sort.label === 'event' ? sort.sortByAscend : null}
-                sortByDescend={
-                  sort.label === 'event' ? sort.sortByDescend : null
-                }
-              />
-            </th>
-            <th className='w-[40%] pr-2 sm:w-2/6'>
+            <th scope='col' className='w-3/5 pl-2 text-left sm:w-4/6'>
               <button
                 type='button'
-                className='flex cursor-pointer items-center justify-end hover:opacity-90'
+                className='flex w-full cursor-pointer items-center text-left hover:opacity-90'
+                onClick={() => onSortBy('event')}
+              >
+                {t('project.event')}
+                <Sort
+                  className='ml-1'
+                  sortByAscend={
+                    sort.label === 'event' ? sort.sortByAscend : null
+                  }
+                  sortByDescend={
+                    sort.label === 'event' ? sort.sortByDescend : null
+                  }
+                />
+              </button>
+            </th>
+            <th scope='col' className='w-2/5 pr-2 text-right sm:w-2/6'>
+              <button
+                type='button'
+                className='flex w-full cursor-pointer items-center justify-end text-right hover:opacity-90'
                 onClick={() => onSortBy('quantity')}
               >
                 {t('project.quantity')}
@@ -794,7 +809,6 @@ const CustomEvents = ({
                     sort.label === 'quantity' ? sort.sortByDescend : null
                   }
                 />
-                &nbsp;&nbsp;
               </button>
             </th>
           </tr>
@@ -803,40 +817,42 @@ const CustomEvents = ({
           {_map(keys, (ev) => (
             <Fragment key={ev}>
               <tr className='group text-base text-gray-900 transition-colors even:bg-gray-50 hover:bg-gray-100 dark:text-gray-50 dark:even:bg-slate-900 hover:dark:bg-slate-800'>
-                <td className='flex items-center py-1 text-left'>
-                  <button
-                    className='peer z-10 -m-1 ml-1 rounded-md border border-transparent p-1 transition-colors hover:border-gray-200 hover:bg-white hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:focus:ring-slate-300'
-                    type='button'
-                    aria-label={t(
-                      activeEvents[ev]
-                        ? 'ariaLabels.hideEventDetails'
-                        : 'ariaLabels.showEventDetails',
-                      { event: ev },
-                    )}
-                    onClick={toggleDetails(ev)}
-                  >
-                    {loadingEvents[ev] ? (
-                      <Spin className='m-0.5!' />
-                    ) : activeEvents[ev] ? (
-                      <CaretUpIcon className='size-5 text-gray-500 dark:text-gray-300' />
-                    ) : (
-                      <CaretDownIcon className='size-5 text-gray-500 dark:text-gray-300' />
-                    )}
-                  </button>
-                  <button
-                    type='button'
-                    aria-label={t('ariaLabels.eventFilters', { event: ev })}
-                    onClick={() => {
-                      const link = _getFilterLink(null, ev)
-                      navigate(link)
-                      setTriggerEventWhenFiltersChange(ev)
-                    }}
-                    className='flex min-w-0 cursor-pointer items-center pl-2 text-left'
-                  >
-                    <span>{ev}</span>
-                    <FunnelIcon className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block peer-hover:hidden dark:text-gray-300' />
-                    <span className='ml-2 h-4 w-4 group-hover:hidden peer-hover:block' />
-                  </button>
+                <td className='py-1 text-left'>
+                  <div className='flex items-center'>
+                    <button
+                      className='peer z-10 -m-1 ml-1 rounded-md border border-transparent p-1 transition-colors hover:border-gray-200 hover:bg-white hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:focus:ring-slate-300'
+                      type='button'
+                      aria-label={t(
+                        activeEvents[ev]
+                          ? 'ariaLabels.hideEventDetails'
+                          : 'ariaLabels.showEventDetails',
+                        { event: ev },
+                      )}
+                      onClick={toggleDetails(ev)}
+                    >
+                      {loadingEvents[ev] ? (
+                        <Spin className='m-0.5!' />
+                      ) : activeEvents[ev] ? (
+                        <CaretUpIcon className='size-5 text-gray-500 dark:text-gray-300' />
+                      ) : (
+                        <CaretDownIcon className='size-5 text-gray-500 dark:text-gray-300' />
+                      )}
+                    </button>
+                    <button
+                      type='button'
+                      aria-label={t('ariaLabels.eventFilters', { event: ev })}
+                      onClick={() => {
+                        const link = _getFilterLink(null, ev)
+                        navigate(link)
+                        setTriggerEventWhenFiltersChange(ev)
+                      }}
+                      className='flex min-w-0 cursor-pointer items-center pl-2 text-left'
+                    >
+                      <span className='min-w-0 wrap-anywhere'>{ev}</span>
+                      <FunnelIcon className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block peer-hover:hidden dark:text-gray-300' />
+                      <span className='ml-2 h-4 w-4 group-hover:hidden peer-hover:block' />
+                    </button>
+                  </div>
                 </td>
                 <td
                   aria-label={t('ariaLabels.eventTotal', { event: ev })}
@@ -869,7 +885,6 @@ const CustomEvents = ({
                         navigate(link)
                         setTriggerEventWhenFiltersChange(ev)
                       }}
-                      displayKeyAsHeader
                     />
                   </td>
                 </tr>
@@ -1086,7 +1101,7 @@ const CustomEvents = ({
           onClose={onModalClose}
           isOpened={detailsOpened}
           title={t('dashboard.events')}
-          message={<CustomEventsTable />}
+          message={renderCustomEventsTable()}
           size='large'
         />
       </>
@@ -1293,115 +1308,27 @@ const MetadataKeyBody = ({
     return getFilterLink(`${filterPrefix}:${activeKey}`, value)
   }
 
-  const sortedRawMetadata = useMemo(
-    () => _orderBy(rawMetadata, 'count', 'desc'),
-    [rawMetadata],
+  const renderDetailsTable = () => (
+    <div className='max-h-[500px] overflow-y-auto'>
+      <KVTableContainer
+        data={
+          mode === 'customEvent'
+            ? rawMetadata
+            : valuesData.map(({ value, count }) => ({
+                key: activeKey,
+                value,
+                count,
+              }))
+        }
+        uniques={uniques}
+        onClick={(key, value) => {
+          const link = _getFilterLink(key, value)
+          navigate(link)
+          setDetailsOpened(false)
+        }}
+      />
+    </div>
   )
-  const sortedValuesData = useMemo(
-    () => _orderBy(valuesData, 'count', 'desc'),
-    [valuesData],
-  )
-
-  const DetailsTable = () => {
-    if (mode === 'customEvent') {
-      return (
-        <div className='max-h-[500px] overflow-y-auto'>
-          <table className='w-full border-separate border-spacing-y-1'>
-            <thead className='sticky top-0 z-10 bg-white dark:bg-slate-950'>
-              <tr className='text-base text-gray-900 dark:text-gray-50'>
-                <th className='pl-2 text-left' style={{ width: '25%' }}>
-                  {t('project.key')}
-                </th>
-                <th className='text-left' style={{ width: '25%' }}>
-                  {t('project.value')}
-                </th>
-                <th className='text-right' style={{ width: '25%' }}>
-                  {t('project.quantity')}
-                </th>
-                <th className='pr-2 text-right' style={{ width: '25%' }}>
-                  {t('project.conversion')}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {_map(sortedRawMetadata, ({ key, value, count }) => {
-                const perc =
-                  uniques === 0 ? 100 : _round((count / uniques) * 100, 2)
-                const link = _getFilterLink(key, value)
-
-                return (
-                  <tr
-                    key={`${key}-${value}`}
-                    className='group cursor-pointer text-base text-gray-900 transition-colors even:bg-gray-50 hover:bg-gray-100 dark:text-gray-50 dark:even:bg-slate-900 hover:dark:bg-slate-800'
-                    onClick={() => {
-                      navigate(link)
-                      setDetailsOpened(false)
-                    }}
-                  >
-                    <td className='py-1 pl-2 text-left'>
-                      <span className='truncate'>{key}</span>
-                    </td>
-                    <td className='flex items-center py-1 text-left'>
-                      <span className='truncate'>{value}</span>
-                      <FunnelIcon className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300' />
-                    </td>
-                    <td className='py-1 text-right'>{count}</td>
-                    <td className='py-1 pr-2 text-right'>{perc}%</td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
-      )
-    }
-
-    // Property mode
-    return (
-      <div className='max-h-[500px] overflow-y-auto'>
-        <table className='w-full border-separate border-spacing-y-1'>
-          <thead className='sticky top-0 z-10 bg-white dark:bg-slate-950'>
-            <tr className='text-base text-gray-900 dark:text-gray-50'>
-              <th className='pl-2 text-left' style={{ width: '50%' }}>
-                {t('project.value')}
-              </th>
-              <th className='text-right' style={{ width: '25%' }}>
-                {t('project.quantity')}
-              </th>
-              <th className='pr-2 text-right' style={{ width: '25%' }}>
-                {t('project.conversion')}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {_map(sortedValuesData, ({ value, count }) => {
-              const perc =
-                uniques === 0 ? 100 : _round((count / uniques) * 100, 2)
-              const link = _getFilterLink(null, value)
-
-              return (
-                <tr
-                  key={value}
-                  className='group cursor-pointer text-base text-gray-900 transition-colors even:bg-gray-50 hover:bg-gray-100 dark:text-gray-50 dark:even:bg-slate-900 hover:dark:bg-slate-800'
-                  onClick={() => {
-                    navigate(link)
-                    setDetailsOpened(false)
-                  }}
-                >
-                  <td className='flex items-center py-1 pl-2 text-left'>
-                    <span className='truncate'>{value}</span>
-                    <FunnelIcon className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300' />
-                  </td>
-                  <td className='py-1 text-right'>{count}</td>
-                  <td className='py-1 pr-2 text-right'>{perc}%</td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
-      </div>
-    )
-  }
 
   const hasExistingData =
     mode === 'customEvent' ? !_isEmpty(rawMetadata) : !_isEmpty(valuesData)
@@ -1538,7 +1465,7 @@ const MetadataKeyBody = ({
             onClose={() => setDetailsOpened(false)}
             isOpened={detailsOpened}
             title={`${title}: ${activeKey}`}
-            message={<DetailsTable />}
+            message={renderDetailsTable()}
             size='large'
           />
         </>
@@ -1621,7 +1548,7 @@ const MetadataKeyBody = ({
           onClose={() => setDetailsOpened(false)}
           isOpened={detailsOpened}
           title={`${title}: ${activeKey}`}
-          message={<DetailsTable />}
+          message={renderDetailsTable()}
           size='large'
         />
       </>

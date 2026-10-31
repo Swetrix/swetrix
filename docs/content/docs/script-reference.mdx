@@ -40,6 +40,8 @@ swetrix.init("YOUR_PROJECT_ID", {
 | profileId            | Optional profile ID for long-term user tracking (MAU/DAU). If set, it will be used for all pageviews and events unless overridden per-call. This allows you to track users across sessions and devices. To also link the visitor's previous anonymous activity to this profile, use [identify()](#identify) instead. | `undefined`                     |
 | preloadSessionReplay | Set to `true` to preload the session replay recorder after `init()`, or pass `{ rrwebUrl: "https://example.com/rrweb.min.js" }` to load it from a custom URL. Recording only starts after you call `startSessionReplay()`.                                                                                           | `undefined`                     |
 
+To disable tracking only for your own browser, see [Exclude your own visits](/exclude-own-visits#exclude-only-your-browser-with-a-cookie) for a cookie-based example using `disabled`.
+
 ## Automatic outbound link tracking
 
 Outbound link tracking is **disabled by default**. Enable it in `init()`:

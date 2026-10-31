@@ -515,7 +515,7 @@
       "items": [
         {
           "q": "Welchen Tarif sollte ich wählen?",
-          "a": "Standard-Pläne eignen sich am besten, wenn Sie datenschutzfreundliche Analysen, Funnels, Fehlerverfolgung, Bot-Filterung, E-Mail-Berichte und API-Zugang benötigen. Plus-Pläne beinhalten alles aus Standard und bieten zusätzlich Session-Replays, Feature-Flags, A/B-Tests, höhere API-Ratenlimits, mehr Websites, mehr Teammitglieder und Prioritätssupport.\n\nSobald Sie sich für eine Planart entschieden haben, wählen Sie das Event-Volumen basierend auf Ihrem Traffic. Sie können mit dem Plan für {{lowestPlanEventsAmount}} Events pro Monat beginnen. Wenn Sie bereits etwas Traffic haben, können Sie mit dem Plan für {{moderatePlanEventsAmount}} Events pro Monat starten.\n\nIn jedem Fall können Sie Ihren Plan jederzeit hoch- oder herunterstufen, und wir werden Ihr Abonnement bei einer Änderung anteilig berechnen, damit es für Sie fair bleibt."
+          "a": "Standard-Tarife sind ideal, wenn Sie Privacy-First-Analytics, Funnels, Error Tracking, Bot-Filterung, E-Mail-Berichte und Zugang zur Stats- und Events-API benötigen. Plus-Tarife beinhalten alles aus Standard und fügen Session Replays, Feature Flags, A/B-Tests, Data Warehouse-Integrationen, höhere API-Ratenlimits, mehr Websites, mehr Teammitglieder und Priority-Support hinzu.\n\nSobald Sie sich für einen Tariftyp entschieden haben, wählen Sie das Ereignisvolumen basierend auf Ihrem Traffic. Sie können mit dem Tarif für {{lowestPlanEventsAmount}} Ereignisse pro Monat beginnen. Wenn Sie bereits etwas Traffic haben, können Sie mit dem Tarif für {{moderatePlanEventsAmount}} Ereignisse pro Monat starten.\n\nIn jedem Fall können Sie Ihren Tarif jederzeit upgraden oder downgraden, und wir berechnen Ihr Abonnement anteilig, wenn Sie Ihren Tarif ändern, damit es fair für Sie bleibt."
         },
         {
           "q": "Was passiert, wenn ich das Limit meines Tarifs überschreite?",
@@ -2345,6 +2345,8 @@
         "sessionReplaysDesc": "Replay-Aufbewahrung und Projekt-Replay-Einstellungen konfigurieren.",
         "import": "Daten importieren",
         "importDesc": "Analysedaten von anderen Plattformen importieren",
+        "warehouse": "Data Warehouse",
+        "warehouseDesc": "Exportieren Sie Ihre Analytics zu Google BigQuery und in andere Datenpipelines.",
         "proxy": "Verwalteter Proxy",
         "proxyDesc": "Leiten Sie das Tracker-Skript und die Analyse-Ereignisse über Ihre eigene Domain, um Werbeblocker zu umgehen."
       },
@@ -2397,6 +2399,63 @@
         "upgradeTitle": "Benötigen Sie mehr Replay-Kapazität?",
         "upgradeDescription": "Eine längere Aufbewahrung und höhere Replay-Kapazität sind durch erweiterte Replay-Berechtigungen verfügbar.",
         "upgradeCta": "Zur Abrechnung"
+      },
+      "warehouse": {
+        "upgradeTitle": "Verfügbar in Plus und Enterprise",
+        "upgradeDescription": "Führen Sie ein Upgrade auf Plus durch, um geplante BigQuery-Exporte und die Rohdaten-Export-API für Ihre Datenpipelines zu aktivieren.",
+        "askOwner": "Bitten Sie den Projekteigentümer um ein Upgrade auf Plus, um geplante BigQuery-Exporte und die Rohdaten-Export-API zu aktivieren.",
+        "upgrade": "Upgrade auf Plus",
+        "description": "Senden Sie Ihre Swetrix-Seitenaufrufe und benutzerdefinierten Ereignisse jeden Tag an Google BigQuery. Exporte umfassen vollständige UTC-Tage bis einschließlich gestern, inklusive Outbound-Klicks. Aus Google Analytics oder anderen Anbietern importierte Daten sind nicht enthalten.",
+        "setupGuide": "Einrichtungsanleitung und Export-API",
+        "destination": "BigQuery-Ziel",
+        "destinationHint": "Erstellen Sie ein Dataset in der Google Cloud, gewähren Sie Ihrem Service Account dann die Rolle 'BigQuery Job User' im Google Cloud-Projekt und 'BigQuery Data Editor' für dieses Dataset. Beim Testen werden die Exporttabellen bei Bedarf erstellt. Es fallen Gebühren für Speicherung und Abfragen in der Google Cloud an.",
+        "googleProject": "Google Cloud-Projekt-ID",
+        "dataset": "Dataset-ID",
+        "location": "Dataset-Speicherort",
+        "locationHint": "Verwenden Sie den genauen Speicherort des Datasets, z. B. EU, US oder europe-west2.",
+        "tablePrefix": "Tabellenpräfix",
+        "tablePrefixHint": "Erstellt separate Tabellen für 'pageviews' und 'custom_events' für dieses Swetrix-Projekt.",
+        "startDate": "Historische Daten exportieren ab",
+        "startDateHint": "Wählen Sie den ersten zu exportierenden UTC-Tag. Es sind nur Daten verfügbar, die noch in Swetrix aufbewahrt werden.",
+        "credentials": "Service Account JSON",
+        "credentialsHint": "Fügen Sie den JSON-Schlüssel des Service Accounts ein oder wählen Sie unten die Datei aus. Anmeldedaten werden verschlüsselt gespeichert.",
+        "credentialsSavedHint": "Ein Schlüssel ist bereits gespeichert. Lassen Sie dies leer, um ihn zu behalten, oder geben Sie einen neuen JSON-Schlüssel an, um ihn zu ersetzen.",
+        "credentialsFile": "Oder wählen Sie eine JSON-Schlüsseldatei aus",
+        "credentialsRequired": "Geben Sie einen JSON-Schlüssel für den Service Account an, um BigQuery zu verbinden.",
+        "invalidCredentials": "Wählen Sie einen gültigen JSON-Schlüssel für den Service Account, der nicht größer als 20 KB ist.",
+        "connect": "BigQuery verbinden",
+        "save": "Änderungen speichern",
+        "saved": "Warehouse-Verbindung gespeichert",
+        "test": "Verbindung testen",
+        "testPassed": "Verbindung verifiziert. Speichere Änderungen, um diese Einstellungen zu verwenden.",
+        "connectionStatus": "Warehouse-Verbindungsstatus",
+        "serviceAccount": "Dienstkonto",
+        "exportedThrough": "Exportiert bis (UTC)",
+        "lastSync": "Letzter erfolgreicher Export",
+        "lastRows": "Zeilen am letzten exportierten Tag",
+        "nextDate": "Nächster Export-Tag: {{date}} (UTC)",
+        "nextSync": "Nächster geplanter Export: {{date}}",
+        "notYet": "Noch nicht exportiert",
+        "syncNow": "Jetzt synchronisieren",
+        "syncQueued": "Export eingereiht",
+        "pause": "Pausieren",
+        "resume": "Fortsetzen",
+        "inFlight": "Pausieren verhindert den Export für den nächsten Tag. Ein bereits laufender Tag wird möglicherweise abgeschlossen.",
+        "retry": "Erneut versuchen",
+        "disconnect": "Trennen",
+        "disconnected": "Warehouse getrennt",
+        "disconnectTitle": "BigQuery trennen?",
+        "disconnectMessage": "Dadurch werden die gespeicherten Zugangsdaten entfernt und zukünftige Exporte gestoppt. Ein bereits laufender Tag wird möglicherweise abgeschlossen. Bereits nach BigQuery exportierte Daten bleiben in deinem Dataset erhalten.",
+        "otherWarehouses": "Snowflake, Redshift und andere Ziele",
+        "otherWarehousesHint": "Unter Plus und Enterprise kannst du die Export-API mit deiner eigenen Pipeline verwenden, um andere Warehouses zu laden. Die Einrichtungsanleitung enthält das API-Format und Beispiele.",
+        "status": {
+          "idle": "Tägliche Exporte aktiviert",
+          "queued": "Export in Warteschlange",
+          "syncing": "Export in Bearbeitung",
+          "error": "Export erfordert Aufmerksamkeit",
+          "paused": "Exporte pausiert",
+          "planRequired": "Für den Export ist Plus oder Enterprise erforderlich"
+        }
       },
       "dataImport": {
         "importFrom": "Importieren von",
@@ -3315,6 +3374,7 @@
       "sessionReplays": "Sitzungsaufzeichnungen",
       "featureFlags": "Feature-Flags",
       "abTesting": "A/B-Testing",
+      "dataWarehouse": "Data Warehouse-Integrationen",
       "twentyXHigherApiRateLimits": "20x höhere API-Ratenbegrenzungen",
       "prioritySupport": "Priority-Support",
       "dedicatedAccountManager": "Persönlicher Account-Manager für laufenden Support",
@@ -3346,6 +3406,7 @@
         },
         "featureFlags": "Rollen Sie Funktionen schrittweise aus, zielen Sie auf Kohorten oder einzelne Nutzer ab und schalten Sie Änderungen ohne ein weiteres Deployment ab.",
         "abTesting": "Führen Sie Experimente mit Zielen durch, teilen Sie Besucher auf Varianten auf und vergleichen Sie Conversion-Ergebnisse, bevor Sie eine Änderung für alle veröffentlichen.",
+        "dataWarehouse": "Exportieren Sie täglich Seitenaufrufe und benutzerdefinierte Ereignisse in Google BigQuery, inklusive historischem Backfill. Nutzen Sie die Raw Export API mit Ihrer eigenen Pipeline für Snowflake, Redshift oder andere Warehouses.",
         "twentyXHigherApiRateLimits": "Standard-Pläne beinhalten 300 API-Anfragen pro Stunde. Plus-Pläne beinhalten 6.000 API-Anfragen pro Stunde, was 20-mal so hoch ist.",
         "teamMembers": {
           "projects": "Mitglieder sind Personen, die du zu deinen Projekten einlädst, wie z. B. Teamkollegen oder Kunden. Gib ihnen Admin- oder Betrachterzugriff, um gemeinsam an deinen Analytics zu arbeiten.",
@@ -3454,7 +3515,7 @@
     },
     "included": {
       "title": "Was enthalten ist",
-      "subtitle": "Das untenstehende Event-Kontingent richtet sich nach dem oben ausgewählten Volumen. Standard beinhaltet das komplette Analytics-Toolkit; Plus erhöht die Workspace-Limits und fügt Replays und Experimente hinzu.",
+      "subtitle": "Das unten stehende Ereigniskontingent richtet sich nach dem oben ausgewählten Volumen. Standard beinhaltet das komplette Analytics-Toolkit; Plus erhöht die Workspace-Limits und bietet zusätzlich Replays, Experimente und Data Warehouse-Integrationen.",
       "cards": {
         "events": {
           "title": "Events pro Monat",
@@ -3521,7 +3582,7 @@
         },
         {
           "q": "Sollte ich Standard oder Plus wählen?",
-          "a": "Wählen Sie Standard für die Kern-Analytics-Suite, einschließlich Traffic, Funnels, Performance-Monitoring, Fehler-Tracking, Berichte und API-Zugriff. Wählen Sie Plus, wenn Sie zusätzlich Sitzungsaufzeichnungen, Feature-Flags, A/B-Tests, höhere Workspace-Limits oder Priority-Support benötigen."
+          "a": "Wählen Sie Standard für die grundlegende Analytics-Suite, einschließlich Traffic, Funnels, Performance-Monitoring, Fehlerverfolgung, Berichten und Zugriff auf die Stats- und Events-API. Wählen Sie Plus, wenn Sie außerdem Session Replays, Feature Flags, A/B-Testing, Data Warehouse-Integrationen, höhere Workspace-Limits oder Priority-Support benötigen."
         },
         {
           "q": "Was passiert, wenn ich mein Event-Limit überschreite?",

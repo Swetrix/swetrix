@@ -515,7 +515,7 @@
       "items": [
         {
           "q": "Quel forfait devrais-je choisir ?",
-          "a": "Les forfaits Standard sont idéaux si vous avez besoin d'analyses axées sur la confidentialité, d'entonnoirs, de suivi des erreurs, de filtrage des bots, de rapports par e-mail et d'un accès API. Les forfaits Plus incluent tout ce qui est dans Standard et ajoutent les rediffusions de session, les drapeaux de fonctionnalités, les tests A/B, des limites de débit API plus élevées, plus de sites web, plus de membres d'équipe et une assistance prioritaire.\n\nUne fois que vous avez choisi un type de forfait, choisissez le volume d'événements en fonction de votre trafic. Vous pouvez commencer avec le forfait de {{lowestPlanEventsAmount}} événements par mois. Si vous avez déjà du trafic, vous pouvez commencer avec le forfait de {{moderatePlanEventsAmount}} événements par mois.\n\nDans tous les cas, vous pouvez mettre à niveau ou rétrograder votre forfait à tout moment, et nous calculerons votre abonnement au prorata si vous changez de forfait afin que ce soit équitable pour vous."
+          "a": "Les forfaits Standard sont idéaux si vous avez besoin d'analyses axées sur la confidentialité, d'entonnoirs, d'un suivi des erreurs, d'un filtrage des bots, de rapports par e-mail et d'un accès aux API Stats et Events. Les forfaits Plus incluent tout ce qui se trouve dans la version Standard et y ajoutent les rediffusions de session, les feature flags, les tests A/B, l'intégration d'entrepôts de données, des limites de requêtes API plus élevées, plus de sites web, plus de membres d'équipe et un support prioritaire.\\n\\nUne fois que vous avez choisi un type de forfait, choisissez le volume d'événements en fonction de votre trafic. Vous pouvez commencer avec le forfait à {{lowestPlanEventsAmount}} événements par mois. Si vous avez déjà un peu de trafic, vous pouvez commencer avec le forfait à {{moderatePlanEventsAmount}} événements par mois.\\n\\nDans tous les cas, vous pouvez passer à un forfait supérieur ou inférieur à tout moment, et nous calculerons votre abonnement au prorata si vous modifiez votre forfait pour que cela soit équitable pour vous."
         },
         {
           "q": "Que se passe-t-il si je dépasse la limite de mon offre ?",
@@ -2346,6 +2346,8 @@
         "sessionReplaysDesc": "Configurez la rétention des replays et les paramètres de replay du projet.",
         "import": "Importer des données",
         "importDesc": "Importer des données d'analyse depuis d'autres plateformes",
+        "warehouse": "Entrepôt de données",
+        "warehouseDesc": "Exportez vos analyses vers Google BigQuery et d'autres pipelines de données.",
         "proxy": "Proxy géré",
         "proxyDesc": "Acheminez le script de suivi et les événements d'analyse via votre propre domaine pour contourner les bloqueurs de publicités."
       },
@@ -2398,6 +2400,63 @@
         "upgradeTitle": "Besoin de plus de capacité de replay ?",
         "upgradeDescription": "Une rétention plus longue et une capacité de replay plus élevée sont disponibles en améliorant vos droits de replay.",
         "upgradeCta": "Aller à la facturation"
+      },
+      "warehouse": {
+        "upgradeTitle": "Disponible avec Plus et Enterprise",
+        "upgradeDescription": "Passez à Plus pour activer les exportations planifiées BigQuery et l'API d'exportation brute pour vos pipelines de données.",
+        "askOwner": "Demandez au propriétaire du projet de passer à Plus pour activer les exportations planifiées BigQuery et l'API d'exportation brute.",
+        "upgrade": "Passer à Plus",
+        "description": "Envoyez vos pages vues et événements personnalisés Swetrix à Google BigQuery tous les jours. Les exportations couvrent les jours UTC complets jusqu'à hier, y compris les clics sortants. Les données importées de Google Analytics ou d'autres fournisseurs ne sont pas incluses.",
+        "setupGuide": "Guide de configuration et API d'exportation",
+        "destination": "Destination BigQuery",
+        "destinationHint": "Créez un dataset dans Google Cloud, puis accordez à votre compte de service le rôle Utilisateur de tâches BigQuery sur le projet Google Cloud et Éditeur de données BigQuery sur ce dataset. Les tests créent les tables d'exportation si nécessaire. Des frais de stockage et de requête Google Cloud s'appliquent.",
+        "googleProject": "ID du projet Google Cloud",
+        "dataset": "ID du dataset",
+        "location": "Emplacement du dataset",
+        "locationHint": "Utilisez l'emplacement exact du dataset, tel que EU, US ou europe-west2.",
+        "tablePrefix": "Préfixe de table",
+        "tablePrefixHint": "Crée des tables pageviews et custom_events séparées pour ce projet Swetrix.",
+        "startDate": "Exporter l'historique des données depuis",
+        "startDateHint": "Choisissez le premier jour UTC à exporter. Seules les données encore conservées dans Swetrix sont disponibles.",
+        "credentials": "JSON du compte de service",
+        "credentialsHint": "Collez la clé JSON du compte de service ou choisissez son fichier ci-dessous. Les informations d'identification sont stockées chiffrées.",
+        "credentialsSavedHint": "Une clé est déjà enregistrée. Laissez ce champ vide pour la conserver, ou fournissez une nouvelle clé JSON pour la remplacer.",
+        "credentialsFile": "Ou choisissez un fichier de clé JSON",
+        "credentialsRequired": "Fournissez une clé JSON de compte de service pour connecter BigQuery.",
+        "invalidCredentials": "Choisissez une clé JSON de compte de service valide ne dépassant pas 20 Ko.",
+        "connect": "Connecter BigQuery",
+        "save": "Enregistrer les modifications",
+        "saved": "Connexion à l'entrepôt enregistrée",
+        "test": "Tester la connexion",
+        "testPassed": "Connexion vérifiée. Enregistrez les modifications pour utiliser ces paramètres.",
+        "connectionStatus": "Statut de la connexion à l'entrepôt",
+        "serviceAccount": "Compte de service",
+        "exportedThrough": "Exporté jusqu'à (UTC)",
+        "lastSync": "Dernier export réussi",
+        "lastRows": "Lignes du dernier jour exporté",
+        "nextDate": "Prochain jour d'export : {{date}} (UTC)",
+        "nextSync": "Prochain export programmé : {{date}}",
+        "notYet": "Pas encore exporté",
+        "syncNow": "Synchroniser maintenant",
+        "syncQueued": "Export mis en file d'attente",
+        "pause": "Mettre en pause",
+        "resume": "Reprendre",
+        "inFlight": "La mise en pause empêche l'export du jour suivant. Un jour déjà en cours peut se terminer.",
+        "retry": "Réessayer",
+        "disconnect": "Déconnecter",
+        "disconnected": "Entrepôt déconnecté",
+        "disconnectTitle": "Déconnecter BigQuery ?",
+        "disconnectMessage": "Cela supprime les identifiants enregistrés et arrête les futurs exports. Un jour déjà en cours peut se terminer. Les données déjà exportées vers BigQuery restent dans votre ensemble de données.",
+        "otherWarehouses": "Snowflake, Redshift et autres destinations",
+        "otherWarehousesHint": "Sur Plus et Enterprise, utilisez l'API d'export avec votre propre pipeline pour charger d'autres entrepôts. Le guide de configuration inclut le format de l'API et des exemples.",
+        "status": {
+          "idle": "Exportations quotidiennes activées",
+          "queued": "Exportation en attente",
+          "syncing": "Exportation en cours",
+          "error": "L'exportation requiert votre attention",
+          "paused": "Exportations en pause",
+          "planRequired": "Le forfait Plus ou Enterprise est requis pour exporter"
+        }
       },
       "dataImport": {
         "importFrom": "Importer depuis",
@@ -3320,6 +3379,7 @@
       "sessionReplays": "Replays de session",
       "featureFlags": "Feature flags",
       "abTesting": "Tests A/B",
+      "dataWarehouse": "Intégrations d'entrepôt de données",
       "twentyXHigherApiRateLimits": "Limites de taux d'API 20x plus élevées",
       "prioritySupport": "Support prioritaire",
       "dedicatedAccountManager": "Gestionnaire de compte dédié pour un support continu",
@@ -3351,6 +3411,7 @@
         },
         "featureFlags": "Déployez les fonctionnalités progressivement, ciblez des cohortes ou des utilisateurs individuels, et désactivez les modifications sans avoir à redéployer.",
         "abTesting": "Lancez des expériences basées sur des objectifs, répartissez les visiteurs entre les variantes et comparez les résultats de conversion avant de déployer un changement pour tous.",
+        "dataWarehouse": "Exportez quotidiennement les pages vues et les événements personnalisés vers Google BigQuery, avec historique rétroactif. Utilisez l'API d'exportation brute avec votre propre pipeline pour Snowflake, Redshift ou d'autres entrepôts.",
         "twentyXHigherApiRateLimits": "Les forfaits Standard incluent 300 requêtes API par heure. Les forfaits Plus incluent 6 000 requêtes API par heure, soit 20 fois plus.",
         "teamMembers": {
           "projects": "Les membres sont des personnes que vous invitez à vos projets, tels que des collègues ou des clients. Donnez-leur un accès administrateur ou spectateur pour collaborer sur vos analyses.",
@@ -3459,7 +3520,7 @@
     },
     "included": {
       "title": "Ce qui est inclus",
-      "subtitle": "Le quota d'événements ci-dessous correspond au volume sélectionné ci-dessus. Standard inclut la boîte à outils d'analyse complète ; Plus augmente les limites de l'espace de travail et ajoute les relectures et les expériences.",
+      "subtitle": "Le quota d'événements ci-dessous correspond au volume sélectionné ci-dessus. Standard inclut la boîte à outils d'analyse complète ; Plus augmente les limites de l'espace de travail et ajoute les rediffusions, les expérimentations et les intégrations d'entrepôt de données.",
       "cards": {
         "events": {
           "title": "événements par mois",
@@ -3526,7 +3587,7 @@
         },
         {
           "q": "Dois-je choisir Standard ou Plus ?",
-          "a": "Choisissez Standard pour la suite d'analyses de base, comprenant le trafic, les entonnoirs, le suivi des performances, le suivi des erreurs, les rapports et l'accès à l'API. Choisissez Plus si vous avez également besoin de rediffusions de session, d'indicateurs de fonctionnalités, de tests A/B, de limites d'espace de travail plus élevées ou d'un support prioritaire."
+          "a": "Choisissez Standard pour la suite d'analyse de base, incluant le trafic, les entonnoirs, la surveillance des performances, le suivi des erreurs, les rapports et l'accès à l'API de statistiques et d'événements. Choisissez Plus si vous avez également besoin des rediffusions de sessions, des feature flags, des tests A/B, des intégrations d'entrepôt de données, de limites d'espace de travail plus élevées ou d'un support prioritaire."
         },
         {
           "q": "Que se passe-t-il si je dépasse ma limite d'événements ?",

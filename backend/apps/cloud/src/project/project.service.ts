@@ -614,6 +614,10 @@ export class ProjectService {
         project,
         PlanFeatureCode.replays,
       ),
+      [PlanFeatureCode.dataWarehouse]: this.projectOwnerHasFeature(
+        project,
+        PlanFeatureCode.dataWarehouse,
+      ),
     }
   }
 

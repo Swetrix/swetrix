@@ -104,17 +104,6 @@ export const openBrowserWindow = (url: string, width = 600, height = 800) => {
   )
 }
 
-export const loadScript = (url: string) => {
-  if (!isBrowser) {
-    return
-  }
-
-  const script = document.createElement('script')
-  script.src = url
-  script.async = true
-  document.body.appendChild(script)
-}
-
 export const calculateRelativePercentage = (
   oldVal: number,
   newVal: number,

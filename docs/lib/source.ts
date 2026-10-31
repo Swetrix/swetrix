@@ -14,6 +14,7 @@ const SLUG_MAP: Record<string, string[]> = {
   // Integration special cases
   "integrations/google-tag-manager": ["gtm-integration"],
   "integrations/google-search-console": ["integrations", "google-search-console"],
+  "integrations/data-warehouse": ["integrations", "data-warehouse"],
 
   // API files → flat URLs
   "api/stats": ["statistics-api"],
@@ -24,6 +25,7 @@ const SLUG_MAP: Record<string, string[]> = {
   // Site settings → flat URLs
   "sitesettings/how-to-access-site-settings": ["how-to-access-site-settings"],
   "sitesettings/project-configuration": ["project-configuration-and-security"],
+  "sitesettings/exclude-own-visits": ["exclude-own-visits"],
   "sitesettings/how-to-invite-users-to-your-website": ["how-to-invite-users-to-your-website"],
   "sitesettings/transfer-ownership": ["how-to-transfer-ownership-of-your-website"],
   "sitesettings/embed-your-analytics-dashboard-into-your-website": ["how-to-embed"],

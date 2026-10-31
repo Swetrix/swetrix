@@ -223,16 +223,8 @@ const FeatureFlagSettingsModal = ({
     }
   }, [fetcher.data, fetcher.state, t, onSuccess, onClose, isLoading])
 
-  // Reset ref when modal opens to allow fresh data handling
-  useEffect(() => {
-    if (isOpen) {
-      lastHandledData.current = null
-    }
-  }, [isOpen])
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    lastHandledData.current = null
 
     if (scheduleChangeEnabled) {
       if (!scheduledApplyAt) {

@@ -33,6 +33,8 @@ By default, Swetrix accepts events from any domain. If you want to restrict trac
 
 You can ignore traffic from specific IP addresses or CIDR ranges, which is useful for excluding your own visits from analytics.
 
+See [Exclude your own visits](/exclude-own-visits) for step-by-step instructions, a free IP lookup tool, and an alternative that disables tracking only in your browser using a cookie.
+
 - Separate multiple values with commas.
 - Supports IPv4, IPv6, and CIDR ranges, for example `172.126.10.16`, `192.168.0.1/32`, or `::1`.
 
@@ -69,6 +71,10 @@ The **Session replays** tab controls how long newly recorded replay chunks are r
 Available retention periods depend on your plan. When you change the retention period, the new value applies only to replay chunks recorded after the change. Existing replay chunks keep the expiry date they were recorded with.
 
 See [Session Replays](/analytics-dashboard/session-replays) for setup, privacy modes, and playback details.
+
+## Data warehouse (Cloud)
+
+The **Data warehouse** tab connects a Cloud project to BigQuery for daily pageview and custom event exports, including historical backfill. The project owner must have **Plus** or **Enterprise**. Project managers can configure the destination, follow sync progress, and pause or disconnect it. Existing connection status and pause/disconnect controls remain available after a downgrade. See [Data warehouse connectors](/integrations/data-warehouse) for Google Cloud setup, the export schema, and the API for other warehouses.
 
 ## Access Control
 

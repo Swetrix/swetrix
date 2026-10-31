@@ -12,6 +12,12 @@ if (process.env.SENTRY_ENABLED === 'true') {
     profileSessionSampleRate: isProduction ? 0.2 : 1,
     profileLifecycle: 'trace',
     integrations: [nodeProfilingIntegration()],
+    beforeSend(event) {
+      if (event.request?.url?.includes('/data-export/')) {
+        event.request.data = '[Filtered]'
+      }
+      return event
+    },
     tracesSampler: ({ name, attributes, parentSampled }) => {
       // Do not sample Telegram webhook-related traces
       if (name.includes('api.telegram.org')) {
