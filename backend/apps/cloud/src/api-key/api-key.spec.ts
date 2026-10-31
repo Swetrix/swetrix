@@ -352,6 +352,33 @@ describe('API key authorization', () => {
       ForbiddenException,
     )
   })
+  it('requires both warehouse scopes and authorizes the project in the path', async () => {
+    const policy: ApiKeyPolicy = {
+      scope: 'analytics:read',
+      requires: ['events:read'],
+      source: 'params',
+      field: 'projectId',
+    }
+    const key = {
+      ...scoped(),
+      scopes: ['analytics:read', 'events:read'],
+    }
+    expect(
+      (await run(policy, key, { params: { projectId: projectA } })).result,
+    ).toBe(true)
+    for (const scopes of [['analytics:read'], ['events:read'], []]) {
+      await expect(
+        run(policy, { ...key, scopes }, { params: { projectId: projectA } }),
+      ).rejects.toThrow(ForbiddenException)
+    }
+    await expect(
+      run(policy, key, {
+        params: { projectId: projectB },
+        query: { projectId: projectA, pid: projectA },
+        body: { projectId: projectA },
+      }),
+    ).rejects.toThrow(ForbiddenException)
+  })
   it('validates every project in JSON and array batch queries', async () => {
     expect(
       (

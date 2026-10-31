@@ -52,6 +52,8 @@ describe('WarehouseSourceService', () => {
     expect(options.query).toContain('toString(psid) AS visitor_id')
     expect(options.query).toContain('toString(sid) AS session_id')
     expect(options.query).toContain('importID IS NULL')
+    expect(options.query).toContain('WHERE pid = {projectId:FixedString(12)}')
+    expect(options.query).not.toContain(projectId)
     expect(options.query).toContain(
       "created < toDateTime({day:Date}, 'UTC') + INTERVAL 1 DAY",
     )
@@ -101,6 +103,28 @@ describe('WarehouseSourceService', () => {
       await expect(
         service.rows(projectId, invalid, 'pageviews').next(),
       ).rejects.toThrow('valid date')
+      expect(query).not.toHaveBeenCalled()
+    },
+  )
+
+  it.each([
+    "' OR 1=1 --",
+    'abcdefghijkl\u0000',
+    'abc--defghij',
+    '../abcdefghi',
+  ])('rejects invalid project %s before querying', async (invalid) => {
+    await expect(
+      service.rows(invalid, day, 'pageviews').next(),
+    ).rejects.toThrow('Invalid export selection')
+    expect(query).not.toHaveBeenCalled()
+  })
+
+  it.each(['errors', 'pageviews OR 1=1', ['pageviews', 'custom_events']])(
+    'rejects invalid event selection %s before querying',
+    async (invalid) => {
+      await expect(
+        service.rows(projectId, day, invalid as 'pageviews').next(),
+      ).rejects.toThrow('Invalid export selection')
       expect(query).not.toHaveBeenCalled()
     },
   )

@@ -40,6 +40,31 @@ describe('BigQueryService', () => {
   })
 
   it.each([
+    { projectId: "' OR 1=1 --" },
+    { gcpProjectId: 'example-project` UNION SELECT 1 --' },
+    { datasetId: 'analytics`; DROP TABLE other; --' },
+    { tablePrefix: 'events` WHERE TRUE; --' },
+    { location: 'EU&projectId=other-project' },
+  ])(
+    'rejects injected destination settings %j before authentication',
+    async (invalid) => {
+      const auth = jest.spyOn(service, 'auth')
+      await expect(
+        service.validate({ ...config, ...invalid }, {}),
+      ).rejects.toThrow('Invalid BigQuery destination settings')
+      await expect(
+        service.exportDay(
+          { ...config, ...invalid },
+          {},
+          '2026-10-26',
+          'run-id',
+        ),
+      ).rejects.toThrow('Invalid BigQuery destination settings')
+      expect(auth).not.toHaveBeenCalled()
+    },
+  )
+
+  it.each([
     { description: 'An unrelated table' },
     { timePartitioning: { type: 'MONTH', field: 'event_date' } },
     { schema: { fields: [] } },
