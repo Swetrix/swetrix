@@ -1,5 +1,10 @@
+FROM mcr.microsoft.com/playwright:v1.60.0-noble AS base
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends nodejs=24.22.2-1nodesource1 && \
+    rm -rf /var/lib/apt/lists/*
+
 #Stage 1: Build
-FROM mcr.microsoft.com/playwright:v1.60.0-noble AS build
+FROM base AS build
 WORKDIR /build
 ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 COPY package*.json ./
@@ -11,7 +16,7 @@ RUN node ./meta/dbip-free-sync.js
 RUN npm prune --omit=dev --force
 
 #Stage 2: Runtime
-FROM mcr.microsoft.com/playwright:v1.60.0-noble AS run
+FROM base AS run
 LABEL maintainer="swetrix.com <contact@swetrix.com>"
 
 ENV TZ=UTC \
