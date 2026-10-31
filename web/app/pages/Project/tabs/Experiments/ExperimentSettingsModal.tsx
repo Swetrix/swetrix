@@ -78,7 +78,7 @@ const ExperimentSettingsModal = ({
   const { fetchGoals } = useProjectGoalsProxy()
   const { fetchFeatureFlags } = useProjectFeatureFlagsProxy()
   const fetcher = useFetcher<ProjectViewActionData>()
-  const processedRef = useRef<string | null>(null)
+  const processedRef = useRef<ProjectViewActionData | null>(null)
 
   const [isLoading, setIsLoading] = useState(false)
   const [goals, setGoals] = useState<Goal[]>([])
@@ -314,9 +314,8 @@ const ExperimentSettingsModal = ({
   useEffect(() => {
     if (!fetcher.data || fetcher.state !== 'idle') return
 
-    const responseKey = `${fetcher.data.intent}-${fetcher.data.success}`
-    if (processedRef.current === responseKey) return
-    processedRef.current = responseKey
+    if (processedRef.current === fetcher.data) return
+    processedRef.current = fetcher.data
 
     if (fetcher.data.success) {
       const { intent } = fetcher.data
@@ -332,18 +331,10 @@ const ExperimentSettingsModal = ({
     }
   }, [fetcher.data, fetcher.state, t, onSuccess, onClose])
 
-  // Reset processed ref when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      processedRef.current = null
-    }
-  }, [isOpen])
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!validateForm()) return
 
-    processedRef.current = null
     const effectiveFlagKey = featureFlagKey.trim() || suggestedFlagKey
 
     const formData = new FormData()

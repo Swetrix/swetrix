@@ -211,7 +211,7 @@ const GoalSettingsModal = ({
 }: GoalSettingsModalProps) => {
   const { t } = useTranslation()
   const fetcher = useFetcher<ProjectViewActionData>()
-  const processedRef = useRef<string | null>(null)
+  const processedRef = useRef<ProjectViewActionData | null>(null)
   const goalProxy = useGoalProxy()
   const isNew = !goalId
 
@@ -317,9 +317,8 @@ const GoalSettingsModal = ({
   useEffect(() => {
     if (!fetcher.data || fetcher.state !== 'idle') return
 
-    const responseKey = `${fetcher.data.intent}-${fetcher.data.success}`
-    if (processedRef.current === responseKey) return
-    processedRef.current = responseKey
+    if (processedRef.current === fetcher.data) return
+    processedRef.current = fetcher.data
 
     if (fetcher.data.success) {
       const { intent } = fetcher.data
@@ -335,15 +334,8 @@ const GoalSettingsModal = ({
     }
   }, [fetcher.data, fetcher.state, t, onSuccess, onClose])
 
-  useEffect(() => {
-    if (isOpen) {
-      processedRef.current = null
-    }
-  }, [isOpen])
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    processedRef.current = null
 
     const mappedConditions: GoalCondition[] = []
     let hasUnmappableCondition = false
