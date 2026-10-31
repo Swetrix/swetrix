@@ -6,6 +6,7 @@ import {
   MagnifyingGlassIcon,
 } from '@phosphor-icons/react'
 import leafletStyles from 'leaflet/dist/leaflet.css?url'
+import mapLibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
 import mapLibreStyles from 'maplibre-gl/dist/maplibre-gl.css?url'
 import { useState, useEffect, useMemo, useRef } from 'react'
 import type { LinksFunction, MetaFunction } from 'react-router'
@@ -183,7 +184,9 @@ function LocationMap({ latitude, longitude }: LocationMapProps) {
       import('react-leaflet'),
       import('leaflet'),
       import('@maplibre/maplibre-gl-leaflet'),
-    ]).then(([rl, L, gl]) => {
+      import('maplibre-gl'),
+    ]).then(([rl, L, gl, maplibre]) => {
+      maplibre.setWorkerUrl(mapLibreWorkerUrl)
       if (!cancelled) setModules({ rl, L, gl })
     })
 
