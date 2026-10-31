@@ -132,8 +132,8 @@ init(SWETRIX_PID, {
   disabled: isDevelopment,
   apiURL: isSelfhosted ? undefined : SWETRIX_API_PROXY_PATH,
   events: {
-    outboundLinks: true
-  }
+    outboundLinks: true,
+  },
 })
 
 export const trackViews = () => {
