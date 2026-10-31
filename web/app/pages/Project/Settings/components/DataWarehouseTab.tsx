@@ -317,8 +317,16 @@ export default function DataWarehouseTab({
         >
           <div className='flex flex-wrap items-center justify-between gap-3'>
             <div>
-              <Text weight='semibold'>Google BigQuery</Text>
-              <Text size='sm' colour='secondary' aria-live='polite'>
+              <Text as='h3' weight='semibold'>
+                Google BigQuery
+              </Text>
+              <Text
+                as='p'
+                size='sm'
+                colour='secondary'
+                className='mt-1'
+                aria-live='polite'
+              >
                 {t(
                   `project.settings.warehouse.status.${
                     !connection.enabled
@@ -432,10 +440,10 @@ export default function DataWarehouseTab({
           }}
         >
           <div>
-            <Text weight='semibold'>
+            <Text as='h3' weight='semibold'>
               {t('project.settings.warehouse.destination')}
             </Text>
-            <Text size='sm' colour='secondary'>
+            <Text as='p' size='sm' colour='secondary' className='mt-1'>
               {t('project.settings.warehouse.destinationHint')}
             </Text>
           </div>
@@ -592,10 +600,10 @@ export default function DataWarehouseTab({
       ) : null}
 
       <div className='border-t border-gray-200 pt-5 dark:border-slate-800'>
-        <Text weight='semibold' size='sm'>
+        <Text as='h3' weight='semibold' size='sm'>
           {t('project.settings.warehouse.otherWarehouses')}
         </Text>
-        <Text size='sm' colour='secondary' className='mt-1'>
+        <Text as='p' size='sm' colour='secondary' className='mt-1'>
           {t('project.settings.warehouse.otherWarehousesHint')}
         </Text>
         {connection ? (
