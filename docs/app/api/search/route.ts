@@ -1,6 +1,5 @@
-import { source } from "@/lib/source";
-import { createFromSource } from "fumadocs-core/search/server";
+import { docsSearch } from "@/lib/search";
 
 export const revalidate = false;
 
-export const { GET } = createFromSource(source);
+export const { GET } = docsSearch;

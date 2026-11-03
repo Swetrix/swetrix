@@ -1,5 +1,7 @@
 import { source } from "@/lib/source";
 import { DocsPage, DocsBody, DocsTitle, DocsDescription } from "fumadocs-ui/page";
+import { TOC, TOCProvider } from "fumadocs-ui/layouts/docs/page/slots/toc";
+import { MobileContents } from "@/components/MobileContents";
 import { notFound } from "next/navigation";
 import { FeedbackWidget } from "@/components/FeedbackWidget";
 import { IntegrationsGrid } from "@/components/IntegrationsGrid";
@@ -22,6 +24,7 @@ export default async function Page(props: { params: Promise<{ slug?: string[] }>
   return (
     <DocsPage
       toc={page.data.toc}
+      slots={{ toc: { provider: TOCProvider, main: TOC, popover: MobileContents } }}
       editOnGithub={{
         repo: GITHUB_REPO,
         owner: GITHUB_OWNER,

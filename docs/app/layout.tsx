@@ -4,6 +4,7 @@ import { GithubInfo } from "fumadocs-ui/components/github-info";
 import type { ReactNode } from "react";
 import { addIntegrationLogos } from "@/components/IntegrationLogo";
 import { source } from "@/lib/source";
+import { MobileHeader } from "@/components/MobileHeader";
 import Footer from "./components/Footer";
 import Analytics from "./components/Analytics";
 import "./global.css";
@@ -38,6 +39,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body>
         <RootProvider search={{ options: { api: "/docs/api/search" } }}>
           <DocsLayout
+            slots={{ header: MobileHeader }}
             tree={addIntegrationLogos(source.getPageTree())}
             nav={{
               title: (
