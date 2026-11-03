@@ -2,6 +2,7 @@ import { Module, forwardRef } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 
 import { ProjectService } from './project.service'
+import { SessionReplayS3Service } from '../analytics/session-replay-s3.service'
 import { ProjectController } from './project.controller'
 import { GSCController } from './gsc.controller'
 import { GSCService } from './gsc.service'
@@ -51,6 +52,7 @@ import { PendingInvitationModule } from '../pending-invitation/pending-invitatio
     PendingInvitationModule,
   ],
   providers: [
+    SessionReplayS3Service,
     ProjectService,
     ProjectsViewsRepository,
     GSCService,

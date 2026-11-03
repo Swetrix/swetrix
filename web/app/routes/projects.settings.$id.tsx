@@ -9,9 +9,15 @@ import { data, redirect } from 'react-router'
 import { serverFetch } from '~/api/api.server'
 import { getOgImageUrl, isSelfhosted } from '~/lib/constants'
 import type { DataWarehouseConnection } from '~/lib/models/DataExport'
-import { Project, DataImport, ProxyDomain } from '~/lib/models/Project'
+import {
+  DEFAULT_TRACKING_SETTINGS,
+  type Project,
+  type DataImport,
+  type ProxyDomain,
+} from '~/lib/models/Project'
 import { Subscriber } from '~/lib/models/Subscriber'
 import ProjectSettings from '~/pages/Project/Settings'
+import { invalidateManagedScript } from '~/utils/managed-script-cache.server'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 import {
   redirectIfNotAuthenticated,
@@ -117,6 +123,46 @@ export async function action({ request, params }: ActionFunctionArgs) {
   const intent = formData.get('intent')?.toString()
 
   switch (intent) {
+    case 'update-tracking-setting': {
+      const field = formData.get('field')
+      const value = formData.get('value')
+      if (
+        !id ||
+        typeof field !== 'string' ||
+        !Object.hasOwn(DEFAULT_TRACKING_SETTINGS, field) ||
+        (value !== 'true' && value !== 'false')
+      ) {
+        return data<ProjectSettingsActionData>(
+          { intent, error: 'Invalid tracking setting' },
+          { status: 400 },
+        )
+      }
+
+      const result = await serverFetch(
+        request,
+        `project/${encodeURIComponent(id)}`,
+        {
+          method: 'PUT',
+          body: { trackingSettings: { [field]: value === 'true' } },
+        },
+      )
+      if (!result.error) invalidateManagedScript(id)
+      return data<ProjectSettingsActionData>(
+        result.error
+          ? {
+              intent,
+              error: Array.isArray(result.error)
+                ? result.error.join('. ')
+                : result.error,
+            }
+          : { intent, success: true },
+        {
+          status: result.error ? result.status || 400 : 200,
+          headers: createHeadersWithCookies(result.cookies),
+        },
+      )
+    }
+
     case 'get-data-warehouse':
     case 'save-data-warehouse':
     case 'test-data-warehouse':

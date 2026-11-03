@@ -108,6 +108,19 @@ After the CNAME resolves, the status moves from `Waiting` → `Issuing` → `Liv
 
 Once your domain is `Live`, replace your existing tracker tag:
 
+If you use the [managed script](/install-script), keep your project script URL and set `data-api-url` to send events through the proxy.
+
+```html
+<script
+  defer
+  crossorigin="anonymous"
+  src="https://swetrix.com/p/YOUR_PROJECT_ID.js"
+  data-api-url="https://t.example.com/log"
+></script>
+```
+
+This serves the project script from Swetrix and sends analytics through your domain. For the manual tracker, use the installation below.
+
 <Tabs defaultValue="script">
 <TabsList>
   <TabsTrigger value="script"><CodeIcon /> Script tag</TabsTrigger>

@@ -82,7 +82,12 @@ export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: BillboardCss },
 ]
 
-export const middleware = [i18nextMiddleware]
+export const middleware: (typeof i18nextMiddleware)[] = [
+  (args, next) =>
+    /^\/p\/[^/]+\.js$/.test(new URL(args.request.url).pathname)
+      ? next()
+      : i18nextMiddleware(args, next),
+]
 
 export const headers: HeadersFunction = () => ({
   // General headers
