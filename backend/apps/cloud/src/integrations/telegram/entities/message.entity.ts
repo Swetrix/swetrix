@@ -1,3 +1,4 @@
+import type { Convenience } from 'telegraf/types'
 import {
   Column,
   CreateDateColumn,
@@ -17,7 +18,7 @@ export class Message {
   text: string
 
   @Column('json', { nullable: true, default: null })
-  extra: unknown | null
+  extra: Convenience.ExtraReplyMessage | null
 
   @CreateDateColumn()
   createdAt: Date

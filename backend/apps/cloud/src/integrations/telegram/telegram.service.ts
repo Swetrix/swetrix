@@ -1,9 +1,8 @@
 import { forwardRef, Inject, Injectable, Optional } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { Markup, Telegraf } from 'telegraf'
+import { Markup } from 'telegraf'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
-import { Context } from './interface/context.interface'
 import { Message } from './entities/message.entity'
 import { UserService } from '../../user/user.service'
 import type { Convenience } from 'telegraf/types'
@@ -12,7 +11,6 @@ import { NotificationChannelService } from '../../notification-channel/notificat
 @Injectable()
 export class TelegramService {
   constructor(
-    @Optional() @Inject(Telegraf) private readonly bot: Telegraf<Context>,
     private readonly userService: UserService,
     private readonly configService: ConfigService,
     @InjectRepository(Message)
@@ -142,14 +140,6 @@ export class TelegramService {
     await this.messageRepository.save({ chatId, text, extra })
   }
 
-  async getMessages() {
-    const messagesCount = 25
-    return this.messageRepository.find({
-      take: messagesCount,
-      order: { createdAt: 'DESC' },
-    })
-  }
-
   escapeTelegramMarkdownV2(text?: string | null) {
     if (text === null || text === undefined) return ''
 
@@ -164,39 +154,5 @@ export class TelegramService {
     // Characters to escape for legacy Markdown: _, *, `, [, \
     const charsToEscapeRegex = /[_*`[\]\\]/g
     return text.replace(charsToEscapeRegex, '\\$&')
-  }
-
-  async sendMessage(
-    messageId: string,
-    chatId: string,
-    text: string,
-    extra?: Convenience.ExtraReplyMessage,
-  ) {
-    if (
-      this.configService.get<string>('ENABLE_INTEGRATIONS') !== 'true' &&
-      this.configService.get<string>('ENABLE_TELEGRAM_INTEGRATION') !== 'true'
-    ) {
-      return
-    }
-
-    // If the bot isn't launched on this node (e.g. non-primary instance),
-    // do nothing here and let the primary node handle queued messages.
-    if (!this.bot) {
-      return
-    }
-
-    const chat = await this.bot.telegram.getChat(chatId)
-
-    if (!chat) {
-      await this.deleteMessage(messageId)
-      return
-    }
-
-    await this.bot.telegram.sendMessage(chatId, text, extra)
-    await this.deleteMessage(messageId)
-  }
-
-  async deleteMessage(messageId: string) {
-    await this.messageRepository.delete(messageId)
   }
 }

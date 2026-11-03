@@ -1,4 +1,10 @@
-import { Injectable, Logger, Optional } from '@nestjs/common'
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  Logger,
+  Optional,
+} from '@nestjs/common'
 import { TelegramService } from '../../integrations/telegram/telegram.service'
 import {
   NotificationChannel,
@@ -13,7 +19,9 @@ export class TelegramChannelService implements ChannelDispatcher {
   private readonly logger = new Logger(TelegramChannelService.name)
 
   constructor(
-    @Optional() private readonly telegramService: TelegramService | null,
+    @Optional()
+    @Inject(forwardRef(() => TelegramService))
+    private readonly telegramService?: TelegramService,
   ) {}
 
   async send(

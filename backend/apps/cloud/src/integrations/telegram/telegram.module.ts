@@ -10,6 +10,7 @@ import {
 import { ConfigService } from '@nestjs/config'
 import { Telegraf } from 'telegraf'
 import { TypeOrmModule } from '@nestjs/typeorm'
+import { TelegramMessageWorker } from './telegram-message.worker'
 import { TelegramUpdate } from './telegram.update'
 import { StartScene } from './scene/start.scene'
 import { ProjectsScene } from './scene/projects.scene'
@@ -47,6 +48,7 @@ const hasTelegramToken = !!process.env.TELEGRAM_BOT_TOKEN
                 configService.get<string>('TELEGRAM_BOT_TOKEN'),
               ),
           },
+          TelegramMessageWorker,
           TelegramUpdate,
           StartScene,
           ProjectsScene,

@@ -61,11 +61,7 @@ import {
   REPEATED_OVERAGE_ALLOWED_PERCENTAGE,
   TRAFFIC_SPIKE_ALLOWED_PERCENTAGE,
 } from '../user/plan-usage'
-import {
-  getRandomTip,
-  isPrimaryClusterNode,
-  isPrimaryNode,
-} from '../common/utils'
+import { getRandomTip, isPrimaryNode } from '../common/utils'
 import { AppLoggerService } from '../logger/logger.service'
 import { DiscordService } from '../integrations/discord/discord.service'
 import { SlackService } from '../integrations/slack/slack.service'
@@ -1933,42 +1929,6 @@ export class TaskManagerService {
           `[CRON WORKER](checkMetricAlerts) Alert promise rejected: ${r.reason}`,
         )
       }
-    }
-  }
-
-  @Cron(CronExpression.EVERY_5_SECONDS)
-  async sendTelegramMessages() {
-    try {
-      // Only one instance should process Telegram message queue; otherwise messages
-      // may be deleted by nodes that don't have the bot launched.
-      if (!(isPrimaryNode() && isPrimaryClusterNode())) {
-        return
-      }
-
-      const messages = await this.telegramService.getMessages()
-
-      const promises = messages.map(async (message) => {
-        try {
-          await this.telegramService.sendMessage(
-            message.id,
-            message.chatId,
-            message.text,
-            message.extra,
-          )
-        } catch (reason) {
-          this.logger.error(
-            `[CRON WORKER](sendTelegramMessages) Error occured while sending message: ${reason}`,
-          )
-        } finally {
-          await this.telegramService.deleteMessage(message.id)
-        }
-      })
-
-      await Promise.allSettled(promises)
-    } catch (error) {
-      this.logger.error(
-        `[CRON WORKER](sendTelegramMessages) Error occured: ${error}`,
-      )
     }
   }
 
