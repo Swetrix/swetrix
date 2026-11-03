@@ -10,6 +10,21 @@ permissions:
   contents: read
 
 jobs:
+  mcp-server-checks:
+    name: MCP Server Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: packages/mcp-server/package-lock.json
+      - run: npm ci
+        working-directory: packages/mcp-server
+      - run: npm test
+        working-directory: packages/mcp-server
+
   backend-checks:
     name: Backend Checks
     runs-on: ubuntu-latest

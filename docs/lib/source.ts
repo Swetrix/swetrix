@@ -21,6 +21,7 @@ const SLUG_MAP: Record<string, string[]> = {
   "api/stats-v2": ["statistics-api-v2"],
   "api/events": ["events-api"],
   "api/admin": ["admin-api"],
+  "api/mcp": ["mcp"],
 
   // Site settings → flat URLs
   "sitesettings/how-to-access-site-settings": ["how-to-access-site-settings"],

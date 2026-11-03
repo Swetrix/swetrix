@@ -1,0 +1,32 @@
+{
+  "name": "@swetrix/mcp-server",
+  "version": "0.1.0",
+  "description": "Model Context Protocol server for the Swetrix Stats and Admin APIs",
+  "license": "AGPL-3.0-only",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Swetrix/swetrix.git",
+    "directory": "packages/mcp-server"
+  },
+  "bin": {
+    "swetrix-mcp": "./src/cli.js"
+  },
+  "files": [
+    "src"
+  ],
+  "type": "module",
+  "scripts": {
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/node": "^2.1.2",
+    "@modelcontextprotocol/server": "^2.4.0",
+    "zod": "^4.2.0"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/client": "^2.4.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
