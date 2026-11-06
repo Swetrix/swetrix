@@ -158,7 +158,9 @@
     "toggleOptions": "切换选项",
     "paginationNavLabel": "分页",
     "jumpToPage": "跳转到第 {{page}} 页",
-    "pageNumber": "第 {{page}} 页"
+    "pageNumber": "第 {{page}} 页",
+    "clear": "清除",
+    "apply": "应用"
   },
   "ariaLabels": {
     "actions": "操作",
@@ -200,7 +202,9 @@
     "progress": "进度：{{value}}%",
     "showEventDetails": "显示 {{event}} 详情",
     "template": "模板",
-    "uploadFile": "上传文件"
+    "uploadFile": "上传文件",
+    "previousMonth": "上个月",
+    "nextMonth": "下个月"
   },
   "performance": {
     "slogan": "通过真实用户<span>性能监控</span>，打造更快的网站。",

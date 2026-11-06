@@ -158,7 +158,9 @@
     "toggleOptions": "Toggle options",
     "paginationNavLabel": "Pagination",
     "jumpToPage": "Jump to page {{page}}",
-    "pageNumber": "Page {{page}}"
+    "pageNumber": "Page {{page}}",
+    "clear": "Clear",
+    "apply": "Apply"
   },
   "ariaLabels": {
     "actions": "Actions",
@@ -200,7 +202,9 @@
     "progress": "Progress: {{value}}%",
     "showEventDetails": "Show {{event}} details",
     "template": "Template",
-    "uploadFile": "Upload file"
+    "uploadFile": "Upload file",
+    "previousMonth": "Previous month",
+    "nextMonth": "Next month"
   },
   "performance": {
     "slogan": "Real user <span>performance monitoring</span> for faster websites.",

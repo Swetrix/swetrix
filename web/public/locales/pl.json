@@ -158,7 +158,9 @@
     "toggleOptions": "Przełącz opcje",
     "paginationNavLabel": "Paginacja",
     "jumpToPage": "Przejdź do strony {{page}}",
-    "pageNumber": "Strona {{page}}"
+    "pageNumber": "Strona {{page}}",
+    "clear": "Wyczyść",
+    "apply": "Zastosuj"
   },
   "ariaLabels": {
     "actions": "Akcje",
@@ -200,7 +202,9 @@
     "progress": "Postęp: {{value}}%",
     "showEventDetails": "Pokaż szczegóły {{event}}",
     "template": "Szablon",
-    "uploadFile": "Prześlij plik"
+    "uploadFile": "Prześlij plik",
+    "previousMonth": "Poprzedni miesiąc",
+    "nextMonth": "Następny miesiąc"
   },
   "performance": {
     "slogan": "Monitorowanie <span>wydajności</span> z perspektywy rzeczywistego użytkownika dla szybszych stron internetowych.",

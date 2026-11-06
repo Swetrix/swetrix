@@ -158,7 +158,9 @@
     "toggleOptions": "Basculer les options",
     "paginationNavLabel": "Pagination",
     "jumpToPage": "Aller à la page {{page}}",
-    "pageNumber": "Page {{page}}"
+    "pageNumber": "Page {{page}}",
+    "clear": "Effacer",
+    "apply": "Appliquer"
   },
   "ariaLabels": {
     "actions": "Actions",
@@ -200,7 +202,9 @@
     "progress": "Progression : {{value}} %",
     "showEventDetails": "Afficher les détails de {{event}}",
     "template": "Modèle",
-    "uploadFile": "Téléverser un fichier"
+    "uploadFile": "Téléverser un fichier",
+    "previousMonth": "Mois précédent",
+    "nextMonth": "Mois suivant"
   },
   "performance": {
     "slogan": "<span>Suivi des performances</span> des utilisateurs réels pour des sites plus rapides.",

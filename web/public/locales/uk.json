@@ -158,7 +158,9 @@
     "toggleOptions": "Перемкнути опції",
     "paginationNavLabel": "Пагінація",
     "jumpToPage": "Перейти на сторінку {{page}}",
-    "pageNumber": "Сторінка {{page}}"
+    "pageNumber": "Сторінка {{page}}",
+    "clear": "Очистити",
+    "apply": "Застосувати"
   },
   "ariaLabels": {
     "actions": "Дії",
@@ -200,7 +202,9 @@
     "progress": "Прогрес: {{value}}%",
     "showEventDetails": "Показати деталі {{event}}",
     "template": "Шаблон",
-    "uploadFile": "Завантажити файл"
+    "uploadFile": "Завантажити файл",
+    "previousMonth": "Попередній місяць",
+    "nextMonth": "Наступний місяць"
   },
   "performance": {
     "slogan": "Моніторинг <span>продуктивності</span> реальних користувачів для швидших вебсайтів.",
