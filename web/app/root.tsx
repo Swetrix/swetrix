@@ -306,19 +306,15 @@ const removeMultipleLngParams = (url: string): string => {
   return _replace(url, /%3Flng%3D[^%]*/g, '')
 }
 
-// Decides whether to redirect an unprefixed URL to its localised counterpart
-// so the URL is always the source of truth for the rendered language.
-//
-// Priority of "preferred language" signals:
-//   1. Legacy `?lng=xx` query (301 — canonical migration of old links)
-//   2. `i18next` cookie set by the language switcher (302 — per-user pref)
-//
-// We deliberately ignore `Accept-Language` here to avoid surprise redirects
-// for bots, link previews, and shared screenshots.
-const buildLocaliseRedirect = (
+/**
+ * Builds canonical language redirects from legacy query parameters or cookies.
+ * Legacy `lng` queries take precedence over stored preferences. Browser language
+ * is handled by middleware so shared URLs keep their requested paths.
+ */
+const buildLocaliseRedirect = async (
   request: Request,
   urlObject: URL,
-): { url: string; status: 301 | 302 } | null => {
+): Promise<{ url: string; status: 301 | 302 } | null> => {
   const { searchParams, pathname } = urlObject
 
   // Already on a localised URL, or a path that should never be prefixed.
@@ -341,7 +337,7 @@ const buildLocaliseRedirect = (
     return { url: next.toString(), status: 301 }
   }
 
-  const cookieLng = readCookieLang(request)
+  const cookieLng = await readCookieLang(request)
   if (cookieLng && cookieLng !== defaultLanguage) {
     const next = new URL(urlObject.toString())
     next.pathname = localisePath(pathname, cookieLng)
@@ -351,6 +347,7 @@ const buildLocaliseRedirect = (
   return null
 }
 
+/** Prepares canonical routing, authentication, locale and theme data. */
 export async function loader({
   request,
   context,
@@ -369,7 +366,7 @@ export async function loader({
     return redirect(httpToHttps, 301)
   }
 
-  const localiseRedirect = buildLocaliseRedirect(request, urlObject)
+  const localiseRedirect = await buildLocaliseRedirect(request, urlObject)
   if (localiseRedirect) {
     return redirect(localiseRedirect.url, localiseRedirect.status)
   }

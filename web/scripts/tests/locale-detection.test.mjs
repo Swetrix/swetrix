@@ -49,46 +49,79 @@ const cases = [
     '/login',
     'i18next=en',
     'en',
+    'zh-CN',
   ],
   [
     'Chinese preference overrides English browser language',
     '/login',
     'i18next=zh',
     'zh',
+    'en-GB',
   ],
   [
     'localised path overrides the preference cookie',
     '/zh/login',
     'i18next=en',
     'zh',
+    'en-GB',
   ],
   [
     'existing German preference remains supported',
     '/login',
     'i18next=de',
     'de',
+    'en-GB',
   ],
   [
     'React Router encoded cookies remain supported',
     '/login',
     encodedCookie,
     'de',
+    'en-GB',
+  ],
+  [
+    'unsupported duplicate cookie does not hide a valid preference',
+    '/login',
+    'i18next=unsupported; i18next=de',
+    'de',
+    'en-GB',
+  ],
+  [
+    'malformed duplicate cookie does not hide a valid preference',
+    '/login',
+    'i18next=%E0%A4; i18next=zh',
+    'zh',
+    'en-GB',
+  ],
+  [
+    'unsupported duplicate cookie does not hide an encoded preference',
+    '/login',
+    `i18next=unsupported; ${encodedCookie}`,
+    'de',
+    'en-GB',
+  ],
+  [
+    'first supported encoded preference takes precedence over a later plain cookie',
+    '/login',
+    `${encodedCookie}; i18next=zh`,
+    'de',
+    'en-GB',
   ],
   [
     'malformed preference falls back to the browser language',
     '/login',
     'i18next=%E0%A4',
-    'en',
+    'zh',
+    'zh-CN',
   ],
 ]
 
-for (const [name, pathname, cookie, expected] of cases) {
+for (const [name, pathname, cookie, expected, browserLanguage] of cases) {
   test(name, async () => {
     const request = new Request(`https://swetrix.test${pathname}`, {
       headers: {
         Cookie: cookie,
-        'Accept-Language':
-          expected === 'en' && cookie === 'i18next=en' ? 'zh-CN' : 'en-GB',
+        'Accept-Language': browserLanguage,
       },
     })
     const context = new RouterContextProvider()

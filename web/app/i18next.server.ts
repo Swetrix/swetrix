@@ -11,7 +11,13 @@ import i18n from './i18n'
 
 const localeCookie = createCookie('i18next')
 
-export const readCookieLang = (request: Request): string | null => {
+/**
+ * Returns the first supported language cookie in header order, skipping invalid
+ * entries and accepting both plain and React Router-encoded preferences.
+ */
+export const readCookieLang = async (
+  request: Request,
+): Promise<string | null> => {
   const cookie = request.headers.get('Cookie')
   if (!cookie) return null
 
@@ -29,7 +35,10 @@ export const readCookieLang = (request: Request): string | null => {
     } catch {
       value = rawValue
     }
-    return whitelist.includes(value) ? value : null
+    if (whitelist.includes(value)) return value
+
+    const parsedValue = await localeCookie.parse(trimmed)
+    if (whitelist.includes(parsedValue)) return parsedValue
   }
 
   return null
@@ -44,7 +53,7 @@ export const [i18nextMiddleware, getLocale, getInstance] =
       async findLocale({ request }) {
         return (
           getLangFromPath(new URL(request.url).pathname) ||
-          readCookieLang(request)
+          (await readCookieLang(request))
         )
       },
     },
