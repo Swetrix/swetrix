@@ -24,6 +24,7 @@
     "lint:fix": "oxlint --fix apps/cloud/src apps/community/src",
     "lint:tsc": "tsc --noEmit",
     "test:v2": "jest --config jest.v2.config.js",
+    "test:idempotency": "jest --config jest.idempotency.config.js",
     "find-deadcode": "ts-prune",
     "sentry:sourcemaps": "sentry-cli sourcemaps inject --org swetrix --project swetrix-api ./dist && sentry-cli sourcemaps upload --org swetrix --project swetrix-api ./dist",
     "knip": "knip"

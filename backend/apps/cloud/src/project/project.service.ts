@@ -12,6 +12,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm'
 import {
   FindManyOptions,
+  EntityManager,
   FindOneOptions,
   Repository,
   DeepPartial,
@@ -40,6 +41,7 @@ import { ActionTokenType } from '../action-tokens/action-token.entity'
 import { MailerService } from '../mailer/mailer.service'
 import { LetterTemplate } from '../mailer/letter'
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
+import type { ApiKeyPrincipal } from '../api-key/api-key.types'
 import { Project } from './entity/project.entity'
 import { ProjectShare, Role } from './entity/project-share.entity'
 import { ProjectDTO } from './dto/project.dto'
@@ -409,6 +411,62 @@ export class ProjectService {
     })
   }
 
+  async getProjectDirectory(
+    userId: string,
+    {
+      take,
+      skip,
+      search,
+      id,
+    }: PaginationOptionsInterface & { search?: string; id?: string },
+    key?: ApiKeyPrincipal,
+  ): Promise<
+    Pagination<
+      Pick<Project, 'id' | 'name' | 'websiteUrl' | 'active' | 'public'>
+    >
+  > {
+    const query = this.projectsRepository
+      .createQueryBuilder('project')
+      .select([
+        'project.id',
+        'project.name',
+        'project.websiteUrl',
+        'project.active',
+        'project.public',
+      ])
+    if (key && !key.unrestricted) {
+      query.where('project.adminId = :userId', { userId })
+      if (!key.allProjects) {
+        if (!key.projectIds.length)
+          return new Pagination({ results: [], total: 0 })
+        query.andWhere('CAST(project.id AS BINARY) IN (:...projectIds)', {
+          projectIds: key.projectIds,
+        })
+      }
+    } else {
+      query.where(
+        `(project.adminId = :userId
+          OR EXISTS (SELECT 1 FROM project_share ps WHERE ps.projectId = project.id AND ps.userId = :userId AND ps.confirmed = true)
+          OR EXISTS (SELECT 1 FROM organisation_member om WHERE om.organisationId = project.organisationId AND om.userId = :userId AND om.confirmed = true))`,
+        { userId },
+      )
+    }
+    if (id) query.andWhere('project.id = CAST(:id AS BINARY)', { id })
+    if (search) {
+      query.andWhere(
+        '(INSTR(LOWER(project.name), LOWER(:search)) > 0 OR INSTR(LOWER(project.id), LOWER(:search)) > 0)',
+        { search },
+      )
+    }
+    const [results, total] = await query
+      .orderBy('project.name', 'ASC')
+      .addOrderBy('project.id', 'ASC')
+      .skip(skip)
+      .take(take)
+      .getManyAndCount()
+    return new Pagination({ results, total })
+  }
+
   async paginateForOrganisation(
     options: PaginationOptionsInterface,
     userId: string,
@@ -462,8 +520,12 @@ export class ProjectService {
     return this.projectsRepository.count()
   }
 
-  async countByAdminId(adminId: string): Promise<number> {
-    return this.projectsRepository.count({ where: { admin: { id: adminId } } })
+  async countByAdminId(
+    adminId: string,
+    manager?: EntityManager,
+  ): Promise<number> {
+    const repo = manager?.getRepository(Project) ?? this.projectsRepository
+    return repo.count({ where: { admin: { id: adminId } } })
   }
 
   async getProjectIdsByAdminId(adminId: string): Promise<string[]> {
@@ -501,8 +563,9 @@ export class ProjectService {
     return _map(projects, 'id')
   }
 
-  async create(project: DeepPartial<Project>) {
-    return this.projectsRepository.save(project)
+  async create(project: DeepPartial<Project>, manager?: EntityManager) {
+    const repo = manager?.getRepository(Project) ?? this.projectsRepository
+    return repo.save(project)
   }
 
   async update(
@@ -709,8 +772,9 @@ export class ProjectService {
     throw new ForbiddenException(message)
   }
 
-  async isPIDUnique(pid: string): Promise<boolean> {
-    const exists = await this.projectsRepository.findOne({
+  async isPIDUnique(pid: string, manager?: EntityManager): Promise<boolean> {
+    const repo = manager?.getRepository(Project) ?? this.projectsRepository
+    const exists = await repo.findOne({
       where: { id: pid },
       select: ['id'],
     })
@@ -1493,9 +1557,16 @@ export class ProjectService {
     return { subscribers, count }
   }
 
-  async createFunnel(projectId: string, data: FunnelCreateDTO) {
-    const funnel = await this.funnelRepository.save({
-      ...data,
+  async createFunnel(
+    projectId: string,
+    data: FunnelCreateDTO,
+    manager?: EntityManager,
+  ) {
+    const repo = manager?.getRepository(Funnel) ?? this.funnelRepository
+    const funnel = await repo.save({
+      ...(manager
+        ? { pid: data.pid, name: data.name, steps: data.steps }
+        : data),
       project: { id: projectId },
     })
     return funnel
@@ -1521,8 +1592,13 @@ export class ProjectService {
     return this.funnelRepository.delete({ id })
   }
 
-  async createAnnotation(projectId: string, data: AnnotationCreateDTO) {
-    const annotation = await this.annotationRepository.save({
+  async createAnnotation(
+    projectId: string,
+    data: AnnotationCreateDTO,
+    manager?: EntityManager,
+  ) {
+    const repo = manager?.getRepository(Annotation) ?? this.annotationRepository
+    const annotation = await repo.save({
       date: data.date,
       text: data.text,
       project: { id: projectId },

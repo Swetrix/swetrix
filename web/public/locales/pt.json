@@ -3827,6 +3827,7 @@
     "tooltip": "As chaves de API conectam seus scripts, dashboards e integrações ao Swetrix. Escolha quais projetos e permissões cada chave pode acessar. Rotacione uma chave para substituir seu segredo, ou revogue-a para interromper o acesso.",
     "description": "Dê a cada integração sua própria chave, com apenas as permissões e projetos de que ela precisa.",
     "projectDescription": "Chaves de API que podem acessar este projeto, e as permissões que elas têm.",
+    "connectMcp": "Conectar um assistente de IA com MCP",
     "create": "Criar chave de API",
     "manage": "Gerenciar chaves de API",
     "retry": "Tentar novamente",

@@ -1,5 +1,8 @@
 import { Req } from '@nestjs/common'
 import { ApiKeyAccess } from '../api-key/api-key-access.decorator'
+import { ApiKeyPrincipal } from '../api-key/api-key.types'
+import { getIdempotencyRequest } from '../common/idempotency'
+import { createIdempotently } from './create-idempotency'
 import {
   Controller,
   Body,
@@ -23,6 +26,7 @@ import { randomUUID } from 'crypto'
 import {
   ApiTags,
   ApiQuery,
+  ApiHeader,
   ApiResponse,
   ApiBearerAuth,
   ApiOperation,
@@ -54,6 +58,7 @@ import {
 } from './project.service'
 import { Pagination } from '../common/pagination/pagination'
 import { Project } from './entity/project.entity'
+import { getProjectDirectory } from './project-directory'
 import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
 import {
   ProjectDTO,
@@ -124,6 +129,48 @@ export class ProjectController {
     private readonly userService: UserService,
     private readonly mailerService: MailerService,
   ) {}
+
+  @ApiBearerAuth()
+  @Get('/directory')
+  @ApiOperation({
+    summary: 'Discover accessible projects and their basic metadata',
+  })
+  @ApiQuery({ name: 'take', required: false, type: Number })
+  @ApiQuery({ name: 'skip', required: false, type: Number })
+  @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiQuery({ name: 'id', required: false, type: String })
+  @Auth(true)
+  @ApiKeyAccess('projects:read', 'projectDirectory')
+  projectDirectory(
+    @Req() request: { user: { apiKeyAccess?: ApiKeyPrincipal } },
+    @CurrentUserId() userId: string,
+    @Query('take', new ParseIntPipe({ optional: true })) take = 25,
+    @Query('skip', new ParseIntPipe({ optional: true })) skip = 0,
+    @Query('search') search?: string,
+    @Query('id') id?: string,
+  ) {
+    if (take < 1 || take > 100 || skip < 0 || skip > 50_000) {
+      throw new BadRequestException(
+        'take must be 1–100 and skip must be 0–50000',
+      )
+    }
+    if (
+      search !== undefined &&
+      (typeof search !== 'string' || search.length > 100)
+    ) {
+      throw new BadRequestException(
+        'search must be a string of at most 100 characters',
+      )
+    }
+    if (id !== undefined && (typeof id !== 'string' || !isValidPID(id))) {
+      throw new BadRequestException('Invalid project ID')
+    }
+    return getProjectDirectory(
+      userId,
+      { take, skip, search: search?.trim(), id },
+      request.user.apiKeyAccess,
+    )
+  }
 
   @Get('/')
   @ApiQuery({ name: 'take', required: false })
@@ -534,15 +581,23 @@ export class ProjectController {
 
   @ApiBearerAuth()
   @Post('/')
+  @ApiHeader({ name: 'Idempotency-Key', required: false })
   @ApiResponse({ status: 201, type: Project })
   @Auth(true)
   @ApiKeyAccess('projects:write', 'create', 'pid')
   async create(
     @Body() projectDTO: CreateProjectDTO,
     @CurrentUserId() userId: string,
+    @Headers('idempotency-key') key?: string,
   ): Promise<Project> {
     this.logger.log({ projectDTO, userId }, 'POST /project')
 
+    const request = getIdempotencyRequest(
+      userId,
+      'create_project',
+      key,
+      projectDTO,
+    )
     const projects = await getProjectsClickhouse(userId)
 
     this.projectService.validateProject(projectDTO as ProjectDTO, true)
@@ -560,9 +615,16 @@ export class ProjectController {
       ? _trim(projectDTO.websiteUrl)
       : null
 
-    await createProjectClickhouse({ ...project, adminId: userId })
-
-    return project
+    return createIdempotently(
+      request,
+      { table: 'project', userId },
+      project,
+      () =>
+        createProjectClickhouse(
+          { ...project, adminId: userId },
+          Boolean(request),
+        ),
+    )
   }
 
   @ApiBearerAuth()
@@ -667,12 +729,14 @@ export class ProjectController {
   }
 
   @Post('/funnel')
+  @ApiHeader({ name: 'Idempotency-Key', required: false })
   @ApiResponse({ status: 201 })
   @Auth(true)
   @ApiKeyAccess('funnels:write', 'body', 'pid')
   async createFunnel(
     @Body() funnelDTO: FunnelCreateDTO,
     @CurrentUserId() userId: string,
+    @Headers('idempotency-key') key?: string,
   ): Promise<any> {
     this.logger.log({ funnelDTO, userId }, 'POST /project/funnel')
 
@@ -688,6 +752,12 @@ export class ProjectController {
 
     this.projectService.allowedToManage(project, userId)
 
+    const request = getIdempotencyRequest(
+      userId,
+      'create_funnel',
+      key,
+      funnelDTO,
+    )
     const funnel = new Funnel()
     funnel.id = randomUUID()
     funnel.name = funnelDTO.name
@@ -696,15 +766,19 @@ export class ProjectController {
 
     const formatted = this.projectService.formatFunnelToClickhouse(funnel)
 
-    await createFunnelClickhouse(formatted)
-
-    return {
+    const response = {
       ...funnel,
       pid: funnelDTO.pid,
       project: _omit(this.projectService.formatFromClickhouse(project), [
         'passwordHash',
       ]),
     }
+    return createIdempotently(
+      request,
+      { table: 'funnel', projectId: funnelDTO.pid },
+      response,
+      () => createFunnelClickhouse(formatted, Boolean(request)),
+    )
   }
 
   @Patch('/funnel')
@@ -807,12 +881,14 @@ export class ProjectController {
   }
 
   @Post('/annotation')
+  @ApiHeader({ name: 'Idempotency-Key', required: false })
   @ApiResponse({ status: 201 })
   @Auth(true)
   @ApiKeyAccess('annotations:write', 'body', 'pid')
   async createAnnotation(
     @Body() annotationDTO: AnnotationCreateDTO,
     @CurrentUserId() userId: string,
+    @Headers('idempotency-key') key?: string,
   ): Promise<any> {
     this.logger.log({ annotationDTO, userId }, 'POST /project/annotation')
 
@@ -828,6 +904,12 @@ export class ProjectController {
 
     this.projectService.allowedToManage(project, userId)
 
+    const request = getIdempotencyRequest(
+      userId,
+      'create_annotation',
+      key,
+      annotationDTO,
+    )
     const annotation = {
       id: randomUUID(),
       date: annotationDTO.date,
@@ -835,9 +917,12 @@ export class ProjectController {
       projectId: annotationDTO.pid,
     }
 
-    await createAnnotationClickhouse(annotation)
-
-    return annotation
+    return createIdempotently(
+      request,
+      { table: 'annotation', projectId: annotationDTO.pid },
+      annotation,
+      () => createAnnotationClickhouse(annotation, Boolean(request)),
+    )
   }
 
   @Patch('/annotation')

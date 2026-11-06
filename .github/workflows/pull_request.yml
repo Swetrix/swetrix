@@ -10,6 +10,60 @@ permissions:
   contents: read
 
 jobs:
+  mcp-server-checks:
+    name: MCP Server Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: packages/mcp-server/package-lock.json
+      - run: npm ci
+        working-directory: packages/mcp-server
+      - run: npm test
+        working-directory: packages/mcp-server
+
+  admin-idempotency-checks:
+    name: Admin API Idempotency Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: test
+          MYSQL_DATABASE: swetrix_idempotency_test
+          MYSQL_USER: test
+          MYSQL_PASSWORD: test
+        ports: ['3306:3306']
+        options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=5s --health-retries=20
+      clickhouse:
+        image: clickhouse/clickhouse-server:26.8
+        env:
+          CLICKHOUSE_DB: idempotency_test
+          CLICKHOUSE_USER: default
+          CLICKHOUSE_PASSWORD: test
+        ports: ['8123:8123']
+        options: --health-cmd="clickhouse-client --password test -q 'SELECT 1'" --health-interval=5s --health-timeout=5s --health-retries=20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '^24.12.0'
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci --force
+      - name: Test retry-safe Admin API creates
+        run: npm run test:idempotency -- --runInBand
+        env:
+          NODE_OPTIONS: --experimental-vm-modules
+          SWETRIX_IDEMPOTENCY_TEST_MYSQL_URL: mysql://test:test@127.0.0.1:3306/swetrix_idempotency_test
+          SWETRIX_IDEMPOTENCY_TEST_CLICKHOUSE_URL: http://default:test@127.0.0.1:8123
+
   backend-checks:
     name: Backend Checks
     runs-on: ubuntu-latest

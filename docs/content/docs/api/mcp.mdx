@@ -1,0 +1,103 @@
+---
+title: MCP server
+slug: /mcp
+description: "Connect an AI assistant to Swetrix to query traffic, investigate errors, and manage projects with a scoped API key."
+---
+
+The Swetrix Model Context Protocol (MCP) server lets an AI assistant query your analytics and work with projects. The assistant selects a tool for your question and receives data from the Swetrix API. You can run the server on your computer or host a shared endpoint for your team.
+
+## Choose what the assistant can access
+
+Create a dedicated key in **Account Settings → Account → API keys** and select the projects the assistant should see. For traffic reports, grant **Analytics → Read only**. If you already know the project ID, this is enough to ask for a report.
+
+Grant **Project settings → Read only** to look up projects by name or ID. `list_projects` and `get_project` use the V1 project directory. For a self-hosted installation, deploy an API version that includes `GET /v1/project/directory` before using those tools. [Admin API reference](/admin-api#get-v1projectdirectory)
+
+Add **Funnels → Read only** to read saved funnels or to request additional dashboard settings with `get_project` and `includeSettings: true`. For custom events or error reports, grant read access to **Events** or **Errors** respectively. [API key permissions](/settings/api-keys)
+
+Error dimension discovery requires read access to both **Analytics** and **Errors**. Filtering a report by custom event or event metadata also requires **Events** access.
+
+## Connect a local client
+
+Install Node.js 22 or newer. From a checkout of the Swetrix repository, install the server's dependencies. [Swetrix source](https://github.com/Swetrix/swetrix)
+
+```bash
+cd packages/mcp-server
+npm ci
+```
+
+Configure your MCP client to launch `node` with the absolute path to `src/cli.js` and supply the key through `SWETRIX_API_KEY`. The client starts the process and communicates over standard input and output (stdio).
+
+For a local VS Code chat session, open **MCP: Open User Configuration** and add the following. Replace the path with the location of your checkout. VS Code prompts for the key the first time the server starts. [VS Code configuration reference](https://code.visualstudio.com/docs/agents/reference/mcp-configuration)
+
+```json
+{
+  "inputs": [
+    {
+      "id": "swetrix-key",
+      "type": "promptString",
+      "description": "Swetrix API key",
+      "password": true
+    }
+  ],
+  "servers": {
+    "swetrix": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["/absolute/path/to/swetrix/packages/mcp-server/src/cli.js"],
+      "env": { "SWETRIX_API_KEY": "${input:swetrix-key}" }
+    }
+  }
+}
+```
+
+The server queries Swetrix Cloud by default. For Community Edition, also set `SWETRIX_API_URL` in the server environment to your instance's API base URL, for example `https://analytics.example.com/api` if your proxy serves the API under `/api`. The server adds the API version and route.
+
+## Ask for a report
+
+- “List my projects and find the project ID for Bakery.”
+- “For project AbC123xYz789, which five pages received the most pageviews in the last seven days?”
+- “Which JavaScript errors occurred most often in that project over the same period?”
+- “Show the drop-off from the home page to the pricing page to the signup event over the last four weeks.”
+
+Give the assistant your reporting timezone when the day boundary matters. For a comparison, specify the two periods and the metric to compare. The Stats API reference lists the dimensions, metrics and filters by report type. [Statistics API v2](/statistics-api-v2)
+
+### Available tools
+
+| Task                                                | Tools                                                                                             |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Discover metrics, dimensions and filter values      | `get_stats_schema`, `get_dimension_values`                                                        |
+| Query totals, trends, breakdowns or current traffic | `get_stats_summary`, `get_stats_timeseries`, `get_stats_breakdown`, `get_live_visitors`           |
+| Investigate custom events                           | `list_custom_events`, `get_custom_event_timeseries`, `get_custom_event_metadata`                  |
+| Analyse funnels and errors                          | `get_funnel`, `list_errors`                                                                       |
+| Find projects and saved configuration               | `list_projects`, `get_project`, `list_funnels`, `list_goals`, `list_segments`, `list_annotations` |
+| Create projects, funnels and annotations (opt-in)   | `create_project`, `create_funnel`, `create_annotation`                                            |
+
+## Host an endpoint for a team
+
+After installing the package dependencies, start the server in Streamable HTTP mode from `packages/mcp-server`.
+
+```bash
+node src/cli.js --http
+```
+
+This serves `http://127.0.0.1:3100/mcp`. Set `SWETRIX_MCP_HOST` or `SWETRIX_MCP_PORT` to change the listening address or port. For remote access, put a TLS reverse proxy in front of the process, preserve the public `Host` header and forward requests to `/mcp`. Set `SWETRIX_MCP_ALLOWED_HOSTS=mcp.example.com` on the server using your public hostname. The server checks request hosts and browser origins against this list. For multiple hosts, separate the hostnames with commas and omit schemes and ports.
+
+Configure each client with your endpoint URL and an `Authorization: Bearer <Swetrix API key>` header on every request. HTTP connections require a scoped key starting with `swx_` and a client that supports custom headers. Choose a server operator you trust with the key and a client you trust with the returned analytics. Each user supplies their own key. Clients can discover the tool names and inputs, and Swetrix checks the caller's permissions and rate limits when a tool calls the API.
+
+For example, keep the `inputs` entry from the VS Code configuration above and replace the `swetrix` server entry with this one, using your own hostname.
+
+```json
+{
+  "type": "http",
+  "url": "https://mcp.example.com/mcp",
+  "headers": { "Authorization": "Bearer ${input:swetrix-key}" }
+}
+```
+
+## Enable changes
+
+The default tool list is read-only. To allow changes, set `SWETRIX_MCP_ENABLE_WRITES=true` in the MCP server environment and restart the process. This setting affects every client of that process. Swetrix still checks each caller's key before applying a change. For example, to create an annotation, grant **Annotations → Read & write** for the target project. To create a project, grant **Project settings → Read & write** and select **All projects**.
+
+Each create tool requires an `idempotencyKey`. Generate a fresh UUID for each intended creation and keep it with the tool arguments. If the response is lost, retry with the same arguments and key within 24 hours. Use a new key for a second, intentional creation, even if the arguments are identical. Self-hosted installations need the backend update and receipt table before enabling writes. Older APIs ignore the header. [Admin API retry behavior](/admin-api#retrying-a-create-request)
+
+If a tool call returns `401`, check that the key is current and belongs to the configured Swetrix instance. For `403`, check the key's project selection and permission groups. A `429` response means the account has reached its API rate limit.
