@@ -50,6 +50,10 @@ export const [i18nextMiddleware, getLocale, getInstance] =
       supportedLanguages: whitelist,
       fallbackLanguage: defaultLanguage,
       cookie: localeCookie,
+      /**
+       * Resolves URL language prefixes before stored cookie preferences.
+       * Returning null allows the remaining detectors to use browser language.
+       */
       async findLocale({ request }) {
         return (
           getLangFromPath(new URL(request.url).pathname) ||
