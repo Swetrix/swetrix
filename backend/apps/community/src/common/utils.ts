@@ -1,3 +1,4 @@
+import type { TrackingSettings } from '../project/tracking-settings'
 import { NotFoundException, HttpException } from '@nestjs/common'
 import path from 'path'
 import fs from 'fs'
@@ -393,7 +394,10 @@ const getProjectsClickhouse = async (
 
 const updateProjectClickhouse = async (
   project: any,
-  options: { ignoreAllowedKeys?: boolean } = {},
+  options: {
+    ignoreAllowedKeys?: boolean
+    trackingPatch?: Partial<TrackingSettings>
+  } = {},
 ) => {
   const updatableKeys = options.ignoreAllowedKeys
     ? CLICKHOUSE_PROJECT_UPDATABLE_KEYS
@@ -409,7 +413,7 @@ const updateProjectClickhouse = async (
   )
 
   const columns = _keys(filtered)
-  if (_isEmpty(columns)) {
+  if (_isEmpty(columns) && options.trackingPatch === undefined) {
     return
   }
 
@@ -441,13 +445,22 @@ const updateProjectClickhouse = async (
       type = 'Nullable(String)'
     }
     return `${col}={${col}:${type}}`
-  }).join(', ')
+  })
 
-  const query = `ALTER TABLE project UPDATE ${assignments} WHERE id={id:FixedString(12)}`
+  if (options.trackingPatch !== undefined) {
+    params.trackingPatch = JSON.stringify(options.trackingPatch)
+    assignments.push(
+      'trackingSettings = jsonMergePatch(trackingSettings, {trackingPatch:String})',
+    )
+  }
+
+  const query = `ALTER TABLE project UPDATE ${assignments.join(', ')} WHERE id={id:FixedString(12)}`
 
   await clickhouse.command({
     query,
     query_params: params,
+    clickhouse_settings:
+      options.trackingPatch !== undefined ? { mutations_sync: '2' } : undefined,
   })
 }
 

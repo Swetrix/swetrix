@@ -4,14 +4,11 @@ import {
   TagIcon,
   SquaresFourIcon,
   ArrowSquareOutIcon,
-  CopyIcon,
-  CheckIcon,
   SparkleIcon,
 } from '@phosphor-icons/react'
 import type { CSSProperties } from 'react'
 import { useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
-import { toast } from 'sonner'
 import {
   siAngular,
   siAstro,
@@ -60,59 +57,39 @@ import {
 } from 'simple-icons'
 
 import {
-  API_URL,
   DOCS_URL,
+  MAIN_URL,
   INTEGRATIONS_URL,
   isSelfhosted,
 } from '~/lib/constants'
-import { Badge } from '~/ui/Badge'
 import CodeBlock from '~/ui/CodeBlock'
+import ManagedTrackingSnippet from '~/ui/ManagedTrackingSnippet'
 import CopyButton from '~/ui/CopyButton'
 import { Text } from '~/ui/Text'
 import { Switch } from '~/ui/Switch'
 import { cn } from '~/utils/generic'
+import {
+  getManagedTrackingSnippet,
+  TRACKER_SCRIPT_ORIGIN,
+  PUBLIC_TRACKER_LOG_URL,
+} from '~/utils/managed-tracker'
 
-const API_URL_WITHOUT_TRAILING_SLASH = API_URL.endsWith('/')
-  ? API_URL.slice(0, -1)
-  : API_URL
-
-const getSnippet = (pid: string, outboundLinks = false) => {
-  if (isSelfhosted) {
-    return `<script src="https://swetrix.org/swetrix.js" defer></script>
+const getManualSnippet = (pid: string) =>
+  `<script src="https://swetrix.org/swetrix.js" defer></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  swetrix.init('${pid}', {
-    apiURL: '${API_URL_WITHOUT_TRAILING_SLASH}/v1/log',${outboundLinks ? '\n    events: { outboundLinks: true },' : ''}
-  })
+  swetrix.init('${pid}'${getInitOptions(false)})
   swetrix.trackViews()
 })
 </script>
 
 <noscript>
 <img
-  src="${API_URL_WITHOUT_TRAILING_SLASH}/log/noscript?pid=${pid}"
+  src="${PUBLIC_TRACKER_LOG_URL}/noscript?pid=${pid}"
   alt=""
   referrerpolicy="no-referrer-when-downgrade"
 />
 </noscript>`
-  }
-
-  return `<script src="https://swetrix.org/swetrix.js" defer></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  swetrix.init('${pid}'${outboundLinks ? ', { events: { outboundLinks: true } }' : ''})
-  swetrix.trackViews()
-})
-</script>
-
-<noscript>
-<img
-  src="https://api.swetrix.com/log/noscript?pid=${pid}"
-  alt=""
-  referrerpolicy="no-referrer-when-downgrade"
-/>
-</noscript>`
-}
 
 type TrackingTab = 'script' | 'npm' | 'gtm' | 'ai' | 'platforms'
 
@@ -403,9 +380,7 @@ const PlatformIcon = ({
 
 const getInitOptions = (outboundLinks: boolean) => {
   const options = [
-    ...(isSelfhosted
-      ? [`apiURL: '${API_URL_WITHOUT_TRAILING_SLASH}/v1/log'`]
-      : []),
+    ...(isSelfhosted ? [`apiURL: '${PUBLIC_TRACKER_LOG_URL}'`] : []),
     ...(outboundLinks ? ['events: { outboundLinks: true }'] : []),
   ]
   return options.length ? `, { ${options.join(', ')} }` : ''
@@ -417,91 +392,20 @@ const getNpmSnippet = (pid: string, outboundLinks = false) =>
 Swetrix.init('${pid}'${getInitOptions(outboundLinks)})
 Swetrix.trackViews()`
 
-const getGtmSnippet = (pid: string, outboundLinks = false) =>
-  `<script>
-  (function () {
-    var el = document.createElement("script");
-    el.src = "https://swetrix.org/swetrix.js";
-    el.onload = function () {
-      swetrix.init("${pid}"${getInitOptions(outboundLinks)});
-      swetrix.trackViews();
-    };
-    document.head.appendChild(el);
-  })();
-</script>`
-
-const getCspInstruction = () => {
-  if (isSelfhosted) {
-    return `If a Content Security Policy exists, preserve the current policy and add https://swetrix.org to script-src when using the script tag. Add the Swetrix API origin used by apiURL (${API_URL_WITHOUT_TRAILING_SLASH}) to connect-src, and to img-src if you keep the noscript pixel.`
-  }
-
-  return 'If a Content Security Policy exists, preserve the current policy and add https://swetrix.org to script-src when using the script tag. Add https://api.swetrix.com to connect-src, and to img-src if you keep the noscript pixel.'
-}
-
 const getAiInstallPrompt = (
   pid: string,
-) => `Install Swetrix analytics in this codebase.
+) => `Install the Swetrix managed tracking script once in the shared layout of this website.
 
-Use these exact Swetrix values:
-- Project ID: "${pid}"
-- Browser script URL: "https://swetrix.org/swetrix.js"
+${getManagedTrackingSnippet(pid)}
 
-Goal:
-- Track page views on every public page.
-- Install Swetrix in the shared/root location so tracking runs once across the whole site.
-- Keep the Project ID exactly as provided.
-- Do not add another analytics provider.
-- Do not send personal data to Swetrix in custom event names or metadata.
+Use this exact tag or the framework’s equivalent external script component. Keep the project ID and anonymous cross-origin setting. The script initializes itself and reads the project’s tracking settings. Pageviews, browser errors, outbound clicks and session replay can be configured in Project settings → Tracking script.
 
-First inspect the codebase and choose the least invasive setup for the framework.
-If Swetrix is already installed, update the existing setup instead of adding a duplicate.
+Check for an existing Swetrix installation first. Replace its automatic initialization and listeners when migrating to the managed tag. Preserve any custom event calls and the site’s consent flow. Load the tag after consent when required.
 
-For plain HTML or server-rendered templates, place this inside the shared <body> template, footer, or base layout so it appears on every page:
+If the site uses a Content Security Policy, allow ${TRACKER_SCRIPT_ORIGIN} in script-src and ${new URL(PUBLIC_TRACKER_LOG_URL, TRACKER_SCRIPT_ORIGIN || MAIN_URL).origin} in connect-src.
 
-\`\`\`html
-${getSnippet(pid)}
-\`\`\`
-
-For JavaScript frameworks, prefer the official npm package:
-
-\`\`\`bash
-npm install swetrix
-\`\`\`
-
-Then initialize Swetrix once in the browser-only root entry, app shell, or layout:
-
-\`\`\`ts
-${getNpmSnippet(pid)}
-\`\`\`
-
-Framework placement guide:
-- Next.js App Router: create a client Analytics component, call Swetrix from useEffect, and render it from app/layout.tsx. Add the noscript pixel in the root layout body if possible.
-- Next.js Pages Router: initialize in pages/_app.tsx and put the noscript pixel in pages/_document.tsx.
-- React with Vite or CRA: initialize in src/main.tsx or src/index.tsx. Add the noscript pixel to index.html.
-- Remix: create app/components/Analytics.tsx and render it from app/root.tsx inside <body>.
-- Vue, Nuxt, SvelteKit, Astro, Gatsby, Qwik, and Solid: initialize once from the client-side root layout, plugin, or entry component.
-- WordPress, Shopify, Webflow, Wix, Squarespace, Ghost, and similar builders: use the global custom code, theme header, footer, or integration area so the snippet appears on every page.
-
-Implementation requirements:
-- Call init before trackViews.
-- Call trackViews once from the root/shared location. It automatically tracks supported client-side route changes.
-- Use the matching namespace: swetrix.* for script-tag installs, Swetrix.* for npm imports.
-- Keep the noscript image pixel where the framework or platform supports it.
-- If enabling automatic browser error monitoring, call trackErrors after trackViews.
-- For custom events, use track({ ev: "EVENT_NAME", meta: { key: "value" } }) with short event names and non-PII metadata only. Never include email, full name, phone number, payment data, auth tokens, or raw user IDs.
-- If an event location is ambiguous, do not invent tracking. Summarize the suggested event locations instead.
-- Do not enable devMode in production code. Swetrix ignores localhost by default.
-- ${getCspInstruction()}
-
-Useful references:
-- Install guide: https://swetrix.com/docs/install-script
-- Framework guides: https://swetrix.com/docs/integrations
-- Script API reference: https://swetrix.com/docs/swetrix-js-reference
-
-After installing:
-- Search the source for "swetrix" and this Project ID.
-- Visit a deployed page, or temporarily enable devMode only for local verification, and confirm pageviews appear in the Swetrix dashboard within about a minute.
-- Return a short summary of changed files and where Swetrix initializes.`
+Install guide: https://swetrix.com/docs/install-script
+After installing, report where the tag was added and how to verify the first pageview in Swetrix.`
 
 const PROMPT_PREVIEW_LINES = 12
 
@@ -513,46 +417,6 @@ const getPromptPreview = (prompt: string) => {
   }
 
   return lines.slice(0, PROMPT_PREVIEW_LINES).join('\n')
-}
-
-const CopyableField = ({ value }: { value: string }) => {
-  const { t } = useTranslation('common')
-  const [copied, setCopied] = useState(false)
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(value)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    } catch {
-      toast.error(t('common.failedToCopy'))
-    }
-  }
-
-  return (
-    <div className='flex items-center justify-between rounded-lg bg-white px-4 py-3 font-mono text-sm ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-700'>
-      <span className='truncate text-gray-900 dark:text-gray-100'>{value}</span>
-      <button
-        type='button'
-        onClick={handleCopy}
-        className='ml-3 flex shrink-0 items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200'
-      >
-        {copied ? (
-          <>
-            <CheckIcon className='size-4 text-emerald-500' />
-            <span className='text-emerald-600 dark:text-emerald-400'>
-              {t('common.copied')}
-            </span>
-          </>
-        ) : (
-          <>
-            <CopyIcon className='size-4' />
-            {t('common.copy')}
-          </>
-        )}
-      </button>
-    </div>
-  )
 }
 
 const AiInstallTab = ({ projectId }: { projectId: string }) => {
@@ -609,6 +473,8 @@ const TrackingSetup = ({ projectId }: TrackingSetupProps) => {
             <button
               key={tab.id}
               type='button'
+              aria-label={t(tab.labelKey)}
+              aria-pressed={isActive}
               onClick={() => setActiveTab(tab.id)}
               className={cn(
                 'flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition-all',
@@ -627,7 +493,7 @@ const TrackingSetup = ({ projectId }: TrackingSetupProps) => {
         })}
       </div>
 
-      {['script', 'npm', 'gtm'].includes(activeTab) ? (
+      {activeTab === 'npm' ? (
         <div className='mb-4'>
           <Switch
             checked={outboundLinks}
@@ -651,18 +517,20 @@ const TrackingSetup = ({ projectId }: TrackingSetupProps) => {
                   {t('onboarding.installTracking.websiteInstallation')}
                 </Text>
                 <Text as='p' size='xs' colour='secondary'>
-                  <Trans
-                    t={t}
-                    i18nKey='modals.trackingSnippet.add'
-                    components={{
-                      bsect: <Badge label='<body>' colour='slate' />,
-                    }}
-                  />
+                  {t('onboarding.installTracking.managedHint')}
                 </Text>
               </div>
             </div>
 
-            <CodeBlock code={getSnippet(projectId, outboundLinks)} />
+            <ManagedTrackingSnippet projectId={projectId} />
+            <details className='mt-4'>
+              <summary className='cursor-pointer text-xs font-medium text-gray-600 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-200'>
+                {t('onboarding.installTracking.manualSnippet')}
+              </summary>
+              <div className='mt-3'>
+                <CodeBlock code={getManualSnippet(projectId)} />
+              </div>
+            </details>
           </div>
         )}
 
@@ -740,25 +608,17 @@ const TrackingSetup = ({ projectId }: TrackingSetupProps) => {
                 </Text>
               </div>
             </div>
-
             <div className='space-y-4'>
               <div>
                 <Text as='p' size='xs' weight='semibold' className='mb-2'>
-                  {t('onboarding.installTracking.gtm.step1')}
+                  {t('onboarding.installTracking.gtm.managedTag')}
                 </Text>
-                <CopyableField value={projectId} />
+                <ManagedTrackingSnippet projectId={projectId} />
               </div>
 
               <div>
                 <Text as='p' size='xs' weight='semibold' className='mb-2'>
-                  {t('onboarding.installTracking.gtm.step2')}
-                </Text>
-                <CodeBlock code={getGtmSnippet(projectId, outboundLinks)} />
-              </div>
-
-              <div>
-                <Text as='p' size='xs' weight='semibold' className='mb-2'>
-                  {t('onboarding.installTracking.gtm.step3')}
+                  {t('onboarding.installTracking.gtm.managedTrigger')}
                 </Text>
               </div>
             </div>

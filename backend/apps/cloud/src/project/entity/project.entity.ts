@@ -6,6 +6,7 @@ import { Experiment } from '../../experiment/entity/experiment.entity'
 import { FeatureFlag } from '../../feature-flag/entity/feature-flag.entity'
 import { Goal } from '../../goal/entity/goal.entity'
 import { User } from '../../user/entities/user.entity'
+import type { TrackingSettings } from '../tracking-settings'
 import { ProjectShare } from './project-share.entity'
 import { ProjectSubscriber } from './project-subscriber.entity'
 import { Funnel } from './funnel.entity'
@@ -200,6 +201,9 @@ export class Project {
 
   @Column('int', { unsigned: true, default: 30 })
   sessionReplayRetentionDays: number
+
+  @Column('json', { nullable: true })
+  trackingSettings?: Partial<TrackingSettings> | null
 
   @ApiProperty()
   @Column('varchar', { nullable: true, default: null, length: 512 })

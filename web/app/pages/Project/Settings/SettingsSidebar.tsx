@@ -203,7 +203,7 @@ const SettingsSidebar = <TabId extends string>({
       {
         id: 'general',
         label: t('project.settings.sidebarGroups.general'),
-        tabIds: ['general', 'access', 'people'] as TabId[],
+        tabIds: ['general', 'tracking', 'access', 'people'] as TabId[],
       },
       {
         id: 'protection',

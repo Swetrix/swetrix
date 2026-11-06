@@ -330,7 +330,9 @@ export const LIVE_VISITORS_UPDATE_INTERVAL = 40000
 
 // Environment variables
 // Using optional chaining for REMIX_ENV?. to avoid errors when running some unit tests
-const isStaging = isBrowser ? window.REMIX_ENV?.STAGING : process.env.STAGING
+export const isStaging = isBrowser
+  ? window.REMIX_ENV?.STAGING
+  : process.env.STAGING
 const STAGING_API_URL = isBrowser
   ? window.REMIX_ENV?.API_STAGING_URL
   : process.env.API_STAGING_URL
@@ -443,6 +445,7 @@ const UNLOCALISED_PATH_PATTERNS: RegExp[] = [
   /^\/comparison(\/|$)/,
   /^\/(privacy|imprint|security|dpa|cookie-policy|terms|data-policy|how-to-measure-core-web-vitals)(\/|$)/,
   /^\/api(\/|$)/,
+  /^\/p(\/|$)/,
   /^\/backend(\/|$)/,
   /^\/_internal_data/,
   /^\/sitemap[^/]*\.xml$/,

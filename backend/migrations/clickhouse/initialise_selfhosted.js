@@ -80,6 +80,8 @@ const CLICKHOUSE_INIT_QUERIES = [
   PARTITION BY toYYYYMM(created)
   ORDER BY (created);`,
 
+  `ALTER TABLE ${dbName}.project ADD COLUMN IF NOT EXISTS trackingSettings String DEFAULT '{}';`,
+
   `CREATE TABLE IF NOT EXISTS ${dbName}.pinned_project
   (
     id String,

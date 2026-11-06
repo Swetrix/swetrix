@@ -10,8 +10,10 @@ import {
   Put,
   Delete,
   BadRequestException,
+  ForbiddenException,
   HttpCode,
   NotFoundException,
+  Header,
   Headers,
   UnauthorizedException,
   Patch,
@@ -44,7 +46,7 @@ import _includes from 'lodash/includes'
 import dayjs from 'dayjs'
 import { hash } from 'bcrypt'
 
-import { Auth } from '../auth/decorators'
+import { Auth, Public } from '../auth/decorators'
 import { AnalyticsService, isValidDate } from '../analytics/analytics.service'
 import {
   LEGAL_PID_CHARACTERS,
@@ -53,6 +55,11 @@ import {
   deleteProjectRedis,
 } from './project.service'
 import { Pagination } from '../common/pagination/pagination'
+import { SessionReplayS3Service } from '../analytics/session-replay-s3.service'
+import {
+  readTrackingSettings,
+  isValidTrackingSettings,
+} from './tracking-settings'
 import { Project } from './entity/project.entity'
 import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
 import {
@@ -119,6 +126,7 @@ import { LetterTemplate } from '../mailer/letter'
 export class ProjectController {
   constructor(
     private readonly projectService: ProjectService,
+    private readonly replayStorage: SessionReplayS3Service,
     private readonly analyticsService: AnalyticsService,
     private readonly logger: AppLoggerService,
     private readonly userService: UserService,
@@ -1092,6 +1100,21 @@ export class ProjectController {
 
     this.projectService.allowedToManage(project, userId)
 
+    const { trackingSettings } = projectDTO
+    if (trackingSettings !== undefined) {
+      if (!isValidTrackingSettings(trackingSettings)) {
+        throw new BadRequestException('Invalid tracking settings')
+      }
+      if (
+        trackingSettings.sessionReplay &&
+        !this.replayStorage.isConfigured()
+      ) {
+        throw new ForbiddenException(
+          'Session replay is unavailable for this project',
+        )
+      }
+    }
+
     if (_isBoolean(projectDTO.public)) {
       project.public = projectDTO.public
     }
@@ -1212,9 +1235,17 @@ export class ProjectController {
       project.brandKeywords = projectDTO.brandKeywords
     }
 
-    await updateProjectClickhouse(
-      this.projectService.formatToClickhouse(project),
-    )
+    const hasProjectChanges =
+      trackingSettings === undefined || Object.keys(projectDTO).length > 1
+    const changes = hasProjectChanges
+      ? this.projectService.formatToClickhouse(project)
+      : { id }
+
+    await updateProjectClickhouse(changes, { trackingPatch: trackingSettings })
+    project.trackingSettings = {
+      ...readTrackingSettings(project.trackingSettings),
+      ...trackingSettings,
+    }
 
     await deleteProjectRedis(id)
 
@@ -1318,11 +1349,17 @@ export class ProjectController {
     return this.projectService.formatFromClickhouse({
       ..._omit(project, [
         'passwordHash',
+        'trackingSettings',
         !isManagerRole && 'share',
         !isManagerRole && 'captchaSecretKey',
       ]),
       share: isManagerRole ? share : undefined,
       funnels: this.projectService.formatFunnelsFromClickhouse(funnels),
+      ...(isManagerRole &&
+        isAccessConfirmed && {
+          trackingSettings: readTrackingSettings(project.trackingSettings),
+          canTrackSessionReplay: this.replayStorage.isConfigured(),
+        }),
       isDataExists,
       isErrorDataExists,
       isCaptchaDataExists,
@@ -1331,6 +1368,32 @@ export class ProjectController {
       isLocked: false,
       isAccessConfirmed,
     })
+  }
+
+  @Public()
+  @Get(':id/tracker-config')
+  @Header('Cache-Control', 'no-store')
+  async getTrackerConfig(@Param('id') id: string) {
+    if (!isValidPID(id)) {
+      throw new NotFoundException()
+    }
+
+    const result = await clickhouse.query({
+      query:
+        'SELECT trackingSettings FROM project WHERE id = {id:FixedString(12)} AND active = 1 LIMIT 1',
+      query_params: { id },
+    })
+    const {
+      data: [project],
+    } = await result.json<{ trackingSettings: string }>()
+    if (!project) {
+      throw new NotFoundException()
+    }
+
+    return readTrackingSettings(
+      project.trackingSettings,
+      this.replayStorage.isConfigured(),
+    )
   }
 
   @ApiOperation({ summary: 'Get project view' })

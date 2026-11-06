@@ -508,7 +508,22 @@ export class ProjectService {
   async update(
     where: FindOptionsWhere<Project>,
     projectDTO: DeepPartial<Project>,
+    trackingPatch?: Project['trackingSettings'],
   ) {
+    if (trackingPatch !== undefined) {
+      return this.projectsRepository
+        .createQueryBuilder()
+        .update(Project)
+        .set({
+          ...projectDTO,
+          trackingSettings: () =>
+            'JSON_MERGE_PATCH(COALESCE(trackingSettings, JSON_OBJECT()), :trackingPatch)',
+        })
+        .where(where)
+        .setParameter('trackingPatch', JSON.stringify(trackingPatch))
+        .execute()
+    }
+
     return this.projectsRepository.update(where, projectDTO)
   }
 

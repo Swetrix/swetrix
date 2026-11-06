@@ -1,6 +1,7 @@
 import { IsBoolean, IsOptional, IsInt, Min, Max, IsIn } from 'class-validator'
 import { IntersectionType, PartialType } from '@nestjs/mapped-types'
 import { ApiProperty } from '@nestjs/swagger'
+import type { TrackingSettings } from '../tracking-settings'
 import { ProjectDTO } from './project.dto'
 import { ProjectPasswordDto } from './project-password.dto'
 
@@ -67,4 +68,7 @@ export class UpdateProjectDto extends IntersectionType(
   @IsIn([30, 90, 365, 1825])
   @IsOptional()
   sessionReplayRetentionDays?: number
+
+  @ApiProperty({ required: false, type: Object })
+  trackingSettings?: Partial<TrackingSettings>
 }
