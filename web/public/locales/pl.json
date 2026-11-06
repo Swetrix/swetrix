@@ -3825,7 +3825,15 @@
     "features": "Funkcjonalności",
     "imprint": "Nota prawna",
     "cloudEdition": "Edycja chmurowa",
-    "starOnGithub": "Daj nam gwiazdkę na GitHubie"
+    "starOnGithub": "Daj nam gwiazdkę na GitHubie",
+    "ip-lookup": "Wyszukiwanie adresów IP",
+    "sitemap-validator": "Walidator mapy witryny",
+    "ab-test-calculator": "Kalkulator testów A/B",
+    "ltv-calculator": "Kalkulator LTV",
+    "meta-tags-generator": "Generator metatagów",
+    "ad-cost-calculator": "Kalkulator kosztów reklamy",
+    "qr-code-generator": "Generator kodów QR",
+    "more-free-tools": "Więcej darmowych narzędzi"
   },
   "apiKeys": {
     "title": "Klucze API",

@@ -3815,7 +3815,15 @@
     "features": "Funktionen",
     "imprint": "Impressum",
     "cloudEdition": "Cloud-Edition",
-    "starOnGithub": "Bewerte uns auf Github"
+    "starOnGithub": "Bewerte uns auf Github",
+    "ip-lookup": "IP-Abfrage",
+    "sitemap-validator": "Sitemap-Validator",
+    "ab-test-calculator": "A/B-Test-Rechner",
+    "ltv-calculator": "LTV-Rechner",
+    "meta-tags-generator": "Meta-Tag-Generator",
+    "ad-cost-calculator": "Werbekostenrechner",
+    "qr-code-generator": "QR-Code-Generator",
+    "more-free-tools": "Weitere kostenlose Tools"
   },
   "apiKeys": {
     "title": "API-Schlüssel",

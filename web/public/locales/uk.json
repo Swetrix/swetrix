@@ -3825,7 +3825,15 @@
     "features": "Можливості",
     "imprint": "Юридичні відомості",
     "cloudEdition": "Хмарна версія",
-    "starOnGithub": "Додайте нас у GitHub"
+    "starOnGithub": "Додайте нас у GitHub",
+    "ip-lookup": "Пошук IP",
+    "sitemap-validator": "Валідатор мапи сайту",
+    "ab-test-calculator": "Калькулятор A/B-тестів",
+    "ltv-calculator": "Калькулятор LTV",
+    "meta-tags-generator": "Генератор метатегів",
+    "ad-cost-calculator": "Калькулятор витрат на рекламу",
+    "qr-code-generator": "Генератор QR-кодів",
+    "more-free-tools": "Більше безкоштовних інструментів"
   },
   "apiKeys": {
     "title": "Ключі API",

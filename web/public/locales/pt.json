@@ -3820,7 +3820,15 @@
     "features": "Recursos",
     "imprint": "Aviso legal",
     "cloudEdition": "Edição Cloud",
-    "starOnGithub": "Deixe uma estrela no GitHub"
+    "starOnGithub": "Deixe uma estrela no GitHub",
+    "ip-lookup": "Consulta de IP",
+    "sitemap-validator": "Validador de sitemap",
+    "ab-test-calculator": "Calculadora de testes A/B",
+    "ltv-calculator": "Calculadora de LTV",
+    "meta-tags-generator": "Gerador de metatags",
+    "ad-cost-calculator": "Calculadora de custos de publicidade",
+    "qr-code-generator": "Gerador de códigos QR",
+    "more-free-tools": "Mais ferramentas gratuitas"
   },
   "apiKeys": {
     "title": "Chaves de API",

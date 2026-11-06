@@ -3815,7 +3815,15 @@
     "features": "Features",
     "imprint": "Legal notice",
     "cloudEdition": "Cloud edition",
-    "starOnGithub": "Star us on GitHub"
+    "starOnGithub": "Star us on GitHub",
+    "ip-lookup": "IP Lookup",
+    "sitemap-validator": "Sitemap Validator",
+    "ab-test-calculator": "A/B Test Calculator",
+    "ltv-calculator": "LTV Calculator",
+    "meta-tags-generator": "Meta Tags Generator",
+    "ad-cost-calculator": "Ad Cost Calculator",
+    "qr-code-generator": "QR Code Generator",
+    "more-free-tools": "More free tools"
   },
   "apiKeys": {
     "title": "API keys",
