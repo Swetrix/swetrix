@@ -744,7 +744,7 @@
       "trustedByThousands": "注重隐私的数据分析，深受全球数千名开发者和企业信赖。",
       "secureAuth": "安全的身份验证",
       "secureAuthDesc": "双重验证为你的账户增加一层安全保障",
-      "testimonial": "“Swetrix 为我们的数据分析带来了根本性的改变。他们一直积极响应功能需求，整个合作过程也始终友善。”"
+      "testimonial": "“Swetrix 为我们的数据分析带来了根本性的改变。他们一直积极响应功能需求，合作过程愉快。”"
     },
     "signup": {
       "tos": "我接受<tos>条款与条件</tos>及<pp>隐私政策</pp>。",
@@ -800,7 +800,7 @@
     },
     "common": {
       "password": "密码",
-      "noRemember": "不记住我。",
+      "noRemember": "临时登录",
       "noRememberHint": "勾选后，关闭浏览器时将退出登录。你的会话只会临时保存，不会长期保留。",
       "repeat": "再次输入密码",
       "changePassword": "更改密码",
@@ -1066,10 +1066,10 @@
     "security": "安全",
     "gridView": "网格视图",
     "listView": "列表视图",
-    "sortAlphaAsc": "按字母升序",
-    "sortAlphaDesc": "按字母降序",
-    "sortDateAsc": "最早优先",
-    "sortDateDesc": "最新优先",
+    "sortAlphaAsc": "按字母 A → Z",
+    "sortAlphaDesc": "按字母 Z → A",
+    "sortDateAsc": "创建时间从早到晚",
+    "sortDateDesc": "创建时间从晚到早",
     "page": "页面",
     "event": "事件",
     "noProjectsForCriteria": "未找到符合所选条件的项目",
@@ -1240,12 +1240,12 @@
         "online_count": "当前在线用户。",
         "event_name": "自定义事件名称。",
         "event_count": "事件触发次数。",
-        "every_event_mode": "如果每次发生时都会触发告警，则为 \"yes\"。",
+        "every_event_mode": "如果每次发生时都会触发告警，则为 “yes”。",
         "error_count": "触发告警的错误数量。",
         "error_message": "错误消息文本。",
         "error_name": "错误的类名或名称。",
         "errors_url": "项目错误视图的直达链接。",
-        "is_new_only": "如果仅对首次出现的错误触发告警，则为 \"yes\"。"
+        "is_new_only": "如果仅对首次出现的错误触发告警，则为 “yes”。"
       }
     }
   },
@@ -2258,7 +2258,7 @@
     "pageviews": "页面浏览量",
     "customEvents": "自定义事件",
     "errors": "错误",
-    "thisHour": "本小时",
+    "thisHour": "最近1小时",
     "all": "全部时间",
     "today": "今天",
     "yesterday": "昨天",
