@@ -44,7 +44,7 @@ Some responses combine resources and require multiple read permissions:
 - The v1 `/log` response includes custom events, so it needs **Analytics** and **Events**. `/log/chart` and the v2 traffic summary work with **Analytics** alone.
 - Session lists and details (including goal sessions) need **Analytics**, **Events**, **Errors**, and **Session replays**, plus **Revenue** on Cloud.
 - Profile lists and sessions need **Analytics**, **Events**, and **Errors**. Profile details also need **Revenue** on Cloud.
-- Project lists and details include saved funnels, so they need **Project settings** and **Funnels**.
+- The project directory (`GET /v1/project/directory`) needs only **Project settings** read access. The full dashboard endpoints (`GET /v1/project` and `GET /v1/project/:id`) include saved funnels and also require **Funnels** read access.
 - Funnel and journey session lists also need **Analytics**, **Events**, and **Errors**. Error session lists also need **Analytics**.
 - Queries that filter on custom events or event metadata also require **Events**.
 - Cloud [raw warehouse exports](/integrations/data-warehouse#export-api-for-other-warehouses) require **Analytics** and **Events**, permission to manage the project, and the project owner's **Plus** or **Enterprise** plan.

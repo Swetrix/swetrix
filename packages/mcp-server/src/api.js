@@ -67,7 +67,10 @@ export function createApi(baseUrl, apiKey, fetchImpl = fetch) {
     throw new Error('Provide a valid Swetrix API key.')
   }
   return {
-    async request(path, { method = 'GET', query = {}, body, signal } = {}) {
+    async request(
+      path,
+      { method = 'GET', query = {}, body, signal, idempotencyKey } = {},
+    ) {
       if (!/^\/v[12]\//.test(path)) throw new Error('Invalid Swetrix API path.')
       const url = new URL(baseUrl + path)
       for (const [key, value] of Object.entries(query)) {
@@ -85,6 +88,9 @@ export function createApi(baseUrl, apiKey, fetchImpl = fetch) {
           headers: {
             accept: 'application/json',
             'x-api-key': apiKey,
+            ...(idempotencyKey === undefined
+              ? {}
+              : { 'Idempotency-Key': idempotencyKey }),
             ...(body === undefined
               ? {}
               : { 'content-type': 'application/json' }),

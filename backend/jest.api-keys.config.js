@@ -5,5 +5,6 @@ module.exports = {
   testMatch: [
     '**/api-key/*.spec.ts',
     '**/auth/guards/multi-auth.guard.spec.ts',
+    '**/project/project-directory.spec.ts',
   ],
 }

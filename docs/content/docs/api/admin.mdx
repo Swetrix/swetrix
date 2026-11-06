@@ -19,6 +19,24 @@ If you have special needs for more requests, please [contact us](https://swetrix
 
 ## Concepts
 
+### Retrying a create request
+
+`POST /v1/project`, `POST /v1/project/funnel`, and `POST /v1/project/annotation` accept an optional `Idempotency-Key` header. Generate a key once for each intended creation, before sending the request. A UUID works well. Keys accept 1–128 ASCII letters, digits, periods, underscores, colons, or hyphens.
+
+For example, send this request again with the **same key and body** if the connection drops. A completed retry returns the original `201` response and annotation ID, provided the caller still has access.
+
+```bash
+curl 'https://api.swetrix.com/v1/project/annotation' \
+  -H "X-Api-Key: ${SWETRIX_API_KEY}" \
+  -H 'Idempotency-Key: 1cd79c24-7e63-4f65-ab31-b2b9e052c390' \
+  -H 'Content-Type: application/json' \
+  -d '{"pid":"WvZCYTrOPzSK","date":"2026-11-04","text":"Released the new checkout"}'
+```
+
+Keys are scoped to the authenticated account and create endpoint for 24 hours. Reusing a key with different request data returns `409 Conflict`. For an operation still in progress, retry later with its original key. After the 24-hour window the same key can create a new resource. Requests without the header follow the existing create behavior.
+
+Community Edition coordinates creates on its ClickHouse server. Point all API replicas at the same ClickHouse node for keyed writes. If an API process stops after reserving a key, a retry can recover the original response once the resource is present. If the write cannot be confirmed, the key can return `409` for the remainder of the window. Check for the resource before starting another creation.
+
 ### Projects manipulation
 
 #### 'Create project' payload
@@ -154,29 +172,52 @@ All fields are optional; only those present are updated. The view `type` cannot 
 
 ## Endpoints
 
+### GET /v1/project/directory
+
+Find projects by name or ID with the `projects:read` permission. Each result contains the project ID, name, website URL (or `null`), collection status (`active`), and dashboard visibility (`public`). A scoped key sees only projects its owner currently owns and the key is allowed to read.
+
+| Query parameter | Description                                                                         |
+| --------------- | ----------------------------------------------------------------------------------- |
+| `search`        | Case-insensitive substring of a name or ID, up to 100 characters.                   |
+| `id`            | Exact 12-character project ID. An unknown or inaccessible ID returns an empty page. |
+| `take`          | Number of results to return, from 1 to 100. Defaults to 25.                         |
+| `skip`          | Number of results to skip, from 0 to 50,000. Defaults to 0.                         |
+
+Results are ordered by name and then ID. `page_total` is the number of results on this page. `total` counts all matches visible to the caller.
+
+```bash title="Find a project"
+curl 'https://api.swetrix.com/v1/project/directory?search=bakery&take=5' \
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+```json title="Response (200 OK)"
+{
+  "results": [
+    {
+      "id": "WvZCYTrOPzSK",
+      "name": "Bakery",
+      "websiteUrl": "https://bakery.example",
+      "active": true,
+      "public": false
+    }
+  ],
+  "page_total": 1,
+  "total": 1
+}
+```
+
 ### GET /v1/project
 
-This endpoint allows you to list all your projects.
+List projects with dashboard data, including saved funnels. Scoped keys need both `projects:read` and `funnels:read`.
 
 ```bash title="Request"
 curl -i -X GET https://api.swetrix.com/v1/project \
   -H "X-Api-Key: ${SWETRIX_API_KEY}"
 ```
 
-```json title="Response (200 OK)"
-[
-  {
-    "id": "WvZCYTrOPzSK",
-    "name": "My Project",
-    "active": true,
-    "public": false
-  }
-]
-```
-
 ### GET /v1/project/:id
 
-This endpoint allows you to get details of a specific project.
+Read the full dashboard details for a project. Scoped keys need both `projects:read` and `funnels:read`. Use `GET /v1/project/directory?id=PROJECT_ID` for basic project information.
 
 ```bash title="Request"
 curl -i -X GET https://api.swetrix.com/v1/project/WvZCYTrOPzSK \

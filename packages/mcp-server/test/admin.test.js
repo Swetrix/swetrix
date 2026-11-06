@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { registerAdminTools } from '../src/admin.js'
+import { apiBaseUrl, createApi } from '../src/api.js'
 
 const projectId = 'WvZCYTrOPzSK'
 const signal = new AbortController().signal
@@ -23,7 +24,7 @@ function registry(request, enableWrites = false) {
 
 test('project discovery forwards bounded pagination and excludes account and project credentials', async () => {
   const tools = registry((path, options) => {
-    assert.equal(path, '/v1/project')
+    assert.equal(path, '/v1/project/directory')
     assert.deepEqual(options, {
       query: { search: 'Shop', take: 25, skip: 0 },
       signal,
@@ -77,15 +78,39 @@ test('list tools paginate collection endpoints that have no upstream pagination'
   )
 })
 
-test('project details preserve the limited response for a password-protected dashboard', async () => {
+test('project info uses an exact directory lookup and treats inaccessible IDs as missing', async () => {
+  let results = [
+    {
+      id: projectId,
+      name: 'Shop',
+      active: true,
+      public: false,
+      websiteUrl: null,
+    },
+  ]
+  const tools = registry((path, options) => {
+    assert.equal(path, '/v1/project/directory')
+    assert.deepEqual(options, { query: { id: projectId, take: 1 }, signal })
+    return { results, total: results.length, page_total: results.length }
+  })
+  const get = () => tools.get('get_project').call({ projectId })
+  assert.deepEqual(await get(), results[0])
+  results = []
+  await assert.rejects(get, /not found or outside/)
+})
+
+test('requesting additional dashboard settings preserves the protected project response', async () => {
   const tools = registry((path) => {
     assert.equal(path, `/v1/project/${projectId}`)
     return { id: projectId, isPasswordProtected: true }
   })
-  assert.deepEqual(await tools.get('get_project').call({ projectId }), {
-    id: projectId,
-    isPasswordProtected: true,
-  })
+  assert.deepEqual(
+    await tools.get('get_project').call({ projectId, includeSettings: true }),
+    {
+      id: projectId,
+      isPasswordProtected: true,
+    },
+  )
 })
 
 test('write tools are opt-in and map valid input to the documented API payload', async () => {
@@ -121,14 +146,24 @@ test('write tools are opt-in and map valid input to the documented API payload',
     assert.equal(enabled.get(name).annotations.idempotentHint, false)
     const expected = { id: 'id', ...args }
     delete expected.projectId
-    assert.deepEqual(await enabled.get(name).call(args), expected)
-    assert.deepEqual(calls.at(-1), [path, { method: 'POST', body, signal }])
+    const idempotencyKey = 'job-405:' + name
+    assert.deepEqual(
+      await enabled.get(name).call({ ...args, idempotencyKey }),
+      expected,
+    )
+    assert.deepEqual(calls.at(-1), [
+      path,
+      { method: 'POST', body, signal, idempotencyKey },
+    ])
+    assert.throws(() => enabled.get(name).call(args), /idempotencyKey/)
   }
   assert.equal(
-    enabled
-      .get('create_annotation')
-      .schema.safeParse({ projectId, date: '2026-02-30', text: 'Launch' })
-      .success,
+    enabled.get('create_annotation').schema.safeParse({
+      projectId,
+      date: '2026-02-30',
+      text: 'Launch',
+      idempotencyKey: 'job-1',
+    }).success,
     false,
   )
 })
@@ -137,7 +172,50 @@ test('unknown create-project settings fail before a project can be created', () 
   const tools = registry(() => assert.fail('Unexpected API request'), true)
   assert.throws(
     () =>
-      tools.get('create_project').call({ name: 'Blog', organisationId: 'org' }),
+      tools
+        .get('create_project')
+        .call({ name: 'Blog', organisationId: 'org', idempotencyKey: 'job-1' }),
     /Unrecognized key/,
   )
+})
+
+test('creation retries send the original key only in the header and never retry automatically', async () => {
+  const keys = []
+  const args = {
+    projectId,
+    date: '2026-11-04',
+    text: 'Launch',
+    idempotencyKey: 'job-427:release_1.0',
+  }
+  const api = createApi(
+    apiBaseUrl(),
+    'test-key',
+    async (url, { headers, body }) => {
+      keys.push(new Headers(headers).get('Idempotency-Key'))
+      assert.equal(url.pathname, '/v1/project/annotation')
+      assert.deepEqual(JSON.parse(body), {
+        pid: projectId,
+        date: args.date,
+        text: args.text,
+      })
+      if (keys.length === 1) throw new TypeError('response lost')
+      return Response.json({ id: 'annotation-1', text: args.text })
+    },
+  )
+  const create = registry(api.request, true).get('create_annotation')
+  await assert.rejects(create.call(args), /Could not reach/)
+  assert.deepEqual(keys, [args.idempotencyKey])
+  assert.deepEqual(await create.call(args), {
+    id: 'annotation-1',
+    text: 'Launch',
+  })
+  await create.call({ ...args, idempotencyKey: 'job-428' })
+  assert.deepEqual(keys, [args.idempotencyKey, args.idempotencyKey, 'job-428'])
+  for (const key of ['', 'two words', 'a\nb', 'a'.repeat(129)]) {
+    assert.throws(
+      () => create.call({ ...args, idempotencyKey: key }),
+      /idempotencyKey/,
+    )
+  }
+  assert.equal(keys.length, 3)
 })

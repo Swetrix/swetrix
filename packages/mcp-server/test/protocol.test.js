@@ -99,11 +99,9 @@ test('HTTP validates the request boundary and isolates concurrent clients across
     connect(limitedKey, 'legacy'),
   ])
   const { tools } = await reader.listTools()
-  assert.equal(
-    tools.find((tool) => tool.name === 'create_annotation').annotations
-      .readOnlyHint,
-    false,
-  )
+  const create = tools.find((tool) => tool.name === 'create_annotation')
+  assert.equal(create.annotations.readOnlyHint, false)
+  assert.ok(create.inputSchema.required.includes('idempotencyKey'))
   const input = {
     name: 'get_stats_summary',
     arguments: { projectId: 'AbC123xYz789', period: '7d' },

@@ -10,7 +10,9 @@ The Swetrix Model Context Protocol (MCP) server lets an AI assistant query your 
 
 Create a dedicated key in **Account Settings → Account → API keys** and select the projects the assistant should see. For traffic reports, grant **Analytics → Read only**. If you already know the project ID, this is enough to ask for a report.
 
-To let the assistant look up projects by name, also grant **Project settings → Read only** and **Funnels → Read only**. The project list in the Admin API includes saved funnels, which is why it requires both permissions. For custom events or error reports, add read access to **Events** or **Errors** respectively. [API key permissions](/settings/api-keys)
+Grant **Project settings → Read only** to look up projects by name or ID. `list_projects` and `get_project` use the V1 project directory. For a self-hosted installation, deploy an API version that includes `GET /v1/project/directory` before using those tools. [Admin API reference](/admin-api#get-v1projectdirectory)
+
+Add **Funnels → Read only** to read saved funnels or to request additional dashboard settings with `get_project` and `includeSettings: true`. For custom events or error reports, grant read access to **Events** or **Errors** respectively. [API key permissions](/settings/api-keys)
 
 Error dimension discovery requires read access to both **Analytics** and **Errors**. Filtering a report by custom event or event metadata also requires **Events** access.
 
@@ -95,5 +97,7 @@ For example, keep the `inputs` entry from the VS Code configuration above and re
 ## Enable changes
 
 The default tool list is read-only. To allow changes, set `SWETRIX_MCP_ENABLE_WRITES=true` in the MCP server environment and restart the process. This setting affects every client of that process. Swetrix still checks each caller's key before applying a change. For example, to create an annotation, grant **Annotations → Read & write** for the target project. To create a project, grant **Project settings → Read & write** and select **All projects**.
+
+Each create tool requires an `idempotencyKey`. Generate a fresh UUID for each intended creation and keep it with the tool arguments. If the response is lost, retry with the same arguments and key within 24 hours. Use a new key for a second, intentional creation, even if the arguments are identical. Self-hosted installations need the backend update and receipt table before enabling writes. Older APIs ignore the header. [Admin API retry behavior](/admin-api#retrying-a-create-request)
 
 If a tool call returns `401`, check that the key is current and belongs to the configured Swetrix instance. For `403`, check the key's project selection and permission groups. A `429` response means the account has reached its API rate limit.

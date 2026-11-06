@@ -71,6 +71,7 @@ export class ApiKeyGuard implements CanActivate {
         )
       return true
     }
+    if (policy.source === 'projectDirectory') return true
     const owned = await this.keys.store.ownedProjects(request.user.id)
     const allowed = owned
       .filter(

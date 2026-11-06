@@ -44,7 +44,8 @@ export function createServer(api, { enableWrites = false } = {}) {
               ? error.message
               : 'The Swetrix request failed.'
           if (!annotations.readOnlyHint) {
-            text += ' Before retrying, check whether the resource was created.'
+            text +=
+              ' For retries within 24 hours of the first request, reuse the same idempotencyKey and arguments. After that, check whether the resource was created.'
           }
           return { isError: true, content: [{ type: 'text', text }] }
         }

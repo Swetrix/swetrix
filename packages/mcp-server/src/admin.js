@@ -7,14 +7,17 @@ const page = {
 }
 const search = z.string().trim().min(1).max(100).optional()
 const name = z.string().trim().min(1).max(50)
-const projectFields = [
-  'id',
-  'name',
-  'websiteUrl',
-  'active',
-  'public',
-  'organisationId',
-]
+const idempotencyKey = z
+  .string()
+  .min(1)
+  .max(128)
+  .regex(/^[A-Za-z0-9._:-]+$/)
+  .describe(
+    'Generate a unique key (such as a UUID) for each intended creation. Reuse the same key and arguments for retries within 24 hours.',
+  )
+const directoryPath = '/v1/project/directory'
+const directoryFields = ['id', 'name', 'websiteUrl', 'active', 'public']
+const projectFields = [...directoryFields, 'organisationId']
 const funnelFields = ['id', 'name', 'steps']
 const annotationFields = ['id', 'date', 'text']
 const createAnnotations = {
@@ -43,22 +46,39 @@ function pageResult(rows, total, skip, fields) {
 export function registerAdminTools(tool, api, { enableWrites }) {
   tool(
     'list_projects',
-    'Find accessible Swetrix projects by name and obtain a project ID for analytics tools. Requires projects:read and funnels:read.',
+    'Find accessible Swetrix projects by name or ID. Requires projects:read.',
     z.strictObject({ search, ...page }),
     async ({ search, take, skip }, { signal }) => {
-      const { results, total } = await api.request('/v1/project', {
+      const { results, total } = await api.request(directoryPath, {
         query: { search, take, skip },
         signal,
       })
-      return pageResult(results, total, skip, projectFields)
+      return pageResult(results, total, skip, directoryFields)
     },
   )
 
   tool(
     'get_project',
-    'Read the project name, website, collection status and dashboard settings. Requires projects:read and funnels:read.',
-    z.strictObject({ projectId }),
-    async ({ projectId }, { signal }) => {
+    'Read the project name, website, collection status and dashboard visibility. Requires projects:read. Request includeSettings for additional dashboard settings.',
+    z.strictObject({
+      projectId,
+      includeSettings: z
+        .boolean()
+        .optional()
+        .describe(
+          'Include allowed origins, bot protection and other dashboard settings. Requires funnels:read in addition to projects:read.',
+        ),
+    }),
+    async ({ projectId, includeSettings }, { signal }) => {
+      if (!includeSettings) {
+        const { results } = await api.request(directoryPath, {
+          query: { id: projectId, take: 1 },
+          signal,
+        })
+        if (!results.length)
+          throw new Error('Project not found or outside your project access.')
+        return pick(results[0], directoryFields)
+      }
       const project = await api.request(`/v1/project/${projectId}`, { signal })
       return pick(project, [
         ...projectFields,
@@ -135,10 +155,19 @@ export function registerAdminTools(tool, api, { enableWrites }) {
   tool(
     'create_project',
     'Create a personal analytics project. Requires projects:write and an API key with access to all projects.',
-    z.strictObject({ name, websiteUrl: z.httpUrl().max(512).optional() }),
-    async (body, { signal }) =>
+    z.strictObject({
+      idempotencyKey,
+      name,
+      websiteUrl: z.httpUrl().max(512).optional(),
+    }),
+    async ({ idempotencyKey, ...body }, { signal }) =>
       pick(
-        await api.request('/v1/project', { method: 'POST', body, signal }),
+        await api.request('/v1/project', {
+          method: 'POST',
+          body,
+          signal,
+          idempotencyKey,
+        }),
         projectFields,
       ),
     createAnnotations,
@@ -147,15 +176,17 @@ export function registerAdminTools(tool, api, { enableWrites }) {
     'create_annotation',
     'Add a dated note to a project dashboard. Requires annotations:write.',
     z.strictObject({
+      idempotencyKey,
       projectId,
       date: z.iso.date(),
       text: z.string().trim().min(1).max(120),
     }),
-    async ({ projectId, date, text }, { signal }) => {
+    async ({ projectId, date, text, idempotencyKey }, { signal }) => {
       const annotation = await api.request('/v1/project/annotation', {
         method: 'POST',
         body: { pid: projectId, date, text },
         signal,
+        idempotencyKey,
       })
       return pick(annotation, annotationFields)
     },
@@ -165,6 +196,7 @@ export function registerAdminTools(tool, api, { enableWrites }) {
     'create_funnel',
     'Save a named funnel with 2–10 ordered steps. Page paths start with / and other steps are custom event names. Requires funnels:write.',
     z.strictObject({
+      idempotencyKey,
       projectId,
       name,
       steps: z
@@ -179,11 +211,12 @@ export function registerAdminTools(tool, api, { enableWrites }) {
         .min(2)
         .max(10),
     }),
-    async ({ projectId, name, steps }, { signal }) => {
+    async ({ projectId, name, steps, idempotencyKey }, { signal }) => {
       const funnel = await api.request('/v1/project/funnel', {
         method: 'POST',
         body: { pid: projectId, name, steps },
         signal,
+        idempotencyKey,
       })
       return pick(funnel, funnelFields)
     },
