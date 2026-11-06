@@ -8,6 +8,7 @@ export const LANGUAGES = [
   { id: 'pl', name: 'Polish', file: 'pl' },
   { id: 'uk', name: 'Ukrainian', file: 'uk' },
   { id: 'pt-BR', name: 'Brazilian Portuguese', file: 'pt' },
+  { id: 'zh-CN', name: 'Simplified Chinese', file: 'zh' },
 ]
 
 const hash = (text) => createHash('sha256').update(text).digest('hex')

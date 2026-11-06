@@ -12,8 +12,9 @@ Set `GEMINI_API_KEY` in `web/.env` or your shell. Shell values take precedence.
 still applies; Crowdin is no longer involved.
 
 The script translates new or changed English strings, removes obsolete keys,
-and writes the French, German, Polish, Ukrainian and Brazilian Portuguese JSON
-files directly. Brazilian Portuguese remains in `pt.json`. Existing translations
+and writes the French, German, Polish, Ukrainian, Brazilian Portuguese and
+Simplified Chinese JSON files directly. Brazilian Portuguese remains in `pt.json`
+and Simplified Chinese uses `zh.json`. Existing translations
 are preserved unless their English source changes or validation finds invalid
 placeholders or markup. Arrays, nested objects and language-specific i18next
 plural forms are supported.
@@ -34,7 +35,7 @@ npm run translate -- --languages=de --limit=25
 `--dry-run` lists the required changes without writing files or calling Gemini.
 `--check` also makes no API calls or writes, and exits with status 1 if the selected
 languages need syncing. It can be used in CI without an API key. `pt` is accepted
-as an alias for `pt-BR`.
+as an alias for `pt-BR`, and `zh` as an alias for `zh-CN`.
 
 Successful batches are saved as they finish. Failed, invalid, skipped and limited
 translations stay pending for the next run. Existing text remains available on a

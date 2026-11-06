@@ -5,6 +5,7 @@ import countriesFr from 'i18n-iso-countries/langs/fr.json'
 import countriesPl from 'i18n-iso-countries/langs/pl.json'
 import countriesPt from 'i18n-iso-countries/langs/pt.json'
 import countriesUk from 'i18n-iso-countries/langs/uk.json'
+import countriesZh from 'i18n-iso-countries/langs/zh.json'
 
 countries.registerLocale({
   locale: 'en',
@@ -33,5 +34,6 @@ countries.registerLocale({
 })
 countries.registerLocale(countriesFr)
 countries.registerLocale(countriesPt)
+countries.registerLocale(countriesZh)
 
 export default countries

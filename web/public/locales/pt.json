@@ -158,7 +158,9 @@
     "toggleOptions": "Alternar opções",
     "paginationNavLabel": "Paginação",
     "jumpToPage": "Ir para a página {{page}}",
-    "pageNumber": "Página {{page}}"
+    "pageNumber": "Página {{page}}",
+    "clear": "Limpar",
+    "apply": "Aplicar"
   },
   "ariaLabels": {
     "actions": "Ações",
@@ -200,7 +202,9 @@
     "progress": "Progresso: {{value}}%",
     "showEventDetails": "Mostrar detalhes de {{event}}",
     "template": "Template",
-    "uploadFile": "Enviar arquivo"
+    "uploadFile": "Enviar arquivo",
+    "previousMonth": "Mês anterior",
+    "nextMonth": "Próximo mês"
   },
   "performance": {
     "slogan": "<span>Monitoramento de desempenho</span> de usuários reais para sites mais rápidos.",
@@ -3820,7 +3824,15 @@
     "features": "Recursos",
     "imprint": "Aviso legal",
     "cloudEdition": "Edição Cloud",
-    "starOnGithub": "Deixe uma estrela no GitHub"
+    "starOnGithub": "Deixe uma estrela no GitHub",
+    "ip-lookup": "Consulta de IP",
+    "sitemap-validator": "Validador de sitemap",
+    "ab-test-calculator": "Calculadora de testes A/B",
+    "ltv-calculator": "Calculadora de LTV",
+    "meta-tags-generator": "Gerador de metatags",
+    "ad-cost-calculator": "Calculadora de custos de publicidade",
+    "qr-code-generator": "Gerador de códigos QR",
+    "more-free-tools": "Mais ferramentas gratuitas"
   },
   "apiKeys": {
     "title": "Chaves de API",
