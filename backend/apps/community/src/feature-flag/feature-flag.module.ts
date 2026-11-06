@@ -9,7 +9,7 @@ import { FeatureFlagController } from './feature-flag.controller'
 
 @Module({
   imports: [
-    ProjectModule,
+    forwardRef(() => ProjectModule),
     AppLoggerModule,
     forwardRef(() => AnalyticsModule),
     forwardRef(() => ExperimentModule),
