@@ -56,7 +56,7 @@ import { detectTheme, isWWW } from '~/utils/server'
 import { createHeadersWithCookies, hasAuthTokens } from '~/utils/session.server'
 
 import AppWrapper from './App'
-import { getLocale, i18nextMiddleware } from './i18next.server'
+import { getLocale, i18nextMiddleware, readCookieLang } from './i18next.server'
 import { AuthProvider } from './providers/AuthProvider'
 import { ThemeProvider, useTheme } from './providers/ThemeProvider'
 
@@ -304,30 +304,6 @@ export function ErrorBoundary() {
 // Let's keep it for a few months to fix the Google Search Console ?lng= issue due to a fucking bug I introduced before
 const removeMultipleLngParams = (url: string): string => {
   return _replace(url, /%3Flng%3D[^%]*/g, '')
-}
-
-const readCookieLang = (request: Request): string | null => {
-  const cookie = request.headers.get('Cookie')
-  if (!cookie) return null
-
-  for (const segment of cookie.split(';')) {
-    const trimmed = segment.trim()
-    const eqIdx = trimmed.indexOf('=')
-    if (eqIdx === -1) continue
-    const name = trimmed.slice(0, eqIdx)
-    if (name !== 'i18next') continue
-
-    const rawValue = trimmed.slice(eqIdx + 1)
-    let value: string
-    try {
-      value = decodeURIComponent(rawValue)
-    } catch {
-      value = rawValue
-    }
-    return whitelist.includes(value) ? value : null
-  }
-
-  return null
 }
 
 // Decides whether to redirect an unprefixed URL to its localised counterpart

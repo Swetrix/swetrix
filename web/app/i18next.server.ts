@@ -11,6 +11,30 @@ import i18n from './i18n'
 
 const localeCookie = createCookie('i18next')
 
+export const readCookieLang = (request: Request): string | null => {
+  const cookie = request.headers.get('Cookie')
+  if (!cookie) return null
+
+  for (const segment of cookie.split(';')) {
+    const trimmed = segment.trim()
+    const eqIdx = trimmed.indexOf('=')
+    if (eqIdx === -1) continue
+    const name = trimmed.slice(0, eqIdx)
+    if (name !== 'i18next') continue
+
+    const rawValue = trimmed.slice(eqIdx + 1)
+    let value: string
+    try {
+      value = decodeURIComponent(rawValue)
+    } catch {
+      value = rawValue
+    }
+    return whitelist.includes(value) ? value : null
+  }
+
+  return null
+}
+
 export const [i18nextMiddleware, getLocale, getInstance] =
   createI18nextMiddleware({
     detection: {
@@ -18,7 +42,10 @@ export const [i18nextMiddleware, getLocale, getInstance] =
       fallbackLanguage: defaultLanguage,
       cookie: localeCookie,
       async findLocale({ request }) {
-        return getLangFromPath(new URL(request.url).pathname)
+        return (
+          getLangFromPath(new URL(request.url).pathname) ||
+          readCookieLang(request)
+        )
       },
     },
     i18next: {
