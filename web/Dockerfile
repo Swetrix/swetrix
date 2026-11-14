@@ -45,8 +45,7 @@ COPY --from=production-deps /app/node_modules /app/node_modules
 
 COPY --from=build /app/build /app/build
 COPY --from=build /app/public /app/public
+COPY --from=build /app/start.cjs /app/start.cjs
 COPY package*.json .npmrc ./
 
-# start.cjs is for ecosystem.config.cjs/PM2; Docker runs npm start directly.
-# Inject .env values through the Docker runtime.
 CMD ["npm", "run", "start"]

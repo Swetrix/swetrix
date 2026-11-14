@@ -20,6 +20,8 @@ The following environment variables are available for configuration:
 <Callout type="info">
 The `BASE_URL` must be publicly reachable from your users' browsers. Do not set it to a Docker network hostname like `http://swetrix-api:8080` or `http://swetrix-api:5005`. Use a public domain or IP that resolves from the internet, for example `https://statistics.example.com`.
 
+The frontend reads `BASE_URL` at startup to allow form submissions behind reverse proxies. Set it in the frontend container's environment, including the public port if it is non-standard (for example, `https://statistics.example.com:8443`), then restart the frontend after changing it. No image rebuild is needed.
+
 </Callout>
 
 ## Backend (swetrix-api image)
