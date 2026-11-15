@@ -206,17 +206,18 @@ const CLICKHOUSE_INIT_QUERIES = [
 ]
 
 const initialiseDatabase = async () => {
-  try {
-    await databaselessQueriesRunner(CLICKHOUSE_DB_INIT_QUERIES)
-    await queriesRunner(CLICKHOUSE_INIT_QUERIES)
-  } catch (reason) {
-    console.error(
-      `[ERROR] Error occured whilst initialising the database: ${reason}`,
-    )
-  }
+  await databaselessQueriesRunner(CLICKHOUSE_DB_INIT_QUERIES)
+  await queriesRunner(CLICKHOUSE_INIT_QUERIES)
 }
 
-initialiseDatabase()
+if (require.main === module) {
+  initialiseDatabase().catch((reason) => {
+    console.error(
+      `[ERROR] Error occurred whilst initialising the database: ${reason}`,
+    )
+    process.exitCode = 1
+  })
+}
 
 module.exports = {
   initialiseDatabase,
