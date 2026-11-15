@@ -24,6 +24,23 @@ The frontend reads `BASE_URL` at startup to allow form submissions behind revers
 
 </Callout>
 
+### File import uploads
+
+File imports support uploads up to 100 MiB. In the bundled `nginx/config`, add the following directive inside the existing `location /` block that forwards requests to the frontend:
+
+```nginx
+client_max_body_size 101m;
+```
+
+The extra space allows for multipart form metadata. Apply the same limit to any outer reverse proxy. Nginx's [default request-body limit](https://nginx.org/en/docs/http/ngx_http_core_module.html#client_max_body_size) is 1 MiB, so larger imports otherwise fail with HTTP `413` before reaching Swetrix.
+
+Validate and reload the proxy after changing its configuration:
+
+```bash
+docker compose exec nginx-proxy nginx -t
+docker compose exec nginx-proxy nginx -s reload
+```
+
 ## Backend (swetrix-api image)
 
 ### Basic configuration
