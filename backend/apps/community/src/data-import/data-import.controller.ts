@@ -166,8 +166,7 @@ export class DataImportController {
   })
   @UseInterceptors(
     FileInterceptor('file', {
-      // Multer rejects at the threshold, so allow files exactly at the limit.
-      limits: { fileSize: MAX_FILE_SIZE + 1 },
+      limits: { fileSize: MAX_FILE_SIZE },
       storage: diskStorage({
         destination: (_req, _file, cb) => {
           fs.mkdirSync(IMPORT_TMP_DIR, { recursive: true })
