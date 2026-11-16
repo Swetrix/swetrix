@@ -2186,7 +2186,7 @@
     "outboundLinks": "Outbound links",
     "outboundClicks": "Clicks",
     "unknownDestination": "Unknown destination",
-    "outboundLinksEmpty": "No outbound clicks in this period. Enable outbound link tracking in your website’s tracking snippet to start collecting clicks.",
+    "outboundLinksEmpty": "No outbound clicks in this period. To collect clicks, turn on outbound link tracking in Project settings → Tracking script, or enable it in your manual installation.",
     "outboundLinksSetup": "Track outbound links",
     "outboundLinksSetupHint": "Include automatic external link tracking in this snippet. Apply the updated snippet to your website to enable it.",
     "entryPages": "Entry page",
@@ -2319,6 +2319,8 @@
       "tabs": {
         "general": "General",
         "generalDesc": "Configure your project name and basic settings.",
+        "tracking": "Tracking script",
+        "trackingDesc": "Choose what the managed script collects on your website.",
         "access": "Access",
         "accessDesc": "Control who can view and access your project.",
         "shields": "Shields",
@@ -2383,6 +2385,35 @@
           "description": "Pass visitor and session IDs to your payment provider to attribute revenue to marketing channels.",
           "paddleExample": "Paddle Checkout Integration:"
         }
+      },
+      "tracking": {
+        "install": "Install the managed script",
+        "installHint": "Add this tag to your site’s <head>. If Swetrix is already installed, replace the existing script and its initialisation code.",
+        "propagation": "Changes here apply to new page loads within five minutes. Manual and npm installations use the options in your code.",
+        "core": "Core tracking",
+        "autoCapture": "Auto-capture events",
+        "pageviews": {
+          "label": "Pageviews",
+          "hint": "Count visits as people navigate your site."
+        },
+        "errors": {
+          "label": "JavaScript errors",
+          "hint": "Collect uncaught browser errors with their messages and stack traces."
+        },
+        "outboundLinks": {
+          "label": "Outbound link clicks",
+          "hint": "Record clicks on links that take visitors to another website."
+        },
+        "sessionReplay": {
+          "label": "Record sessions",
+          "hint": "Capture page interactions with all text and inputs masked."
+        },
+        "consent": "If your site requires consent, load the managed script after the visitor opts in.",
+        "retention": "Manage replay retention",
+        "replayStorage": "Configure replay storage on your Swetrix instance to enable recording.",
+        "replayUnavailable": "Session recording is unavailable for this project.",
+        "saving": "Saving tracking settings…",
+        "saved": "Tracking settings saved"
       },
       "sessionReplays": {
         "retentionTitle": "Replay retention",
@@ -3650,6 +3681,8 @@
       "title": "Add Swetrix to your website",
       "desc": "Add the Swetrix script to your site, or send events from web, mobile, or desktop apps through the API. For advanced setup options, see our <url>documentation</url>.",
       "websiteInstallation": "Website setup",
+      "managedHint": "Add this tag to your site’s <head>. Manage what it tracks in Project settings → Tracking script.",
+      "manualSnippet": "Configure the tracker in code instead",
       "optional": "This step is optional. You can set up tracking later from project settings.",
       "skipForNow": "Skip for now",
       "ai": {
@@ -3671,6 +3704,8 @@
         "entryFileHint": "Add this to your app's entry file, such as <codeA>index.js</codeA> or <codeB>App.js</codeB>. <url>View full docs</url>"
       },
       "gtm": {
+        "managedTag": "1. Create a Custom HTML tag and paste this script",
+        "managedTrigger": "2. Choose your trigger and publish the container",
         "title": "Google Tag Manager",
         "desc": "Add Swetrix through GTM without changing your codebase.",
         "step1": "1. Copy your Project ID",

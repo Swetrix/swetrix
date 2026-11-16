@@ -11,10 +11,6 @@ GTM adds extra complexity and is blocked by many adblockers, which may reduce tr
 
 </Callout>
 
-## Why the snippet looks different
-
-Normally you'd add Swetrix to your site with a simple `<script>` tag. However, GTM injects Custom HTML tags **dynamically**, which means the `defer` attribute on a script tag is ignored by browsers — the script loads asynchronously instead. To ensure Swetrix is fully loaded before we initialise it, we use a dynamic script element with an `onload` handler.
-
 ## Installation
 
 1. Sign in to your Google Tag Manager account, click on **Tags** and then **New**.
@@ -29,25 +25,15 @@ Normally you'd add Swetrix to your site with a simple `<script>` tag. However, G
 
    <img alt="Custom HTML" src="/docs/img/integrations/google/gt-3.png" />
 
-4. In the HTML input field, paste the following code:
+4. In the HTML input field, paste the managed tag from **Project settings → Tracking script**. Swetrix Cloud uses the following tag.
 
 ```html
-<script>
-  (function () {
-    var el = document.createElement("script");
-    el.src = "https://swetrix.org/swetrix.js";
-    el.onload = function () {
-      swetrix.init("YOUR_PROJECT_ID");
-      swetrix.trackViews();
-    };
-    document.head.appendChild(el);
-  })();
-</script>
+<script defer crossorigin="anonymous" src="https://swetrix.com/p/YOUR_PROJECT_ID.js"></script>
 ```
 
 <Callout type="warn">
 Replace `YOUR_PROJECT_ID` with your actual Project ID from the Swetrix dashboard, otherwise tracking won't work.
-You can also refer to the [tracking script reference](/swetrix-js-reference) for more advanced configuration options (e.g. `hash`, `search`, `respectDNT`).
+Choose the features to collect in the same project settings tab. If you use a consent manager, select a trigger that fires after consent.
 
 </Callout>
 

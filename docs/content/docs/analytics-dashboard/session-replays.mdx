@@ -14,14 +14,14 @@ Session Replays let you watch recorded browser sessions alongside the analytics 
 <img alt="Session replay" src="/docs/img/analytics-dashboard/session-replay.png" />
 
 <Callout type="info">
-  Session replays are only recorded after your website calls
-  [`startSessionReplay()`](/swetrix-js-reference#startsessionreplay). A regular pageview or custom
-  event does not automatically create a replay.
+  With the [managed script](/install-script), turn on **Session replay** in **Project settings →
+  Tracking script**. With the manual script or npm SDK, call
+  [`startSessionReplay()`](/swetrix-js-reference#startsessionreplay) when recording should begin.
 </Callout>
 
 ## Recording replays
 
-To collect replays, install the Swetrix tracking script as usual, initialise it with your Project ID, and call `startSessionReplay()` when you want recording to begin.
+The managed script starts recording with total masking when enabled. If you use a consent manager, release the tag after the visitor agrees. To control the recorder independently of pageviews or customize its options, initialise the manual script or npm SDK with your Project ID and call `startSessionReplay()` when recording should begin.
 
 ```javascript
 swetrix.init("YOUR_PROJECT_ID", {

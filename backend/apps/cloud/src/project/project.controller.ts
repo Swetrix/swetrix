@@ -15,6 +15,7 @@ import {
   ForbiddenException,
   HttpException,
   HttpStatus,
+  Header,
   Headers,
   Patch,
   ConflictException,
@@ -61,6 +62,11 @@ import { ActionTokensService } from '../action-tokens/action-tokens.service'
 import { MailerService } from '../mailer/mailer.service'
 import { LetterTemplate } from '../mailer/letter'
 import { Pagination } from '../common/pagination/pagination'
+import { SessionReplayS3Service } from '../analytics/session-replay-s3.service'
+import {
+  readTrackingSettings,
+  isValidTrackingSettings,
+} from './tracking-settings'
 import { Project } from './entity/project.entity'
 import { ProjectShare, roles } from './entity/project-share.entity'
 import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
@@ -118,6 +124,7 @@ import { PendingInvitationService } from '../pending-invitation/pending-invitati
 import { PendingInvitationType } from '../pending-invitation/pending-invitation.entity'
 import {
   PlanCode,
+  PlanFeatureCode,
   getEffectiveAccountLimits,
   getSessionReplayRetentionEntitlement,
 } from '../user/entities/user.entity'
@@ -138,6 +145,7 @@ const isValidUpdateShareDTO = (share: ShareUpdateDTO): boolean => {
 export class ProjectController {
   constructor(
     private readonly projectService: ProjectService,
+    private readonly replayStorage: SessionReplayS3Service,
     private readonly userService: UserService,
     private readonly logger: AppLoggerService,
     private readonly actionTokensService: ActionTokensService,
@@ -1800,6 +1808,21 @@ export class ProjectController {
 
     this.projectService.allowedToManage(project, uid)
 
+    const { trackingSettings } = projectDTO
+    if (trackingSettings !== undefined) {
+      if (!isValidTrackingSettings(trackingSettings)) {
+        throw new BadRequestException('Invalid tracking settings')
+      }
+      if (
+        trackingSettings.sessionReplay &&
+        !this.canTrackSessionReplay(project)
+      ) {
+        throw new ForbiddenException(
+          'Session replay is unavailable for this project',
+        )
+      }
+    }
+
     if (_isBoolean(projectDTO.public)) {
       project.public = projectDTO.public
     }
@@ -1911,12 +1934,21 @@ export class ProjectController {
         trimmed.length > 0 ? JSON.stringify(trimmed) : null
     }
 
-    await this.projectService.update({ id }, _omit(project, ['share', 'admin']))
+    const hasProjectChanges =
+      trackingSettings === undefined || Object.keys(projectDTO).length > 1
+    const changes = hasProjectChanges
+      ? _omit(project, ['share', 'admin', 'trackingSettings'])
+      : {}
+    await this.projectService.update({ id }, changes, trackingSettings)
 
     await deleteProjectRedis(id)
 
     const result = _omit(project, ['admin', 'passwordHash', 'share']) as any
     result.brandKeywords = parseBrandKeywords(result.brandKeywords)
+    result.trackingSettings = {
+      ...readTrackingSettings(project.trackingSettings),
+      ...trackingSettings,
+    }
 
     return result
   }
@@ -2051,6 +2083,7 @@ export class ProjectController {
       ..._omit(project, [
         'admin',
         'passwordHash',
+        'trackingSettings',
         'organisation',
         'gscAccessTokenEnc',
         'gscRefreshTokenEnc',
@@ -2061,6 +2094,11 @@ export class ProjectController {
         !isManagerRole && 'captchaSecretKey',
       ]),
       brandKeywords: parseBrandKeywords(project.brandKeywords),
+      ...(isManagerRole &&
+        isAccessConfirmed && {
+          trackingSettings: readTrackingSettings(project.trackingSettings),
+          canTrackSessionReplay: this.canTrackSessionReplay(project),
+        }),
       isAccessConfirmed,
       isLocked: !!project.admin?.dashboardBlockReason,
       featureAccess: this.projectService.getProjectFeatureAccess(project),
@@ -2071,6 +2109,43 @@ export class ProjectController {
       organisationId: project.organisation?.id,
       role,
     }
+  }
+
+  private canTrackSessionReplay(project: Project) {
+    return (
+      this.replayStorage.isConfigured() &&
+      this.projectService.projectOwnerHasFeature(
+        project,
+        PlanFeatureCode.replays,
+      )
+    )
+  }
+
+  @Public()
+  @Get(':id/tracker-config')
+  @Header('Cache-Control', 'no-store')
+  async getTrackerConfig(@Param('id') id: string) {
+    if (!isValidPID(id)) {
+      throw new NotFoundException()
+    }
+
+    const project = await this.projectService.findOne({
+      where: { id, active: true, isArchived: false },
+      select: {
+        id: true,
+        trackingSettings: true,
+        admin: { id: true, planType: true, planCode: true },
+      },
+      relations: { admin: true },
+    })
+    if (!project) {
+      throw new NotFoundException()
+    }
+
+    return readTrackingSettings(
+      project.trackingSettings,
+      this.canTrackSessionReplay(project),
+    )
   }
 
   @ApiOperation({ summary: 'Get project view' })

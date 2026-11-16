@@ -1,3 +1,5 @@
+import type { TrackingSettings } from '../tracking-settings'
+
 export enum BotsProtectionLevel {
   OFF = 'off',
   BASIC = 'basic',
@@ -15,6 +17,7 @@ export class Project {
   ipWhitelist: string[]
   countryBlacklist: string[]
   sessionReplayRetentionDays: number
+  trackingSettings?: string | Partial<TrackingSettings>
   active: boolean
   public: boolean
   isPasswordProtected: boolean

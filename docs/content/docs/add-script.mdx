@@ -15,11 +15,35 @@ See [CMS & website builder integrations](/integrations#cms--website-builders).
 
 </Callout>
 
-<Tabs defaultValue="html">
+<Tabs defaultValue="managed">
 <TabsList>
-  <TabsTrigger value="html"><CodeIcon /> HTML script tag</TabsTrigger>
+  <TabsTrigger value="managed"><CodeIcon /> Managed script</TabsTrigger>
+  <TabsTrigger value="html"><CodeIcon /> Manual script</TabsTrigger>
   <TabsTrigger value="npm"><NpmIcon /> npm package</TabsTrigger>
 </TabsList>
+<TabsContent value="managed">
+
+Open **Project settings → Tracking script**, copy your project's tag, and paste it in the shared `<head>` of your site. Swetrix Cloud uses the following tag.
+
+```html
+<script defer crossorigin="anonymous" src="https://swetrix.com/p/YOUR_PROJECT_ID.js"></script>
+```
+
+Community Edition serves the tracker and the replay recorder from your own instance. Use the URL shown in your project settings.
+
+| Section             | What you can turn on                                                                                                |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Core tracking       | Pageviews are on by default. Browser error tracking is optional.                                                    |
+| Auto-capture events | Count clicks on links that lead to other sites.                                                                     |
+| Session replay      | Enable recording with total masking. The recorder downloads only when recording is enabled for an eligible visitor. |
+
+Saved changes take effect on new page loads within five minutes. If your site asks for consent, configure your consent manager to load the tag after the visitor agrees. Use the manual script when you need to start and stop replay separately from analytics.
+
+When migrating, replace the old script tag and its automatic tracking calls with the managed tag. Check any custom events or identity calls run after the tag has loaded. Remove the old `<noscript>` pixel if you want the pageviews switch to control all pageview collection.
+
+For a Content Security Policy, allow `https://swetrix.com` in `script-src` and `https://api.swetrix.com` in `connect-src` on Cloud. On Community Edition allow your instance's origin in both directives.
+
+</TabsContent>
 <TabsContent value="html">
 
 The easiest way to add the tracking script to your website is to edit the HTML code of your website.

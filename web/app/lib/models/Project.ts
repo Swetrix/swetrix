@@ -237,6 +237,15 @@ export interface DataImport {
   finishedAt: string | null
 }
 
+export const DEFAULT_TRACKING_SETTINGS = {
+  pageviews: true,
+  errors: false,
+  outboundLinks: false,
+  sessionReplay: false,
+}
+
+export type TrackingSettings = typeof DEFAULT_TRACKING_SETTINGS
+
 export interface Project {
   id: string
   name: string
@@ -267,6 +276,8 @@ export interface Project {
   isCaptchaDataExists: boolean
   isReplayDataExists: boolean
   featureAccess?: ProjectFeatureAccess
+  trackingSettings?: TrackingSettings
+  canTrackSessionReplay?: boolean
   sessionReplayRetentionDays?: number
   botsProtectionLevel: 'off' | 'basic' | 'strict'
   role?: Role

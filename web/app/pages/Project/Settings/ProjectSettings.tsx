@@ -9,6 +9,7 @@ import _size from 'lodash/size'
 import { Link } from '~/ui/Link'
 import {
   SlidersHorizontalIcon,
+  CodeIcon,
   ShieldIcon,
   LockIcon,
   UserCircleIcon,
@@ -63,6 +64,7 @@ import General from './tabs/General'
 import Revenue from './tabs/Revenue'
 import SessionReplays from './tabs/SessionReplays'
 import Shields from './tabs/Shields'
+import TrackingScript from './tabs/TrackingScript'
 import ProjectAlerts from './Alerts/ProjectAlertsView'
 import NotificationChannels from '~/components/NotificationChannels/NotificationChannels'
 import BotProtectionReport from './components/BotProtectionReport'
@@ -234,6 +236,7 @@ const ProjectSettings = () => {
 
   type SettingsTab =
     | 'general'
+    | 'tracking'
     | 'shields'
     | 'access'
     | 'captcha'
@@ -261,6 +264,17 @@ const ProjectSettings = () => {
             icon: SlidersHorizontalIcon,
             iconColor: 'text-blue-500',
             visible: true,
+          },
+          {
+            id: 'tracking',
+            label: t('project.settings.tabs.tracking'),
+            description: t('project.settings.tabs.trackingDesc'),
+            icon: CodeIcon,
+            iconColor: 'text-teal-500',
+            visible:
+              initialProject.isAccessConfirmed !== false &&
+              (initialProject.role === 'owner' ||
+                initialProject.role === 'admin'),
           },
           {
             id: 'access',
@@ -390,7 +404,7 @@ const ProjectSettings = () => {
           },
         ] as const satisfies readonly SettingsTabConfig<SettingsTab>[]
       ).filter((tab) => tab.visible) as SettingsTabConfig<SettingsTab>[],
-    [t, project?.role],
+    [t, project?.role, initialProject.isAccessConfirmed, initialProject.role],
   )
 
   const sessionReplayMaxRetentionDays = useMemo(() => {
@@ -1044,7 +1058,18 @@ const ProjectSettings = () => {
             />
           </aside>
 
-          <section className='flex-1'>
+          <section className='min-w-0 flex-1'>
+            {activeTab === 'tracking' && activeTabConfig ? (
+              <>
+                <TabHeader
+                  icon={activeTabConfig.icon}
+                  label={activeTabConfig.label}
+                  description={activeTabConfig.description}
+                  iconColorClass={activeTabConfig.iconColor}
+                />
+                <TrackingScript project={initialProject} />
+              </>
+            ) : null}
             {['general', 'shields', 'access'].includes(activeTab) &&
             activeTabConfig ? (
               <form onSubmit={handleSubmit}>

@@ -65,6 +65,32 @@ server {
 
 ## Update Swetrix tracking script configuration
 
+For the [managed script](/install-script), forward the entire `/p/` path to the Swetrix web host. Both the project script and its optional recorder use that path.
+
+```nginx
+location /p/ {
+  proxy_pass https://swetrix.com;
+  proxy_set_header Host swetrix.com;
+  proxy_set_header Cookie "";
+  proxy_set_header Authorization "";
+  proxy_ssl_server_name on;
+  proxy_cache jscache;
+}
+```
+
+Copy the managed tag from project settings, change its host to your proxy, and point `data-api-url` at your proxied log endpoint.
+
+```html
+<script
+  defer
+  crossorigin="anonymous"
+  src="https://t.example.com/p/YOUR_PROJECT_ID.js"
+  data-api-url="https://t.example.com/log"
+></script>
+```
+
+### Manual script and npm
+
 After you updated your Nginx configuration, you need to update swetrix.js tracking script to send analytics data through your server. You can do it by setting the `apiURL` property inside the [init() function](/swetrix-js-reference#init).
 
 ```javascript

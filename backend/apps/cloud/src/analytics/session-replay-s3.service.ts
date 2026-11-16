@@ -40,9 +40,10 @@ const encodeQueryValue = (value: string) =>
   )
 
 const normalizeEndpoint = (endpoint: string) => {
-  const value = endpoint.trim().replace(/\/+$/, '')
-
-  return /^https?:\/\//.test(value) ? value : `https://${value}`
+  const value = endpoint.trim()
+  const url = URL.parse(value.includes('://') ? value : `https://${value}`)
+  if (!url || !['http:', 'https:'].includes(url.protocol)) return null
+  return url.href.replace(/\/+$/, '')
 }
 
 const inferHetznerRegion = (endpoint: string) => {
