@@ -49,7 +49,7 @@ function printHelp() {
 
 Usage: npm run translate -- [options]
 
-  --languages=fr,de   Restrict target languages (fr, de, pl, uk, pt-BR; pt also works).
+  --languages=fr,de   Restrict target languages (fr, de, pl, uk, pt-BR, zh-CN; pt and zh also work).
   --limit=25          Translate at most this many strings per language.
   --dry-run           List pending translations and obsolete keys; no API calls or writes.
   --check             Exit 1 if translations need syncing; no API calls or writes.

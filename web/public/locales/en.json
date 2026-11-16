@@ -158,7 +158,9 @@
     "toggleOptions": "Toggle options",
     "paginationNavLabel": "Pagination",
     "jumpToPage": "Jump to page {{page}}",
-    "pageNumber": "Page {{page}}"
+    "pageNumber": "Page {{page}}",
+    "clear": "Clear",
+    "apply": "Apply"
   },
   "ariaLabels": {
     "actions": "Actions",
@@ -200,7 +202,9 @@
     "progress": "Progress: {{value}}%",
     "showEventDetails": "Show {{event}} details",
     "template": "Template",
-    "uploadFile": "Upload file"
+    "uploadFile": "Upload file",
+    "previousMonth": "Previous month",
+    "nextMonth": "Next month"
   },
   "performance": {
     "slogan": "Real user <span>performance monitoring</span> for faster websites.",
@@ -3815,7 +3819,15 @@
     "features": "Features",
     "imprint": "Legal notice",
     "cloudEdition": "Cloud edition",
-    "starOnGithub": "Star us on GitHub"
+    "starOnGithub": "Star us on GitHub",
+    "ip-lookup": "IP Lookup",
+    "sitemap-validator": "Sitemap Validator",
+    "ab-test-calculator": "A/B Test Calculator",
+    "ltv-calculator": "LTV Calculator",
+    "meta-tags-generator": "Meta Tags Generator",
+    "ad-cost-calculator": "Ad Cost Calculator",
+    "qr-code-generator": "QR Code Generator",
+    "more-free-tools": "More free tools"
   },
   "apiKeys": {
     "title": "API keys",

@@ -158,7 +158,9 @@
     "toggleOptions": "Przełącz opcje",
     "paginationNavLabel": "Paginacja",
     "jumpToPage": "Przejdź do strony {{page}}",
-    "pageNumber": "Strona {{page}}"
+    "pageNumber": "Strona {{page}}",
+    "clear": "Wyczyść",
+    "apply": "Zastosuj"
   },
   "ariaLabels": {
     "actions": "Akcje",
@@ -200,7 +202,9 @@
     "progress": "Postęp: {{value}}%",
     "showEventDetails": "Pokaż szczegóły {{event}}",
     "template": "Szablon",
-    "uploadFile": "Prześlij plik"
+    "uploadFile": "Prześlij plik",
+    "previousMonth": "Poprzedni miesiąc",
+    "nextMonth": "Następny miesiąc"
   },
   "performance": {
     "slogan": "Monitorowanie <span>wydajności</span> z perspektywy rzeczywistego użytkownika dla szybszych stron internetowych.",
@@ -3825,7 +3829,15 @@
     "features": "Funkcjonalności",
     "imprint": "Nota prawna",
     "cloudEdition": "Edycja chmurowa",
-    "starOnGithub": "Daj nam gwiazdkę na GitHubie"
+    "starOnGithub": "Daj nam gwiazdkę na GitHubie",
+    "ip-lookup": "Wyszukiwanie adresów IP",
+    "sitemap-validator": "Walidator mapy witryny",
+    "ab-test-calculator": "Kalkulator testów A/B",
+    "ltv-calculator": "Kalkulator LTV",
+    "meta-tags-generator": "Generator metatagów",
+    "ad-cost-calculator": "Kalkulator kosztów reklamy",
+    "qr-code-generator": "Generator kodów QR",
+    "more-free-tools": "Więcej darmowych narzędzi"
   },
   "apiKeys": {
     "title": "Klucze API",

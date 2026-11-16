@@ -56,7 +56,7 @@ import { detectTheme, isWWW } from '~/utils/server'
 import { createHeadersWithCookies, hasAuthTokens } from '~/utils/session.server'
 
 import AppWrapper from './App'
-import { getLocale, i18nextMiddleware } from './i18next.server'
+import { getLocale, i18nextMiddleware, readCookieLang } from './i18next.server'
 import { AuthProvider } from './providers/AuthProvider'
 import { ThemeProvider, useTheme } from './providers/ThemeProvider'
 
@@ -306,43 +306,15 @@ const removeMultipleLngParams = (url: string): string => {
   return _replace(url, /%3Flng%3D[^%]*/g, '')
 }
 
-const readCookieLang = (request: Request): string | null => {
-  const cookie = request.headers.get('Cookie')
-  if (!cookie) return null
-
-  for (const segment of cookie.split(';')) {
-    const trimmed = segment.trim()
-    const eqIdx = trimmed.indexOf('=')
-    if (eqIdx === -1) continue
-    const name = trimmed.slice(0, eqIdx)
-    if (name !== 'i18next') continue
-
-    const rawValue = trimmed.slice(eqIdx + 1)
-    let value: string
-    try {
-      value = decodeURIComponent(rawValue)
-    } catch {
-      value = rawValue
-    }
-    return whitelist.includes(value) ? value : null
-  }
-
-  return null
-}
-
-// Decides whether to redirect an unprefixed URL to its localised counterpart
-// so the URL is always the source of truth for the rendered language.
-//
-// Priority of "preferred language" signals:
-//   1. Legacy `?lng=xx` query (301 — canonical migration of old links)
-//   2. `i18next` cookie set by the language switcher (302 — per-user pref)
-//
-// We deliberately ignore `Accept-Language` here to avoid surprise redirects
-// for bots, link previews, and shared screenshots.
-const buildLocaliseRedirect = (
+/**
+ * Builds canonical language redirects from legacy query parameters or cookies.
+ * Legacy `lng` queries take precedence over stored preferences. Browser language
+ * is handled by middleware so shared URLs keep their requested paths.
+ */
+const buildLocaliseRedirect = async (
   request: Request,
   urlObject: URL,
-): { url: string; status: 301 | 302 } | null => {
+): Promise<{ url: string; status: 301 | 302 } | null> => {
   const { searchParams, pathname } = urlObject
 
   // Already on a localised URL, or a path that should never be prefixed.
@@ -365,7 +337,7 @@ const buildLocaliseRedirect = (
     return { url: next.toString(), status: 301 }
   }
 
-  const cookieLng = readCookieLang(request)
+  const cookieLng = await readCookieLang(request)
   if (cookieLng && cookieLng !== defaultLanguage) {
     const next = new URL(urlObject.toString())
     next.pathname = localisePath(pathname, cookieLng)
@@ -375,6 +347,7 @@ const buildLocaliseRedirect = (
   return null
 }
 
+/** Prepares canonical routing, authentication, locale and theme data. */
 export async function loader({
   request,
   context,
@@ -393,7 +366,7 @@ export async function loader({
     return redirect(httpToHttps, 301)
   }
 
-  const localiseRedirect = buildLocaliseRedirect(request, urlObject)
+  const localiseRedirect = await buildLocaliseRedirect(request, urlObject)
   if (localiseRedirect) {
     return redirect(localiseRedirect.url, localiseRedirect.status)
   }

@@ -396,7 +396,7 @@ export const MIN_FUNNEL_STEPS = 2
 export const MAX_FUNNEL_STEPS = 10
 
 // List of languages with translations available
-export const whitelist = ['de', 'en', 'fr', 'pl', 'pt', 'uk']
+export const whitelist = ['de', 'en', 'fr', 'pl', 'pt', 'uk', 'zh']
 export const whitelistWithCC = {
   de: 'de-DE',
   en: 'en-GB',
@@ -404,6 +404,7 @@ export const whitelistWithCC = {
   pl: 'pl-PL',
   pt: 'pt-BR',
   uk: 'uk-UA',
+  zh: 'zh-CN',
 } as Record<string, string>
 export const defaultLanguage = 'en'
 export const languages = {
@@ -413,6 +414,7 @@ export const languages = {
   pl: 'Polski',
   pt: 'Português (Brasil)',
   uk: 'Українська',
+  zh: '简体中文',
 } as Record<string, string>
 
 export const languageFlag = {
@@ -422,10 +424,12 @@ export const languageFlag = {
   pl: 'PL',
   pt: 'BR',
   uk: 'UA',
+  zh: 'CN',
 } as Record<string, string>
 
 export const paddleLanguageMapping = {
   uk: 'en',
+  zh: 'zh-Hans',
 } as Record<string, string>
 
 // Languages that get a URL prefix (/{lang}/...). The default language is served unprefixed.
@@ -493,7 +497,7 @@ export const localisePath = (pathname: string, lang: string): string => {
 
 // Increase this counter every time some major change is done within localisation files
 // This will prevent cached version or raw locale strings being displayed in production
-export const I18N_CACHE_BREAKER = 49
+export const I18N_CACHE_BREAKER = 51
 
 export const roles: Role[] = ['admin', 'viewer']
 

@@ -4,6 +4,7 @@ import _startsWith from 'lodash/startsWith'
 import { useEffect } from 'react'
 import { useLocation, Outlet } from 'react-router'
 import 'dayjs/locale/uk'
+import 'dayjs/locale/zh'
 import { Toaster } from 'sonner'
 
 import Footer from '~/components/Footer'

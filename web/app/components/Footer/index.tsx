@@ -747,7 +747,7 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
                           icon={icon}
                           iconColor={iconColor}
                         >
-                          {name || t(`footer.${key}`)}
+                          {t(`footer.${key}`, { defaultValue: name })}
                         </FooterLink>
                       </li>
                     ),

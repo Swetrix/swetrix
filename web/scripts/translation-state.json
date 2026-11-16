@@ -3150,13 +3150,26 @@
     "apiKeys.resources.revenue.description": "41fcea5ab73c916ee0dc98c26aed3566aa7011188c945b69d6ca51a58d68c3f2",
     "apiKeys.resources.organisations.name": "7bd34abba2aec0c6f00b4b111402581d36f7cfaeb310164f06ce85792ac34b64",
     "apiKeys.resources.organisations.description": "1748cd4a69fc26b28a451895c8a5187ffb572c276f6419fadbbd143c8e40d9f6",
-    "apiKeys.projectReadOnly": "9b1d590e77504bbf16512c301e41d1c1964a3cf175d5d63afd1b34a1580cb02a"
+    "apiKeys.projectReadOnly": "9b1d590e77504bbf16512c301e41d1c1964a3cf175d5d63afd1b34a1580cb02a",
+    "footer.ip-lookup": "3c0048d7a7265a9033bef962e771420713f655138bde7754c54f6532eb741910",
+    "footer.sitemap-validator": "7ebc01aebf6a03b25459454f09aaeec3184cb70180ff88815714c82f727087f3",
+    "footer.ab-test-calculator": "0d3c2eee9b47bf6be9a12dcf27800a3bf6e55863ae4564f383b4557778105c36",
+    "footer.ltv-calculator": "e7b46912a4182f58246f113246f276c534e54f4f179bf573238703ec511a516a",
+    "footer.meta-tags-generator": "ff591550ec7aca78e8afcadb93c6cb7ffa5e8338540bb29acb86f5c6124c38ed",
+    "footer.ad-cost-calculator": "147e5e8f3b0b8c1059b1ac300e9e23b7bc2773b9e3a1aa99900cefef36e21700",
+    "footer.qr-code-generator": "346aab89640f01cb0a79cebe466788970acb229facb7ed28fd6711f8fb0eb8ab",
+    "footer.more-free-tools": "ac611f323eb0278f314a8d645943ad2b529c24de4b6aca9fcb76fcf52ecb25e2",
+    "common.clear": "83b12c2216efb4fdc924e1deb5182e905e4926ed0c1c324d467107f46d5a26a9",
+    "common.apply": "31e392d1c0378beca611de66c0f4c71cba29159905cc54242d9bddee5b23d851",
+    "ariaLabels.previousMonth": "6a2769502a5dda78a083f84a659c0977c548508669688897a267a5ce53bd3c5e",
+    "ariaLabels.nextMonth": "74e53211fef4b4d4d93f0cf221d0920174e216cb7e9343ff37dafa3278c1b034"
   },
   "pending": {
     "fr": [],
     "de": [],
     "pl": [],
     "uk": [],
-    "pt-BR": []
+    "pt-BR": [],
+    "zh-CN": []
   }
 }

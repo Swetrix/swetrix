@@ -28,6 +28,7 @@ packages/*/.nyc_output
 
 # IDEs and editors
 /.idea
+.history/
 .project
 .classpath
 .c9/

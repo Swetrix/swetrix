@@ -118,7 +118,7 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(
     ref,
   ) {
     const isSingleMode = mode === 'single'
-    const { i18n } = useTranslation('common')
+    const { t, i18n } = useTranslation('common')
     const locale = i18n.language
 
     const today = useMemo(() => startOfDay(new Date()), [])
@@ -404,14 +404,14 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(
                       type='button'
                       className='rounded-md p-2 hover:bg-gray-100 dark:hover:bg-slate-900'
                       onClick={handlePrevMonth}
-                      aria-label='Previous month'
+                      aria-label={t('ariaLabels.previousMonth')}
                     >
                       <CaretLeftIcon className='size-5' />
                     </button>
                     <div className='flex items-center gap-2'>
                       <div className='relative'>
                         <select
-                          aria-label='Month'
+                          aria-label={t('project.month')}
                           className='appearance-none rounded-md border border-gray-200 bg-white px-2 py-1 pr-7 text-sm text-gray-900 hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-50'
                           value={anchorMonth.getMonth()}
                           onChange={(e) =>
@@ -439,7 +439,7 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(
                       </div>
                       <div className='relative'>
                         <select
-                          aria-label='Year'
+                          aria-label={t('project.year')}
                           className='appearance-none rounded-md border border-gray-200 bg-white px-2 py-1 pr-7 text-sm text-gray-900 hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-50'
                           value={anchorMonth.getFullYear()}
                           onChange={(e) =>
@@ -466,7 +466,7 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(
                       type='button'
                       className='rounded-md p-2 hover:bg-gray-100 dark:hover:bg-slate-900'
                       onClick={handleNextMonth}
-                      aria-label='Next month'
+                      aria-label={t('ariaLabels.nextMonth')}
                     >
                       <CaretRightIcon className='size-5' />
                     </button>
@@ -533,7 +533,7 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(
                           setHoverDate(null)
                         }}
                       >
-                        Clear
+                        {t('common.clear')}
                       </button>
                       <button
                         type='button'
@@ -544,7 +544,7 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(
                           commitRange(start, end || start)
                         }}
                       >
-                        Apply
+                        {t('common.apply')}
                       </button>
                     </div>
                   </div>
@@ -563,14 +563,14 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(
                     type='button'
                     className='rounded-md p-2 hover:bg-gray-100 dark:hover:bg-slate-900'
                     onClick={handlePrevMonth}
-                    aria-label='Previous month'
+                    aria-label={t('ariaLabels.previousMonth')}
                   >
                     <CaretLeftIcon className='size-5' />
                   </button>
                   <div className='flex items-center gap-2'>
                     <div className='relative'>
                       <select
-                        aria-label='Month'
+                        aria-label={t('project.month')}
                         className='appearance-none rounded-md border border-gray-200 bg-white px-2 py-1 pr-7 text-sm text-gray-900 hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-50'
                         value={anchorMonth.getMonth()}
                         onChange={(e) =>
@@ -598,7 +598,7 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(
                     </div>
                     <div className='relative'>
                       <select
-                        aria-label='Year'
+                        aria-label={t('project.year')}
                         className='appearance-none rounded-md border border-gray-200 bg-white px-2 py-1 pr-7 text-sm text-gray-900 hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-50'
                         value={anchorMonth.getFullYear()}
                         onChange={(e) =>
@@ -625,7 +625,7 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(
                     type='button'
                     className='rounded-md p-2 hover:bg-gray-100 dark:hover:bg-slate-900'
                     onClick={handleNextMonth}
-                    aria-label='Next month'
+                    aria-label={t('ariaLabels.nextMonth')}
                   >
                     <CaretRightIcon className='size-5' />
                   </button>
@@ -692,7 +692,7 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(
                         setHoverDate(null)
                       }}
                     >
-                      Clear
+                      {t('common.clear')}
                     </button>
                     <button
                       type='button'
@@ -703,7 +703,7 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(
                         commitRange(start, end || start)
                       }}
                     >
-                      Apply
+                      {t('common.apply')}
                     </button>
                   </div>
                 </div>

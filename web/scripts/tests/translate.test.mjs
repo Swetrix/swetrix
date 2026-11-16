@@ -78,7 +78,7 @@ test('syncs additions, English edits, deletions and nesting without touching exi
   fr.obsolete = 'Remove me'
   await f.write(f.locale('fr'), fr)
   const result = await f.run()
-  assert.equal(result.translated, 10)
+  assert.equal(result.translated, 2 * LANGUAGES.length)
   assert.equal(result.remaining, 0)
   assert.equal(result.removed, 1)
   assert.deepEqual(await f.read(f.locale('en')), updated)
@@ -176,8 +176,8 @@ test('check and dry-run detect stale, missing, invalid and removed entries witho
     const result = await f.run(args, () =>
       assert.fail('Read-only run called Gemini'),
     )
-    assert.equal(result.remaining, 10)
-    assert.equal(result.removed, 5)
+    assert.equal(result.remaining, 2 * LANGUAGES.length)
+    assert.equal(result.removed, LANGUAGES.length)
     assert.deepEqual(await f.snapshot(), before)
     await assert.rejects(fs.access(`${f.stateFile}.lock`))
   }
