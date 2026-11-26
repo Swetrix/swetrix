@@ -1,5 +1,6 @@
 import { Req } from '@nestjs/common'
 import { ApiKeyAccess } from '../api-key/api-key-access.decorator'
+import type { ApiKeyPrincipal } from '../api-key/api-key.types'
 import {
   Controller,
   Body,
@@ -25,6 +26,7 @@ import {
 } from '@nestjs/common'
 import {
   ApiTags,
+  ApiHeader,
   ApiQuery,
   ApiResponse,
   ApiBearerAuth,
@@ -46,6 +48,9 @@ import _find from 'lodash/find'
 import dayjs from 'dayjs'
 
 import { hash } from 'bcrypt'
+import type { EntityManager } from 'typeorm'
+import { getIdempotencyRequest } from '../common/idempotency'
+import { IdempotentCreateService } from './idempotent-create.service'
 import { parseBrandKeywords } from './gsc.service'
 import { Auth, Public } from '../auth/decorators'
 import { isValidDate } from '../analytics/analytics.service'
@@ -118,6 +123,7 @@ import { PendingInvitationService } from '../pending-invitation/pending-invitati
 import { PendingInvitationType } from '../pending-invitation/pending-invitation.entity'
 import {
   PlanCode,
+  User,
   getEffectiveAccountLimits,
   getSessionReplayRetentionEntitlement,
 } from '../user/entities/user.entity'
@@ -145,6 +151,7 @@ export class ProjectController {
     private readonly projectsViewsRepository: ProjectsViewsRepository,
     private readonly organisationService: OrganisationService,
     private readonly pendingInvitationService: PendingInvitationService,
+    private readonly idempotentCreate: IdempotentCreateService,
   ) {}
 
   @ApiBearerAuth()
@@ -207,6 +214,46 @@ export class ProjectController {
     )
 
     return this.projectService.processDefaultResults(paginated, userId)
+  }
+
+  @ApiBearerAuth()
+  @Get('/directory')
+  @ApiOperation({
+    summary: 'Discover accessible projects and their basic metadata',
+  })
+  @ApiQuery({ name: 'take', required: false, type: Number })
+  @ApiQuery({ name: 'skip', required: false, type: Number })
+  @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiQuery({ name: 'id', required: false, type: String })
+  @Auth(true)
+  @ApiKeyAccess('projects:read', 'projectDirectory')
+  projectDirectory(
+    @Req() request: { user: { apiKeyAccess?: ApiKeyPrincipal } },
+    @CurrentUserId() userId: string,
+    @Query('take', new ParseIntPipe({ optional: true })) take = 25,
+    @Query('skip', new ParseIntPipe({ optional: true })) skip = 0,
+    @Query('search') search?: string,
+    @Query('id') id?: string,
+  ) {
+    if (take < 1 || take > 100 || skip < 0 || skip > 50_000)
+      throw new BadRequestException(
+        'take must be 1–100 and skip must be 0–50000',
+      )
+    if (
+      search !== undefined &&
+      (typeof search !== 'string' || search.length > 100)
+    )
+      throw new BadRequestException(
+        'search must be a string of at most 100 characters',
+      )
+    if (id !== undefined && (typeof id !== 'string' || !isValidPID(id)))
+      throw new BadRequestException('Invalid project ID')
+
+    return this.projectService.getProjectDirectory(
+      userId,
+      { take, skip, search: search?.trim(), id },
+      request.user.apiKeyAccess,
+    )
   }
 
   @ApiBearerAuth()
@@ -311,6 +358,7 @@ export class ProjectController {
 
   @ApiBearerAuth()
   @Post('/')
+  @ApiHeader({ name: 'Idempotency-Key', required: false })
   @ApiResponse({ status: 201, type: Project })
   @Auth(true)
   @ApiKeyAccess('projects:write', 'create', 'pid')
@@ -320,7 +368,7 @@ export class ProjectController {
     @Ip() requestIp: string,
     @CurrentUserId() userId: string,
   ): Promise<Omit<Project, 'passwordHash'>> {
-    this.logger.log({ projectDTO, userId }, 'POST /project')
+    this.logger.log({ name: projectDTO.name, userId }, 'POST /project')
     const ip = getIPFromHeaders(headers) || requestIp || ''
 
     if (!userId) {
@@ -368,7 +416,40 @@ export class ProjectController {
       )
     }
 
-    const projectCount = await this.projectService.countByAdminId(user.id)
+    const request = getIdempotencyRequest(
+      userId,
+      'create_project',
+      headers['idempotency-key'],
+      projectDTO,
+    )
+    const { value, created } = await this.idempotentCreate.run(
+      request,
+      (manager) => this.createProjectForOwner(projectDTO, user, manager),
+      async (project, manager) => {
+        const [accessible] = await manager.query(
+          'SELECT id FROM project WHERE id = ? AND adminId = ? AND organisationId <=> ?',
+          [project.id, user.id, projectDTO.organisationId ?? null],
+        )
+        if (!accessible)
+          throw new ForbiddenException(
+            'The previously created project is no longer accessible.',
+          )
+      },
+    )
+    if (created)
+      await trackCustom(ip, headers['user-agent'], { ev: 'PROJECT_CREATED' })
+    return value
+  }
+
+  private async createProjectForOwner(
+    projectDTO: CreateProjectDTO,
+    user: User,
+    manager?: EntityManager,
+  ) {
+    const projectCount = await this.projectService.countByAdminId(
+      user.id,
+      manager,
+    )
     const { effectiveProjectLimit } = getEffectiveAccountLimits(user)
 
     if (projectCount >= effectiveProjectLimit) {
@@ -381,7 +462,7 @@ export class ProjectController {
 
     let pid = generateRandomId(LEGAL_PID_CHARACTERS, PID_LENGTH)
 
-    while (!(await this.projectService.isPIDUnique(pid))) {
+    while (!(await this.projectService.isPIDUnique(pid, manager))) {
       pid = generateRandomId(LEGAL_PID_CHARACTERS, PID_LENGTH)
     }
 
@@ -409,12 +490,7 @@ export class ProjectController {
         project.passwordHash = await hash(projectDTO.password, 10)
       }
 
-      const newProject = await this.projectService.create(project)
-
-      await trackCustom(ip, headers['user-agent'], {
-        ev: 'PROJECT_CREATED',
-      })
-
+      const newProject = await this.projectService.create(project, manager)
       return _omit(newProject, ['passwordHash'])
     } catch (reason) {
       console.error('[ERROR] Failed to create a new project:')
@@ -424,6 +500,7 @@ export class ProjectController {
   }
 
   @Post('/funnel')
+  @ApiHeader({ name: 'Idempotency-Key', required: false })
   @ApiResponse({ status: 201 })
   @Auth(true)
   @ApiKeyAccess('funnels:write', 'body', 'pid')
@@ -466,20 +543,30 @@ export class ProjectController {
 
     this.projectService.allowedToManage(project, userId)
 
-    if (_size(project.funnels) >= MAX_FUNNELS) {
-      throw new ForbiddenException(
-        `You cannot create more than ${MAX_FUNNELS}. Please contact us to increase the limit.`,
-      )
-    }
-
-    await trackCustom(ip, headers['user-agent'], {
-      ev: 'FUNNEL_CREATED',
-      meta: {
-        steps_quantity: funnelDTO.steps.length,
+    const request = getIdempotencyRequest(
+      userId,
+      'create_funnel',
+      headers['idempotency-key'],
+      funnelDTO,
+    )
+    const { value, created } = await this.idempotentCreate.run(
+      request,
+      (manager) => {
+        if (_size(project.funnels) >= MAX_FUNNELS) {
+          throw new ForbiddenException(
+            `You cannot create more than ${MAX_FUNNELS}. Please contact us to increase the limit.`,
+          )
+        }
+        return this.projectService.createFunnel(project.id, funnelDTO, manager)
       },
-    })
-
-    return this.projectService.createFunnel(project.id, funnelDTO)
+    )
+    if (created) {
+      await trackCustom(ip, headers['user-agent'], {
+        ev: 'FUNNEL_CREATED',
+        meta: { steps_quantity: funnelDTO.steps.length },
+      })
+    }
+    return value
   }
 
   @Patch('/funnel')
@@ -605,6 +692,7 @@ export class ProjectController {
   }
 
   @Post('/annotation')
+  @ApiHeader({ name: 'Idempotency-Key', required: false })
   @ApiResponse({ status: 201 })
   @Auth(true)
   @ApiKeyAccess('annotations:write', 'body', 'pid')
@@ -638,14 +726,28 @@ export class ProjectController {
 
     this.projectService.allowedToManage(project, userId)
 
-    await trackCustom(ip, headers['user-agent'], {
-      ev: 'ANNOTATION_CREATED',
-      meta: {
-        length: annotationDTO.text.length,
-      },
-    })
-
-    return this.projectService.createAnnotation(project.id, annotationDTO)
+    const request = getIdempotencyRequest(
+      userId,
+      'create_annotation',
+      headers['idempotency-key'],
+      annotationDTO,
+    )
+    const { value, created } = await this.idempotentCreate.run(
+      request,
+      (manager) =>
+        this.projectService.createAnnotation(
+          project.id,
+          annotationDTO,
+          manager,
+        ),
+    )
+    if (created) {
+      await trackCustom(ip, headers['user-agent'], {
+        ev: 'ANNOTATION_CREATED',
+        meta: { length: annotationDTO.text.length },
+      })
+    }
+    return value
   }
 
   @Patch('/annotation')

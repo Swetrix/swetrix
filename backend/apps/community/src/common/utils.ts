@@ -285,12 +285,18 @@ const deleteFunnelClickhouse = async (id: string) => {
   })
 }
 
-const createFunnelClickhouse = async (funnel: Partial<ClickhouseFunnel>) => {
+const createFunnelClickhouse = async (
+  funnel: Partial<ClickhouseFunnel>,
+  synchronous = false,
+) => {
   const { id, name, steps, projectId } = funnel
 
   await clickhouse.insert({
     table: 'funnel',
     format: 'JSONEachRow',
+    clickhouse_settings: synchronous
+      ? { async_insert: 0, wait_for_async_insert: 1, wait_end_of_query: 1 }
+      : undefined,
     values: [
       {
         id,
@@ -495,12 +501,18 @@ const deleteProjectSharesByUserIdClickhouse = async (userId: string) => {
   })
 }
 
-const createProjectClickhouse = async (project: Partial<Project>) => {
+const createProjectClickhouse = async (
+  project: Partial<Project>,
+  synchronous = false,
+) => {
   const { id, name, adminId, websiteUrl } = project
 
   await clickhouse.insert({
     table: 'project',
     format: 'JSONEachRow',
+    clickhouse_settings: synchronous
+      ? { async_insert: 0, wait_for_async_insert: 1, wait_end_of_query: 1 }
+      : undefined,
     values: [
       {
         id,
@@ -1039,12 +1051,16 @@ const getAnnotationClickhouse = async (
 
 const createAnnotationClickhouse = async (
   annotation: Partial<ClickhouseAnnotation>,
+  synchronous = false,
 ) => {
   const { id, date, text, projectId } = annotation
 
   await clickhouse.insert({
     table: 'annotation',
     format: 'JSONEachRow',
+    clickhouse_settings: synchronous
+      ? { async_insert: 0, wait_for_async_insert: 1, wait_end_of_query: 1 }
+      : undefined,
     values: [
       {
         id,

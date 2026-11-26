@@ -232,7 +232,15 @@ export default function ApiKeys({ projectId }: { projectId?: string }) {
           <Text as='p' size='sm' colour='secondary' className='mt-1'>
             {t(
               projectId ? 'apiKeys.projectDescription' : 'apiKeys.description',
-            )}
+            )}{' '}
+            <a
+              href={`${DOCS_URL}/mcp`}
+              className='font-medium underline decoration-dashed hover:decoration-solid'
+              target='_blank'
+              rel='noreferrer noopener'
+            >
+              {t('apiKeys.connectMcp')}
+            </a>
           </Text>
         </div>
         {!projectId ? (

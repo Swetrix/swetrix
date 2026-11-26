@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 
 import { ProjectService } from './project.service'
 import { ProjectController } from './project.controller'
+import { IdempotentCreateService } from './idempotent-create.service'
 import { GSCController } from './gsc.controller'
 import { GSCService } from './gsc.service'
 import { UserModule } from '../user/user.module'
@@ -52,6 +53,7 @@ import { PendingInvitationModule } from '../pending-invitation/pending-invitatio
   ],
   providers: [
     ProjectService,
+    IdempotentCreateService,
     ProjectsViewsRepository,
     GSCService,
     ProxyDomainService,

@@ -11,6 +11,7 @@ function runInitialiser(t, failure, script = 'initialise_selfhosted.js') {
   for (const filename of [
     'initialise_database.js',
     'initialise_selfhosted.js',
+    'selfhosted_2026_11_04_admin_idempotency.js',
   ]) {
     fs.copyFileSync(
       path.resolve(__dirname, '../migrations/clickhouse', filename),

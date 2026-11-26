@@ -3822,6 +3822,7 @@
     "tooltip": "API-Schlüssel verbinden Ihre Skripte, Dashboards und Integrationen mit Swetrix. Wählen Sie, auf welche Projekte und Berechtigungen jeder Schlüssel zugreifen kann. Rotieren Sie einen Schlüssel, um sein Secret zu ersetzen, oder widerrufen Sie ihn, um den Zugriff zu sperren.",
     "description": "Geben Sie jeder Integration ihren eigenen Schlüssel, mit genau den Berechtigungen und Projekten, die sie benötigt.",
     "projectDescription": "API-Schlüssel, die auf dieses Projekt zugreifen können, und deren Berechtigungen.",
+    "connectMcp": "Einen KI-Assistenten mit MCP verbinden",
     "create": "API-Schlüssel erstellen",
     "manage": "API-Schlüssel verwalten",
     "retry": "Erneut versuchen",

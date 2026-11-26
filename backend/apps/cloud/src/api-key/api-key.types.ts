@@ -40,6 +40,7 @@ export interface ApiKeyPolicy {
     | 'query'
     | 'body'
     | 'list'
+    | 'projectDirectory'
     | 'account'
     | 'create'
     | 'goal'

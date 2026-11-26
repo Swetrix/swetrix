@@ -387,6 +387,21 @@ describe('API key authorization', () => {
     const { request } = await run({ ...read, source: 'list' })
     expect((request as any).apiKeyProjectIds).toEqual([projectA])
   })
+  it('requires projects:read for discovery without loading the full list of owned projects', async () => {
+    const policy: ApiKeyPolicy = {
+      scope: 'projects:read',
+      source: 'projectDirectory',
+    }
+    const { result, store } = await run(policy, {
+      ...scoped(),
+      scopes: ['projects:read'],
+    })
+    expect(result).toBe(true)
+    expect(store.ownedProjects).not.toHaveBeenCalled()
+    await expect(
+      run(policy, { ...scoped(), scopes: ['analytics:read'] }),
+    ).rejects.toThrow(ForbiddenException)
+  })
   it('requires all-project access for account-wide operations', async () => {
     await expect(run({ ...read, source: 'account' })).rejects.toThrow()
     expect(

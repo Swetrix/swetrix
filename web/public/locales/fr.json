@@ -3827,6 +3827,7 @@
     "tooltip": "Les clés API connectent vos scripts, tableaux de bord et intégrations à Swetrix. Choisissez les projets et les permissions auxquels chaque clé peut accéder. Effectuez la rotation d'une clé pour remplacer son secret, ou révoquez-la pour bloquer l'accès.",
     "description": "Donnez à chaque intégration sa propre clé, avec uniquement les permissions et les projets dont elle a besoin.",
     "projectDescription": "Les clés API qui peuvent accéder à ce projet, et les permissions dont elles disposent.",
+    "connectMcp": "Connecter un assistant IA avec MCP",
     "create": "Créer une clé API",
     "manage": "Gérer les clés API",
     "retry": "Réessayer",

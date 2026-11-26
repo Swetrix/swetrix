@@ -4,6 +4,57 @@ on:
     types: [published]
 
 jobs:
+  publish-mcp-server:
+    name: Publish MCP server to npm
+    if: startsWith(github.event.release.tag_name, 'mcp-server@')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    defaults:
+      run:
+        working-directory: packages/mcp-server
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '^24.11.0'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Verify release tag matches the package version
+        run: node -e "require('node:assert/strict').equal(process.env.GITHUB_REF_NAME, 'mcp-server@' + require('./package.json').version)"
+
+      - run: npm ci
+      - run: npm test
+
+      - name: Check for an existing npm publication
+        id: publication
+        run: |
+          node --input-type=module <<'NODE'
+          import { execFileSync } from 'node:child_process'
+          import { appendFileSync } from 'node:fs'
+
+          const [pkg] = JSON.parse(execFileSync('npm', ['pack', '--dry-run', '--json'], { encoding: 'utf8' }))
+          const url = `https://registry.npmjs.org/${encodeURIComponent(pkg.name)}/${encodeURIComponent(pkg.version)}`
+          const response = await fetch(url, { signal: AbortSignal.timeout(30_000) })
+          if (response.status === 404) {
+            appendFileSync(process.env.GITHUB_OUTPUT, 'missing=true\n')
+          } else {
+            if (!response.ok) throw new Error(`npm registry returned HTTP ${response.status}`)
+            const published = await response.json()
+            if (!pkg.integrity || published.dist?.integrity !== pkg.integrity) {
+              throw new Error(`${pkg.id} already exists on npm with different contents. Choose a new version.`)
+            }
+            console.log(`${pkg.id} is already published with the same integrity.`)
+          }
+          NODE
+
+      - name: Publish to npm
+        if: steps.publication.outputs.missing == 'true'
+        env:
+          NPM_DIST_TAG: ${{ github.event.release.prerelease && 'next' || 'latest' }}
+        run: npm publish --provenance --access public --tag "$NPM_DIST_TAG"
+
   publish-tracker-js:
     name: Publish tracker-js to npm
     if: startsWith(github.event.release.tag_name, 'tracker-js@')

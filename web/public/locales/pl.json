@@ -3832,6 +3832,7 @@
     "tooltip": "Klucze API łączą Twoje skrypty, panele i integracje ze Swetrix. Wybierz, do jakich projektów i uprawnień każdy klucz ma dostęp. Odnów klucz, aby zastąpić jego sekret, lub unieważnij go, aby zablokować dostęp.",
     "description": "Nadaj każdej integracji własny klucz, tylko z uprawnieniami i projektami, których potrzebuje.",
     "projectDescription": "Klucze API, które mają dostęp do tego projektu oraz ich uprawnienia.",
+    "connectMcp": "Połącz asystenta AI z MCP",
     "create": "Utwórz klucz API",
     "manage": "Zarządzaj kluczami API",
     "retry": "Spróbuj ponownie",

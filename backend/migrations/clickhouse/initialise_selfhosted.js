@@ -1,8 +1,11 @@
 // This script initialises the Swetrix selfhosted edition database and tables if they're absent
 const { queriesRunner, dbName } = require('./setup')
 const { initialiseDatabase } = require('./initialise_database')
+const { createReceiptTable } = require('./selfhosted_2026_11_04_admin_idempotency')
 
 const CLICKHOUSE_INIT_QUERIES = [
+  createReceiptTable(dbName),
+
   `CREATE TABLE IF NOT EXISTS ${dbName}.api_key (
     id String, userId String, name String, keyHash String,
     encryptedKey String, keyPreview String, scopes String, projectIds String,

@@ -1,0 +1,158 @@
+---
+title: MCP server
+slug: /mcp
+description: "Connect an AI assistant to Swetrix to query traffic, investigate errors, and manage projects with a scoped API key."
+---
+
+Ask your AI assistant which pages bring in visitors, how traffic has changed, or where people drop out of a funnel. Your MCP client runs the Swetrix server from npm and connects to your account with a scoped API key. [@swetrix/mcp-server on npm](https://www.npmjs.com/package/@swetrix/mcp-server)
+
+## Create an API key
+
+In **Account Settings → Account → API keys**, create a key and select your projects. Grant **Project settings → Read only** so the assistant can find projects by name, and **Analytics → Read only** for traffic reports. If you already know your project ID, **Analytics → Read only** is enough for traffic reports.
+
+## Connect a local client
+
+Install Node.js 22 or newer, then choose your client. Each configuration runs `npx -y @swetrix/mcp-server`.
+
+<Tabs defaultValue="claude-code">
+<TabsList>
+  <TabsTrigger value="claude-code"><McpClientIcon client="claude-code" /> Claude Code</TabsTrigger>
+  <TabsTrigger value="claude-desktop"><McpClientIcon client="claude-desktop" /> Claude Desktop</TabsTrigger>
+  <TabsTrigger value="codex"><McpClientIcon client="codex" /> Codex</TabsTrigger>
+  <TabsTrigger value="cursor"><McpClientIcon client="cursor" /> Cursor</TabsTrigger>
+  <TabsTrigger value="vscode"><McpClientIcon client="vscode" /> VS Code</TabsTrigger>
+</TabsList>
+<TabsContent value="claude-code">
+
+With `SWETRIX_API_KEY` set in your shell, run this command to add Swetrix for your user account. Open Claude Code and run `/mcp` to check the connection.
+
+```bash
+claude mcp add --scope user swetrix --env SWETRIX_API_KEY="$SWETRIX_API_KEY" -- npx -y @swetrix/mcp-server
+```
+
+</TabsContent>
+<TabsContent value="claude-desktop">
+
+Open **Settings → Developer → Edit Config**. Add the `swetrix` entry to `claude_desktop_config.json`, replace `YOUR_SWETRIX_API_KEY` with your key, then fully quit and reopen Claude Desktop.
+
+```json
+{
+  "mcpServers": {
+    "swetrix": {
+      "command": "npx",
+      "args": ["-y", "@swetrix/mcp-server"],
+      "env": { "SWETRIX_API_KEY": "YOUR_SWETRIX_API_KEY" }
+    }
+  }
+}
+```
+
+</TabsContent>
+<TabsContent value="codex">
+
+With `SWETRIX_API_KEY` set in your shell, run this command in your terminal. Start a new Codex session and run `/mcp` to see the Swetrix tools.
+
+```bash
+codex mcp add swetrix --env SWETRIX_API_KEY="$SWETRIX_API_KEY" -- npx -y @swetrix/mcp-server
+```
+
+</TabsContent>
+<TabsContent value="cursor">
+
+Set `SWETRIX_API_KEY` in the environment that launches Cursor. Add this server to your user configuration at `~/.cursor/mcp.json`, then enable it in Cursor's MCP settings. [Cursor MCP configuration](https://cursor.com/docs/mcp)
+
+```json
+{
+  "mcpServers": {
+    "swetrix": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@swetrix/mcp-server"],
+      "env": { "SWETRIX_API_KEY": "${env:SWETRIX_API_KEY}" }
+    }
+  }
+}
+```
+
+</TabsContent>
+<TabsContent value="vscode">
+
+Open the Command Palette, run **MCP: Open User Configuration**, and add the following configuration. Start the Swetrix server and enter your key when VS Code prompts you. [VS Code MCP configuration](https://code.visualstudio.com/docs/agents/reference/mcp-configuration)
+
+```json
+{
+  "inputs": [
+    {
+      "id": "swetrix-key",
+      "type": "promptString",
+      "description": "Swetrix API key",
+      "password": true
+    }
+  ],
+  "servers": {
+    "swetrix": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@swetrix/mcp-server"],
+      "env": { "SWETRIX_API_KEY": "${input:swetrix-key}" }
+    }
+  }
+}
+```
+
+</TabsContent>
+</Tabs>
+
+The server queries Swetrix Cloud by default. For Community Edition, also set `SWETRIX_API_URL` in the server environment to your instance's API base URL, for example `https://analytics.example.com/api` if your proxy serves the API under `/api`. The server adds the API version and route.
+
+## Ask for a report
+
+- “List my projects and find the project ID for Bakery.”
+- “For project AbC123xYz789, which five pages received the most pageviews in the last seven days?”
+- “Which JavaScript errors occurred most often in that project over the same period?”
+- “Show the drop-off from the home page to the pricing page to the signup event over the last four weeks.”
+
+Give the assistant your reporting timezone when the day boundary matters. For a comparison, specify the two periods and the metric to compare. The Stats API reference lists the dimensions, metrics and filters by report type. [Statistics API v2](/statistics-api-v2)
+
+### Available tools
+
+Add read access to **Events**, **Errors**, or **Funnels** for those reports. Discovering error dimensions requires both **Analytics** and **Errors**. Filtering by custom events or event metadata requires **Events**. [API key permissions](/settings/api-keys)
+
+| Task                                                | Tools                                                                                             |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Discover metrics, dimensions and filter values      | `get_stats_schema`, `get_dimension_values`                                                        |
+| Query totals, trends, breakdowns or current traffic | `get_stats_summary`, `get_stats_timeseries`, `get_stats_breakdown`, `get_live_visitors`           |
+| Investigate custom events                           | `list_custom_events`, `get_custom_event_timeseries`, `get_custom_event_metadata`                  |
+| Analyse funnels and errors                          | `get_funnel`, `list_errors`                                                                       |
+| Find projects and saved configuration               | `list_projects`, `get_project`, `list_funnels`, `list_goals`, `list_segments`, `list_annotations` |
+| Create projects, funnels and annotations (opt-in)   | `create_project`, `create_funnel`, `create_annotation`                                            |
+
+## Host an endpoint for a team
+
+To share a server with your team, launch the npm package in Streamable HTTP mode.
+
+```bash
+npx -y @swetrix/mcp-server --http
+```
+
+This serves `http://127.0.0.1:3100/mcp`. Set `SWETRIX_MCP_HOST` or `SWETRIX_MCP_PORT` to change the listening address or port. For remote access, put a TLS reverse proxy in front of the process, preserve the public `Host` header and forward requests to `/mcp`. Set `SWETRIX_MCP_ALLOWED_HOSTS=mcp.example.com` on the server using your public hostname. The server checks request hosts and browser origins against this list. For multiple hosts, separate the hostnames with commas and omit schemes and ports.
+
+Configure each client with your endpoint URL and an `Authorization: Bearer <Swetrix API key>` header on every request. HTTP connections require a scoped key starting with `swx_` and a client that supports custom headers. Choose a server operator you trust with the key and a client you trust with the returned analytics. Each user supplies their own key. Clients can discover the tool names and inputs, and Swetrix checks the caller's permissions and rate limits when a tool calls the API.
+
+For example, keep the `inputs` entry from the VS Code tab above and replace the `swetrix` server entry with this one, using your own hostname.
+
+```json
+{
+  "type": "http",
+  "url": "https://mcp.example.com/mcp",
+  "headers": { "Authorization": "Bearer ${input:swetrix-key}" }
+}
+```
+
+## Enable changes
+
+The default tool list is read-only. To allow changes, set `SWETRIX_MCP_ENABLE_WRITES=true` in the MCP server environment and restart the process. This setting affects every client of that process. Swetrix still checks each caller's key before applying a change. For example, to create an annotation, grant **Annotations → Read & write** for the target project. To create a project, grant **Project settings → Read & write** and select **All projects**.
+
+Each create tool requires an `idempotencyKey`. Generate a fresh UUID for each intended creation and keep it with the tool arguments. If the response is lost, retry with the same arguments and key within 24 hours. Use a new key for a second, intentional creation, even if the arguments are identical. Self-hosted installations need the backend update and receipt table before enabling writes. Older APIs ignore the header. [Admin API retry behavior](/admin-api#retrying-a-create-request)
+
+If a tool call returns `401`, check that the key is current and belongs to the configured Swetrix instance. For `403`, check the key's project selection and permission groups. A `429` response means the account has reached its API rate limit.

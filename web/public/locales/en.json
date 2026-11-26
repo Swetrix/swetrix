@@ -3822,6 +3822,7 @@
     "tooltip": "API keys connect your scripts, dashboards, and integrations to Swetrix. Choose which projects and permissions each key can access. Rotate a key to replace its secret, or revoke it to stop access.",
     "description": "Give each integration its own key, with only the permissions and projects it needs.",
     "projectDescription": "API keys that can access this project, and the permissions they have.",
+    "connectMcp": "Connect an AI assistant with MCP",
     "create": "Create API key",
     "manage": "Manage API keys",
     "retry": "Try again",
