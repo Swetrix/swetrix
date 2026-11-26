@@ -289,8 +289,9 @@ const initialiseSelfhosted = async () => {
     await queriesRunner(CLICKHOUSE_INIT_QUERIES)
   } catch (reason) {
     console.error(
-      `[ERROR] Error occured whilst initialising the database: ${reason}`,
+      `[ERROR] Error occurred whilst initialising the database: ${reason}`,
     )
+    process.exitCode = 1
   }
 }
 

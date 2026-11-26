@@ -7,7 +7,11 @@ import { GoalService } from './goal.service'
 import { GoalController } from './goal.controller'
 
 @Module({
-  imports: [ProjectModule, AppLoggerModule, forwardRef(() => AnalyticsModule)],
+  imports: [
+    forwardRef(() => ProjectModule),
+    AppLoggerModule,
+    forwardRef(() => AnalyticsModule),
+  ],
   providers: [GoalService],
   exports: [GoalService],
   controllers: [GoalController],

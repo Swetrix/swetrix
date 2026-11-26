@@ -91,6 +91,9 @@ jobs:
       - name: Backend TypeScript Validation
         run: npm run lint:tsc
         working-directory: backend
+      - name: Community Edition Startup Regression Tests
+        run: npm run test:community-startup
+        working-directory: backend
       - name: Backend Knip Validation
         run: npm run knip
         working-directory: backend
@@ -121,6 +124,9 @@ jobs:
         working-directory: web
       - name: Web TypeScript Validation
         run: npm run typecheck
+        working-directory: web
+      - name: Frontend Startup Regression Tests
+        run: node --test scripts/tests/start.test.mjs
         working-directory: web
       - name: Web Knip Validation
         run: npm run knip

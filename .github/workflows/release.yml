@@ -34,6 +34,8 @@ jobs:
           context: ./backend
           file: ./backend/Dockerfile
           platforms: linux/amd64,linux/arm64
+          pull: true
+          no-cache: true
           push: true
           tags: ${{ steps.meta_backend.outputs.tags }}
           labels: ${{ steps.meta_backend.outputs.labels }}
