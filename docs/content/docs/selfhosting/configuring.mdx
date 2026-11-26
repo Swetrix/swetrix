@@ -113,7 +113,7 @@ Swetrix Community Edition also supports OIDC authentication. To enable it, you n
 | Variable             | Default          | Description                                                                                                                       |
 | -------------------- | ---------------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | `OIDC_ENABLED`       | `false`          | Must be set to `true` to enable OIDC authentication.                                                                              |
-| `OIDC_ONLY_AUTH`     | `false`          | If set to `true` - Swetrix will only allow users to authenticate via OIDC (i.e. regular login / registration form will not work). |
+| `OIDC_ONLY_AUTH`     | `false`          | Set to `true` with `OIDC_ENABLED=true` to hide the password forms and require OIDC for sign-in and registration.                  |
 | `OIDC_DISCOVERY_URL` |                  | URL of the OIDC discovery endpoint, for example `https://example.com/.well-known/openid-configuration`                            |
 | `OIDC_CLIENT_ID`     |                  | OIDC client ID                                                                                                                    |
 | `OIDC_CLIENT_SECRET` |                  | OIDC client secret                                                                                                                |
