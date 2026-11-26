@@ -1,6 +1,9 @@
 FROM mcr.microsoft.com/playwright:v1.60.0-noble AS base
 RUN apt-get update && \
     apt-get install -y --no-install-recommends nodejs=24.22.2-1nodesource1 && \
+    apt-mark hold nodejs && \
+    DEBIAN_FRONTEND=noninteractive apt-get upgrade -y --with-new-pkgs --no-install-recommends && \
+    apt-mark unhold nodejs && \
     rm -rf /var/lib/apt/lists/*
 
 #Stage 1: Build
