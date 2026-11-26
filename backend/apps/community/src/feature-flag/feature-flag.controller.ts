@@ -412,19 +412,6 @@ export class FeatureFlagController {
     if (ip) {
       await checkRateLimit(ip, 'feature-flag-evaluate-ip', 600, 60)
     }
-    const botResult = await this.analyticsService.checkBot(
-      evaluateDto.pid,
-      userAgent,
-      headers,
-      ip,
-      headers.referer || headers.referrer,
-      null,
-      'feature_flag',
-    )
-
-    if (botResult.isBot) {
-      return { flags: {} }
-    }
 
     await checkRateLimit(
       evaluateDto.pid,

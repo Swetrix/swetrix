@@ -328,6 +328,8 @@ Make sure to pass your website visitors IP address and User Agent instead of the
 
 Feature flags allow you to control feature rollouts to your users. You can evaluate flags server-side based on user context.
 
+For backend-only flags such as service kill switches, pass your service's own User-Agent (for example, `myapp/1.0`). When a flag targets a visitor's browser, device, or location, forward the visitor's User-Agent and IP address.
+
 ### Getting all feature flags
 
 ```javascript

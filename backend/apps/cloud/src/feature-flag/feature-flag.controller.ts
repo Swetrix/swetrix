@@ -493,20 +493,6 @@ export class FeatureFlagController {
       60,
     )
 
-    const botResult = await this.analyticsService.checkBot(
-      evaluateDto.pid,
-      userAgent,
-      headers,
-      ip,
-      headers.referer || headers.referrer,
-      null,
-      'feature_flag',
-    )
-
-    if (botResult.isBot) {
-      return { flags: {} }
-    }
-
     let project
     try {
       project = await this.projectService.getRedisProject(evaluateDto.pid)
