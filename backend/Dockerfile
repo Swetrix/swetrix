@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/playwright:v1.60.0-noble AS base
+FROM mcr.microsoft.com/playwright:v1.61.1-noble AS base
 RUN apt-get update && \
     apt-get install -y --no-install-recommends nodejs=24.22.2-1nodesource1 && \
     apt-mark hold nodejs && \
