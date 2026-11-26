@@ -1,49 +1,61 @@
-# Swetrix MCP server
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://swetrix.com/assets/logo_white.png?v=2">
+  <img alt="" src="https://swetrix.com/assets/logo_blue.png?v=2" height="80">
+</picture>
 
-Connect an MCP client to the Swetrix Statistics API v2 and Admin API. Ask for traffic reports, custom events, funnels and errors, or discover projects and their configuration.
+# `@swetrix/mcp-server` - Swetrix MCP server
 
-## Run from this directory
+Ask your AI assistant questions about your Swetrix analytics. The server connects a Model Context Protocol (MCP) client to Swetrix Cloud or Community Edition so you can explore traffic, custom events, funnels and errors in a chat.
 
-Use Node.js 22 or newer and run `npm ci`.
+## Quick start
 
-- **Local (stdio)**. Configure your client to launch `node` with the absolute path to `src/cli.js`. Pass a scoped Swetrix API key in the server's `SWETRIX_API_KEY` environment variable.
-- **Streamable HTTP**. Run `node src/cli.js --http` to listen at `http://127.0.0.1:3100/mcp`. Each client sends its own scoped `swx_` key in the `Authorization: Bearer <Swetrix API key>` header. For remote connections, terminate TLS at a reverse proxy, preserve the public host header and set `SWETRIX_MCP_ALLOWED_HOSTS` to your public hostname.
+You'll need Node.js 22 or newer and a Swetrix API key.
 
-By default the server queries `https://api.swetrix.com`. Set `SWETRIX_API_URL` to query your own Swetrix instance. Set `SWETRIX_MCP_HOST` and `SWETRIX_MCP_PORT` to change the HTTP listening address and port.
+1. In Swetrix, open **Account Settings → Account → API keys** and create a key for the projects you want to explore.
+2. Grant **Analytics → Read only** for traffic reports and **Project settings → Read only** to find projects by name.
+3. In VS Code, run **MCP: Open User Configuration** from the Command Palette and add the configuration below. Start the Swetrix server and enter your API key when prompted. VS Code uses `npx` to install and launch the package.
 
-Start with **Analytics → Read only** on a selected project and ask for its top pages by project ID. Add **Project settings → Read only** to discover projects by name. To expose write tools, set `SWETRIX_MCP_ENABLE_WRITES=true` on the server and give the key the corresponding write permission.
-
-Write tools require an API version that supports `Idempotency-Key`. Pass a unique `idempotencyKey` for each intended creation, such as a random UUID. Retry with the same arguments and key within 24 hours if the result is uncertain.
-
-For client configuration examples, permissions and troubleshooting, see the [MCP setup guide](https://swetrix.com/docs/mcp).
-
-## Publishing to npm
-
-**First publication.** From the commit you want to release, run these commands in `packages/mcp-server`. Sign in with an npm account that can publish under `@swetrix` and complete the two-factor prompt. [npm scoped package publishing](https://docs.npmjs.com/creating-and-publishing-scoped-public-packages/)
-
-```sh
-npm ci
-npm test
-npm pack --dry-run
-npm login
-npm publish --access public
+```json
+{
+  "inputs": [
+    {
+      "id": "swetrix-key",
+      "type": "promptString",
+      "description": "Swetrix API key",
+      "password": true
+    }
+  ],
+  "servers": {
+    "swetrix": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@swetrix/mcp-server"],
+      "env": { "SWETRIX_API_KEY": "${input:swetrix-key}" }
+    }
+  }
+}
 ```
 
-Once that commit is on GitHub, you can record the first release from the same checkout. For version `0.1.0`, run the following command. The workflow checks the published tarball's integrity against the tagged source and skips the upload when they match.
+For another MCP client that supports local servers, use `npx -y @swetrix/mcp-server` as the launch command and pass your key through the `SWETRIX_API_KEY` environment variable.
 
-```sh
-gh release create mcp-server@0.1.0 --target "$(git rev-parse HEAD)" --title "MCP server 0.1.0" --generate-notes --latest=false
-```
+## Usage
 
-**One-time GitHub setup.** When the next version is ready, open the npm package settings and add a GitHub Actions trusted publisher for owner `Swetrix`, repository `swetrix`, and workflow `tracker-release.yml`. Leave the environment field empty and enable **Allow npm publish**. npm requires the first automated publish within two days of configuring trust. The workflow uses Node 24 LTS on a GitHub-hosted runner to satisfy npm's minimums of Node 22.14.0 and npm CLI 11.5.1. [npm trusted publishing](https://docs.npmjs.com/trusted-publishers/)
+Start with “List my Swetrix projects.” Then pick a project and ask:
 
-**Release a new version.**
+- “Which five pages had the most pageviews last week?”
+- “How many visitors did we have each day this month?”
+- “Which countries sent the most visitors to our pricing page?”
 
-1. Run `npm version patch --no-git-tag-version` in `packages/mcp-server` for a patch release. Commit the updated `package.json` and `package-lock.json` and merge them into `main`.
-2. Publish a GitHub Release with tag `mcp-server@<version>` matching the manifest. For example, after bumping from `0.1.0` to `0.1.1`, run the following command.
+For questions about custom events, saved funnels or JavaScript errors, grant read access to **Events**, **Funnels** or **Errors** respectively. [API key permissions](https://swetrix.com/docs/settings/api-keys)
 
-```sh
-gh release create mcp-server@0.1.1 --target main --title "MCP server 0.1.1" --generate-notes --latest=false
-```
+## Configuration
 
-Publishing the GitHub Release triggers the tests and npm publication. The workflow uses the npm tag `latest` for regular releases and `next` for GitHub prereleases. Community Edition Docker releases use the separate `v` prefix.
+**Self-hosted Swetrix.** The server uses Swetrix Cloud by default. For Community Edition, add `SWETRIX_API_URL` to the server environment and set it to your API base URL, for example `https://analytics.example.com/api` if your reverse proxy serves the API under `/api`. The server adds the API version to each request.
+
+**Write access.** The default tools are read-only. To let your assistant create projects, funnels or annotations, set `SWETRIX_MCP_ENABLE_WRITES=true`, grant the corresponding write permission on the key, and restart the MCP server. Each create tool takes an `idempotencyKey`. Use a new UUID for each creation and reuse it with the same arguments if you retry within 24 hours.
+
+**Streamable HTTP.** Run `npx -y @swetrix/mcp-server --http` to serve MCP at `http://127.0.0.1:3100/mcp`. Each client sends its own scoped Swetrix API key in the `Authorization: Bearer <key>` header. For a shared HTTPS endpoint, follow the reverse proxy setup in the [MCP guide](https://swetrix.com/docs/mcp#host-an-endpoint-for-a-team).
+
+## License
+
+[MIT License](https://github.com/Swetrix/swetrix/blob/main/packages/mcp-server/LICENSE).
