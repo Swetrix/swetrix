@@ -35,44 +35,20 @@ async function checkStartup() {
     )
     module._compile(outputText, filename)
   }
-  const stubs = {
-    ioredis: `
-      const { EventEmitter } = require('node:events')
-      module.exports = class Redis extends EventEmitter {
-        defineCommand() {}
-      }
-    `,
-    bullmq: `
-      const { EventEmitter } = require('node:events')
-      class Queue extends EventEmitter {
-        constructor(name, opts) { super(); this.name = name; this.opts = opts }
-        async close() {}
-      }
-      exports.Queue = Queue
-      exports.Worker = class Worker extends Queue {}
-      exports.QueueEvents = class QueueEvents extends Queue {}
-      exports.FlowProducer = class FlowProducer extends Queue {}
-    `,
-  }
   registerHooks({
     resolve(specifier, context, nextResolve) {
-      if (specifier.startsWith('swetrix-test:')) {
-        return { url: specifier, shortCircuit: true }
-      }
-      if (Object.hasOwn(stubs, specifier)) {
-        return { url: `swetrix-test:${specifier}`, shortCircuit: true }
+      if (specifier === 'bullmq' || specifier === 'ioredis') {
+        return nextResolve(
+          path.join(
+            __dirname,
+            'fixtures',
+            'community-startup',
+            `${specifier}.cjs`,
+          ),
+          context,
+        )
       }
       return nextResolve(specifier, context)
-    },
-    load(url, context, nextLoad) {
-      if (url.startsWith('swetrix-test:')) {
-        return {
-          format: 'commonjs',
-          source: stubs[url.slice('swetrix-test:'.length)],
-          shortCircuit: true,
-        }
-      }
-      return nextLoad(url, context)
     },
   })
 
