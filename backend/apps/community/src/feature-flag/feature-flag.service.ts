@@ -125,6 +125,16 @@ export class FeatureFlagService {
       result.killSwitchValue = flag.killSwitchValue ? 1 : 0
     }
 
+    if (flag.killedAt != null) {
+      result.killedAt = dayjs.utc(flag.killedAt).format('YYYY-MM-DD HH:mm:ss')
+    }
+
+    if (flag.targetingUpdatedAt != null) {
+      result.targetingUpdatedAt = dayjs
+        .utc(flag.targetingUpdatedAt)
+        .format('YYYY-MM-DD HH:mm:ss')
+    }
+
     return result
   }
 
@@ -433,7 +443,7 @@ export class FeatureFlagService {
         col === 'targetingUpdatedAt' ||
         col === 'updated'
       ) {
-        return `${col}={${col}:DateTime}`
+        return `${col}={${col}:DateTime('UTC')}`
       }
 
       return `${col}={${col}:String}`
