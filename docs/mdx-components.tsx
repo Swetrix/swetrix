@@ -3,6 +3,7 @@ import { Callout } from "fumadocs-ui/components/callout";
 import { Step, Steps } from "fumadocs-ui/components/steps";
 import { Tab, Tabs, TabsList, TabsTrigger, TabsContent } from "fumadocs-ui/components/tabs";
 import {
+  McpClientIcon,
   GoogleAnalyticsIcon,
   UmamiIcon,
   SimpleAnalyticsIcon,
@@ -39,6 +40,7 @@ export function getMDXComponents(components?: MDXComponents): MDXComponents {
     TabsList,
     TabsTrigger,
     TabsContent,
+    McpClientIcon,
     GoogleAnalyticsIcon,
     UmamiIcon,
     SimpleAnalyticsIcon,
