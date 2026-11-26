@@ -110,14 +110,14 @@ If any of these are unset, Google Analytics import requests fail with a "not con
 
 Swetrix Community Edition also supports OIDC authentication. To enable it, you need to set the following variables:
 
-| Variable             | Default          | Description                                                                                                                       |
-| -------------------- | ---------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `OIDC_ENABLED`       | `false`          | Must be set to `true` to enable OIDC authentication.                                                                              |
-| `OIDC_ONLY_AUTH`     | `false`          | Set to `true` with `OIDC_ENABLED=true` to hide the password forms and require OIDC for sign-in and registration.                  |
-| `OIDC_DISCOVERY_URL` |                  | URL of the OIDC discovery endpoint, for example `https://example.com/.well-known/openid-configuration`                            |
-| `OIDC_CLIENT_ID`     |                  | OIDC client ID                                                                                                                    |
-| `OIDC_CLIENT_SECRET` |                  | OIDC client secret                                                                                                                |
-| `OIDC_PROMPT`        | `select_account` | OIDC prompt                                                                                                                       |
+| Variable             | Default          | Description                                                                                                      |
+| -------------------- | ---------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `OIDC_ENABLED`       | `false`          | Must be set to `true` to enable OIDC authentication.                                                             |
+| `OIDC_ONLY_AUTH`     | `false`          | Set to `true` with `OIDC_ENABLED=true` to hide the password forms and require OIDC for sign-in and registration. |
+| `OIDC_DISCOVERY_URL` |                  | URL of the OIDC discovery endpoint, for example `https://example.com/.well-known/openid-configuration`           |
+| `OIDC_CLIENT_ID`     |                  | OIDC client ID                                                                                                   |
+| `OIDC_CLIENT_SECRET` |                  | OIDC client secret                                                                                               |
+| `OIDC_PROMPT`        | `select_account` | OIDC prompt                                                                                                      |
 
 When configuring your OIDC provider, use `BASE_URL/socialised` (e.g. `https://analytics.example.com/socialised`) as the redirect URI.
 
