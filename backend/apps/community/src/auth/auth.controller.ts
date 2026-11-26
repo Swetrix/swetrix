@@ -71,6 +71,13 @@ export class AuthController {
     private readonly mailerService: MailerService,
   ) {}
 
+  @ApiOperation({ summary: 'Get the instance authentication settings' })
+  @Public()
+  @Get('config')
+  getAuthConfig() {
+    return { oidcOnlyAuth: OIDC_ONLY_AUTH }
+  }
+
   @ApiOperation({ summary: 'Register a new user' })
   @ApiCreatedResponse({
     description: 'User registered',

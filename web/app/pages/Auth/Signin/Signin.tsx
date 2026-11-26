@@ -43,7 +43,7 @@ interface LinkingData {
   isTwoFactorAuthenticationEnabled: boolean
 }
 
-const Signin = () => {
+const Signin = ({ oidcOnlyAuth }: { oidcOnlyAuth: boolean }) => {
   const navigate = useNavigate()
   const navigation = useNavigation()
   const actionData = useActionData<LoginActionData>()
@@ -343,6 +343,25 @@ const Signin = () => {
     return provider
   }
 
+  const sessionPreference = (
+    <div className='flex items-center justify-between'>
+      <Checkbox
+        checked={dontRemember}
+        onChange={setDontRemember}
+        disabled={isLoading}
+        label={
+          <span className='flex items-center gap-1'>
+            <Text size='sm'>{t('auth.common.noRemember')}</Text>
+            <Tooltip
+              text={t('auth.common.noRememberHint')}
+              className='relative'
+            />
+          </span>
+        }
+      />
+    </div>
+  )
+
   return (
     <div className='flex min-h-min-footer bg-gray-50 dark:bg-slate-950'>
       <div className='flex w-full flex-col justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:w-3/5 lg:px-12 xl:px-24 dark:bg-slate-950'>
@@ -491,9 +510,11 @@ const Signin = () => {
                 >
                   {t('auth.signin.title')}
                 </Text>
-                <Text as='p' colour='secondary' className='mt-2'>
-                  {t('auth.signin.welcomeBack')}
-                </Text>
+                {!oidcOnlyAuth && (
+                  <Text as='p' colour='secondary' className='mt-2'>
+                    {t('auth.signin.welcomeBack')}
+                  </Text>
+                )}
               </div>
 
               <div
@@ -525,94 +546,89 @@ const Signin = () => {
                 )}
               </div>
 
-              <div className='relative my-6'>
-                <div
-                  className='absolute inset-0 flex items-center'
-                  aria-hidden='true'
-                >
-                  <div className='w-full border-t border-gray-200 dark:border-gray-700' />
-                </div>
-                <div className='relative flex justify-center text-sm'>
-                  <Text
-                    as='span'
-                    colour='secondary'
-                    size='sm'
-                    className='inline-flex items-center gap-2 bg-gray-50 px-4 dark:bg-slate-950'
-                  >
-                    {t('auth.common.orContinueWith')} email
-                    {lastAuthMethod === 'email' ? <AuthLastUsedBadge /> : null}
-                  </Text>
-                </div>
-              </div>
-
-              <Form
-                method='post'
-                className='space-y-4'
-                onSubmit={handleFormSubmit}
-              >
-                <Input
-                  name='email'
-                  type='email'
-                  autoComplete='email'
-                  label={t('auth.common.email')}
-                  error={getFieldError('email')}
-                  placeholder='name@company.com'
-                  disabled={isLoading}
-                  onChange={() => clearFieldError('email')}
-                />
-                <Input
-                  name='password'
-                  type='password'
-                  autoComplete='current-password'
-                  label={t('auth.common.password')}
-                  labelCorner={
-                    <Link
-                      to={routes.reset_password}
-                      className='text-sm font-medium text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-300'
-                      tabIndex={-1}
+              {oidcOnlyAuth ? (
+                <div className='mt-4'>{sessionPreference}</div>
+              ) : (
+                <>
+                  <div className='relative my-6'>
+                    <div
+                      className='absolute inset-0 flex items-center'
+                      aria-hidden='true'
                     >
-                      {t('auth.signin.forgot')}
-                    </Link>
-                  }
-                  hint={t('auth.common.hint', { amount: MIN_PASSWORD_CHARS })}
-                  error={getFieldError('password')}
-                  disabled={isLoading}
-                  onChange={() => clearFieldError('password')}
-                />
+                      <div className='w-full border-t border-gray-200 dark:border-gray-700' />
+                    </div>
+                    <div className='relative flex justify-center text-sm'>
+                      <Text
+                        as='span'
+                        colour='secondary'
+                        size='sm'
+                        className='inline-flex items-center gap-2 bg-gray-50 px-4 dark:bg-slate-950'
+                      >
+                        {t('auth.common.orContinueWith')} email
+                        {lastAuthMethod === 'email' ? (
+                          <AuthLastUsedBadge />
+                        ) : null}
+                      </Text>
+                    </div>
+                  </div>
 
-                {/* Hidden input for form submission since Headless UI Checkbox doesn't submit natively */}
-                <input
-                  type='hidden'
-                  name='dontRemember'
-                  value={dontRemember ? 'true' : 'false'}
-                />
+                  <Form
+                    method='post'
+                    className='space-y-4'
+                    onSubmit={handleFormSubmit}
+                  >
+                    <Input
+                      name='email'
+                      type='email'
+                      autoComplete='email'
+                      label={t('auth.common.email')}
+                      error={getFieldError('email')}
+                      placeholder='name@company.com'
+                      disabled={isLoading}
+                      onChange={() => clearFieldError('email')}
+                    />
+                    <Input
+                      name='password'
+                      type='password'
+                      autoComplete='current-password'
+                      label={t('auth.common.password')}
+                      labelCorner={
+                        <Link
+                          to={routes.reset_password}
+                          className='text-sm font-medium text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-300'
+                          tabIndex={-1}
+                        >
+                          {t('auth.signin.forgot')}
+                        </Link>
+                      }
+                      hint={t('auth.common.hint', {
+                        amount: MIN_PASSWORD_CHARS,
+                      })}
+                      error={getFieldError('password')}
+                      disabled={isLoading}
+                      onChange={() => clearFieldError('password')}
+                    />
 
-                <div className='flex items-center justify-between'>
-                  <Checkbox
-                    checked={dontRemember}
-                    onChange={setDontRemember}
-                    disabled={isLoading}
-                    label={
-                      <span className='flex items-center gap-1'>
-                        <Text size='sm'>{t('auth.common.noRemember')}</Text>
-                        <Tooltip
-                          text={t('auth.common.noRememberHint')}
-                          className='relative'
-                        />
-                      </span>
-                    }
-                  />
-                </div>
+                    {/* Hidden input for form submission since Headless UI Checkbox doesn't submit natively */}
+                    <input
+                      type='hidden'
+                      name='dontRemember'
+                      value={dontRemember ? 'true' : 'false'}
+                    />
 
-                <Button
-                  size='xl'
-                  className='mt-6 w-full justify-center'
-                  type='submit'
-                  loading={isFormSubmitting}
-                >
-                  {t('auth.signin.button')}
-                </Button>
-              </Form>
+                    {sessionPreference}
+
+                    <Button
+                      size='xl'
+                      className='mt-6 w-full justify-center'
+                      type='submit'
+                      loading={isFormSubmitting}
+                    >
+                      {t('auth.signin.button')}
+                    </Button>
+                  </Form>
+                </>
+              )}
 
               {/* Sign up link */}
               {!isSelfhosted ? (

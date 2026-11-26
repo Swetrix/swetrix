@@ -5,9 +5,14 @@ import type {
   LoaderFunctionArgs,
   MetaFunction,
 } from 'react-router'
-import { redirect, data } from 'react-router'
+import { redirect, data, useLoaderData } from 'react-router'
 
-import { getAuthenticatedUser, loginUser, serverFetch } from '~/api/api.server'
+import {
+  getAuthenticatedUser,
+  getOidcOnlyAuth,
+  loginUser,
+  serverFetch,
+} from '~/api/api.server'
 import { getOgImageUrl } from '~/lib/constants'
 import Signin from '~/pages/Auth/Signin'
 import { decidePostAuthRedirect } from '~/utils/auth'
@@ -44,7 +49,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return redirect(decidePostAuthRedirect(authResult.user.user))
   }
 
-  return null
+  return { oidcOnlyAuth: await getOidcOnlyAuth(request) }
 }
 
 export interface LoginActionData {
@@ -170,5 +175,6 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function SigninRoute() {
-  return <Signin />
+  const { oidcOnlyAuth } = useLoaderData<typeof loader>()
+  return <Signin oidcOnlyAuth={oidcOnlyAuth} />
 }

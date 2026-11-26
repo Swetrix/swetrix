@@ -8,7 +8,11 @@ import type {
 import { redirect, data, useLoaderData } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 
-import { getAuthenticatedUser, registerUser } from '~/api/api.server'
+import {
+  getAuthenticatedUser,
+  getOidcOnlyAuth,
+  registerUser,
+} from '~/api/api.server'
 import {
   getOgImageUrl,
   isSelfhosted,
@@ -92,7 +96,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return redirect(selfPath(url), headers)
   }
 
-  return { site: readOnboardingSite(request) }
+  return {
+    site: readOnboardingSite(request),
+    oidcOnlyAuth: await getOidcOnlyAuth(request),
+  }
 }
 
 export interface SignupActionData {
@@ -154,7 +161,7 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function SignupPage() {
-  const loaderData = useLoaderData<typeof loader>()
+  const { site, oidcOnlyAuth } = useLoaderData<typeof loader>()
 
-  return <Signup site={loaderData?.site ?? null} />
+  return <Signup site={site} oidcOnlyAuth={oidcOnlyAuth} />
 }

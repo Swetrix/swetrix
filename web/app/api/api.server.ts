@@ -9,7 +9,7 @@ import {
   AuthTokens,
   isPersistentSession,
 } from '~/utils/session.server'
-import { API_URL } from '~/lib/constants'
+import { API_URL, isSelfhosted } from '~/lib/constants'
 import type { V2Filter } from '~/api/v2/types'
 
 // ============================================================================
@@ -395,6 +395,18 @@ export async function getAuthenticatedUser(
   }
 
   return { user: result.data, cookies: result.cookies }
+}
+
+export async function getOidcOnlyAuth(request: Request): Promise<boolean> {
+  if (!isSelfhosted) return false
+
+  const { data } = await serverFetch<{ oidcOnlyAuth: boolean }>(
+    request,
+    'v1/auth/config',
+    { skipAuth: true, timeoutMs: 3000 },
+  )
+
+  return data?.oidcOnlyAuth === true
 }
 
 export async function loginUser(

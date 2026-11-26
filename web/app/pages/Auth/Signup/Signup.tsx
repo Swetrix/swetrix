@@ -79,11 +79,12 @@ const SiteChip = ({
 )
 
 interface SignupProps {
+  oidcOnlyAuth: boolean
   /** The website typed on the landing hero, if the visitor came in that way. */
   site?: string | null
 }
 
-const Signup = ({ site = null }: SignupProps) => {
+const Signup = ({ site = null, oidcOnlyAuth }: SignupProps) => {
   const { t, i18n } = useTranslation('common')
   const { theme } = useTheme()
   const navigate = useNavigate()
@@ -321,146 +322,160 @@ const Signup = ({ site = null }: SignupProps) => {
             )}
           </div>
 
-          <div className='relative my-6'>
-            <div
-              className='absolute inset-0 flex items-center'
-              aria-hidden='true'
-            >
-              <div className='w-full border-t border-gray-200 dark:border-gray-700' />
-            </div>
-            <div className='relative flex justify-center text-sm'>
-              <Text
-                as='span'
-                colour='secondary'
-                size='sm'
-                className='inline-flex items-center gap-2 bg-gray-50 px-4 dark:bg-slate-950'
-              >
-                {t('auth.common.orContinueWith')} email
-                {lastAuthMethod === 'email' ? <AuthLastUsedBadge /> : null}
-              </Text>
-            </div>
-          </div>
-
-          <Form method='post' className='space-y-4' onSubmit={handleFormSubmit}>
-            <Input
-              name='email'
-              type='email'
-              autoComplete='email'
-              label={t('auth.common.email')}
-              error={getFieldError('email')}
-              placeholder='name@company.com'
-              disabled={isLoading}
-              onChange={() => clearFieldError('email')}
-            />
-            <div className='space-y-2'>
-              <Input
-                name='password'
-                type='password'
-                autoComplete='new-password'
-                label={t('auth.common.password')}
-                hint={t('auth.common.hint', { amount: MIN_PASSWORD_CHARS })}
-                error={getFieldError('password')}
-                disabled={isLoading}
-                value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value)
-                  clearFieldError('password')
-                }}
-              />
-              <PasswordStrength password={password} />
-            </div>
-            {/* Hidden fields for checkbox values since Headless UI Checkbox doesn't submit natively */}
-            <input type='hidden' name='tos' value={tos ? 'true' : 'false'} />
-            <input
-              type='hidden'
-              name='checkIfLeaked'
-              value={checkIfLeaked ? 'true' : 'false'}
-            />
-
-            {isSelfhosted ? null : (
-              <Checkbox
-                checked={tos}
-                onChange={(checked) => {
-                  setTos(checked)
-                  clearFieldError('tos')
-                }}
-                disabled={isLoading}
-                label={
-                  <Text as='span' size='sm'>
-                    <Trans
-                      t={t}
-                      i18nKey='auth.signup.tos'
-                      components={{
-                        tos: (
-                          <Link
-                            to={routes.terms}
-                            className='font-medium text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-300'
-                            aria-label={t('footer.tos')}
-                          />
-                        ),
-
-                        pp: (
-                          <Link
-                            to={routes.privacy}
-                            className='font-medium text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-300'
-                            aria-label={t('footer.pp')}
-                          />
-                        ),
-                      }}
-                    />
+          {!oidcOnlyAuth && (
+            <>
+              <div className='relative my-6'>
+                <div
+                  className='absolute inset-0 flex items-center'
+                  aria-hidden='true'
+                >
+                  <div className='w-full border-t border-gray-200 dark:border-gray-700' />
+                </div>
+                <div className='relative flex justify-center text-sm'>
+                  <Text
+                    as='span'
+                    colour='secondary'
+                    size='sm'
+                    className='inline-flex items-center gap-2 bg-gray-50 px-4 dark:bg-slate-950'
+                  >
+                    {t('auth.common.orContinueWith')} email
+                    {lastAuthMethod === 'email' ? <AuthLastUsedBadge /> : null}
                   </Text>
-                }
-                classes={{
-                  hint: '!text-red-600 dark:!text-red-500',
-                }}
-                hint={getFieldError('tos')}
-              />
-            )}
+                </div>
+              </div>
 
-            <div className='flex items-center'>
-              <Checkbox
-                checked={checkIfLeaked}
-                onChange={setCheckIfLeaked}
-                disabled={isLoading}
-                label={
-                  <Text size='sm'>{t('auth.common.checkLeakedPassword')}</Text>
-                }
-              />
-              <Tooltip
-                className='ml-2'
-                text={
-                  <Trans
-                    t={t}
-                    i18nKey='auth.common.checkLeakedPasswordDesc'
-                    components={{
-                      db: (
-                        <a
-                          href={HAVE_I_BEEN_PWNED_URL}
-                          aria-label={t('ariaLabels.openHaveIBeenPwned')}
-                          className='font-medium underline decoration-dashed hover:decoration-solid'
-                          target='_blank'
-                          rel='noreferrer noopener'
-                        />
-                      ),
-                    }}
-                    values={{
-                      database: 'haveibeenpwned.com',
+              <Form
+                method='post'
+                className='space-y-4'
+                onSubmit={handleFormSubmit}
+              >
+                <Input
+                  name='email'
+                  type='email'
+                  autoComplete='email'
+                  label={t('auth.common.email')}
+                  error={getFieldError('email')}
+                  placeholder='name@company.com'
+                  disabled={isLoading}
+                  onChange={() => clearFieldError('email')}
+                />
+                <div className='space-y-2'>
+                  <Input
+                    name='password'
+                    type='password'
+                    autoComplete='new-password'
+                    label={t('auth.common.password')}
+                    hint={t('auth.common.hint', { amount: MIN_PASSWORD_CHARS })}
+                    error={getFieldError('password')}
+                    disabled={isLoading}
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value)
+                      clearFieldError('password')
                     }}
                   />
-                }
-              />
-            </div>
+                  <PasswordStrength password={password} />
+                </div>
+                {/* Hidden fields for checkbox values since Headless UI Checkbox doesn't submit natively */}
+                <input
+                  type='hidden'
+                  name='tos'
+                  value={tos ? 'true' : 'false'}
+                />
+                <input
+                  type='hidden'
+                  name='checkIfLeaked'
+                  value={checkIfLeaked ? 'true' : 'false'}
+                />
 
-            <Button
-              size='xl'
-              className='mt-6 flex w-full items-center justify-center gap-1'
-              type='submit'
-              loading={isFormSubmitting}
-            >
-              <span>{t('common.continue')}</span>
-              <ArrowRightIcon className='size-4 translate-y-px' />
-            </Button>
-          </Form>
+                {isSelfhosted ? null : (
+                  <Checkbox
+                    checked={tos}
+                    onChange={(checked) => {
+                      setTos(checked)
+                      clearFieldError('tos')
+                    }}
+                    disabled={isLoading}
+                    label={
+                      <Text as='span' size='sm'>
+                        <Trans
+                          t={t}
+                          i18nKey='auth.signup.tos'
+                          components={{
+                            tos: (
+                              <Link
+                                to={routes.terms}
+                                className='font-medium text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-300'
+                                aria-label={t('footer.tos')}
+                              />
+                            ),
+
+                            pp: (
+                              <Link
+                                to={routes.privacy}
+                                className='font-medium text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-300'
+                                aria-label={t('footer.pp')}
+                              />
+                            ),
+                          }}
+                        />
+                      </Text>
+                    }
+                    classes={{
+                      hint: '!text-red-600 dark:!text-red-500',
+                    }}
+                    hint={getFieldError('tos')}
+                  />
+                )}
+
+                <div className='flex items-center'>
+                  <Checkbox
+                    checked={checkIfLeaked}
+                    onChange={setCheckIfLeaked}
+                    disabled={isLoading}
+                    label={
+                      <Text size='sm'>
+                        {t('auth.common.checkLeakedPassword')}
+                      </Text>
+                    }
+                  />
+                  <Tooltip
+                    className='ml-2'
+                    text={
+                      <Trans
+                        t={t}
+                        i18nKey='auth.common.checkLeakedPasswordDesc'
+                        components={{
+                          db: (
+                            <a
+                              href={HAVE_I_BEEN_PWNED_URL}
+                              aria-label={t('ariaLabels.openHaveIBeenPwned')}
+                              className='font-medium underline decoration-dashed hover:decoration-solid'
+                              target='_blank'
+                              rel='noreferrer noopener'
+                            />
+                          ),
+                        }}
+                        values={{
+                          database: 'haveibeenpwned.com',
+                        }}
+                      />
+                    }
+                  />
+                </div>
+
+                <Button
+                  size='xl'
+                  className='mt-6 flex w-full items-center justify-center gap-1'
+                  type='submit'
+                  loading={isFormSubmitting}
+                >
+                  <span>{t('common.continue')}</span>
+                  <ArrowRightIcon className='size-4 translate-y-px' />
+                </Button>
+              </Form>
+            </>
+          )}
 
           <Text
             as='p'
