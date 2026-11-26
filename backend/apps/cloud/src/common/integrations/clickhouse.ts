@@ -74,6 +74,8 @@ const clickhouse = createClient({
     compile_expressions: 0,
     compile_aggregate_expressions: 0,
 
+    async_insert: 0,
+
     // Used for analytics & captcha stuff.
     // https://clickhouse.com/docs/en/optimize/asynchronous-inserts
     wait_for_async_insert: 0, // Return ACK (await) when row was added to the buffer, not flushed to the database

@@ -55,6 +55,8 @@ class CHLogger implements _CHLogger {
   }
 }
 
+export const ASYNC_INSERT_BUSY_TIMEOUT_MS = 15_000
+
 const clickhouse = createClient({
   url: `${process.env.CLICKHOUSE_HOST}:${process.env.CLICKHOUSE_PORT}`,
   username: process.env.CLICKHOUSE_USER,
@@ -71,10 +73,12 @@ const clickhouse = createClient({
     enable_http_compression: 0,
     log_queries: 0,
 
+    async_insert: 0,
+
     // Used for analytics & captcha stuff.
     // https://clickhouse.com/docs/en/optimize/asynchronous-inserts
     wait_for_async_insert: 0, // Return ACK (await) when row was added to the buffer, not flushed to the database
-    async_insert_busy_timeout_ms: 15000, // 15 seconds; this is how long the buffer will be kept before writing stuff into the database
+    async_insert_busy_timeout_ms: ASYNC_INSERT_BUSY_TIMEOUT_MS,
   },
   log: {
     LoggerClass: CHLogger,

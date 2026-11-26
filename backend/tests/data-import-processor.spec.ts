@@ -2,6 +2,7 @@ import * as fs from 'fs'
 import * as os from 'os'
 import * as path from 'path'
 import { randomUUID } from 'crypto'
+import { NotFoundException } from '@nestjs/common'
 
 for (const edition of ['cloud', 'community']) {
   describe(`${edition} import processor`, () => {
@@ -10,6 +11,7 @@ for (const edition of ['cloud', 'community']) {
     const getMapper = jest.fn()
     jest.doMock(`${root}/common/integrations/clickhouse`, () => ({
       clickhouse: { insert },
+      ASYNC_INSERT_BUSY_TIMEOUT_MS: 1,
     }))
     jest.doMock(`${root}/data-import/mappers`, () => ({ getMapper }))
     jest.doMock(`${root}/data-import/data-import.service`, () => ({
@@ -68,6 +70,58 @@ for (const edition of ['cloud', 'community']) {
               data: { created: '2024-01-01 00:00:00', importID: 2 },
             }
         },
+      })
+    }
+    it('uses synchronous inserts by default for import batches', () => {
+      const createClient = jest.fn()
+      jest.isolateModules(() => {
+        jest.doMock('@clickhouse/client', () => ({
+          createClient,
+          ClickHouseLogLevel: { ERROR: 'ERROR', DEBUG: 'DEBUG' },
+        }))
+        jest.requireActual(`${root}/common/integrations/clickhouse`)
+      })
+      expect(createClient).toHaveBeenCalledWith(
+        expect.objectContaining({
+          clickhouse_settings: expect.objectContaining({ async_insert: 0 }),
+        }),
+      )
+    })
+    if (edition === 'community') {
+      it('processes a queued upload once its buffered import record becomes visible', async () => {
+        service.findOne.mockRejectedValueOnce(
+          new NotFoundException('Import not found'),
+        )
+        rows(1)
+        await new DataImportProcessor(service).process(job)
+        expect(service.findOne).toHaveBeenCalledTimes(2)
+        expect(service.markCompleted).toHaveBeenCalled()
+        expect(service.markFailed).not.toHaveBeenCalled()
+        expect(fs.existsSync(filePath)).toBe(false)
+      })
+      it('records a failure if the import cannot start', async () => {
+        service.markProcessing.mockRejectedValueOnce(
+          new Error('database unavailable'),
+        )
+        await new DataImportProcessor(service).process(job)
+        expect(service.markFailed).toHaveBeenCalledWith(
+          2,
+          'testproject1',
+          expect.any(String),
+        )
+        expect(insert).not.toHaveBeenCalled()
+        expect(fs.existsSync(filePath)).toBe(false)
+      })
+      it('retains the upload if the missing record cannot be marked failed', async () => {
+        const error = new NotFoundException('Import not found')
+        service.findOne.mockRejectedValue(error)
+        service.markFailed.mockRejectedValueOnce(error)
+        await expect(
+          new DataImportProcessor(service).process(job),
+        ).rejects.toThrow('Import not found')
+        expect(service.markFailed).toHaveBeenCalled()
+        expect(insert).not.toHaveBeenCalled()
+        expect(fs.existsSync(filePath)).toBe(true)
       })
     }
     it('writes batches of 5000, flushes the remainder, and cleans the upload', async () => {

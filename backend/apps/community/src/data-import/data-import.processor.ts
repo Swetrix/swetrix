@@ -2,14 +2,17 @@ import * as fs from 'fs'
 import * as os from 'os'
 import * as path from 'path'
 import { Processor, WorkerHost } from '@nestjs/bullmq'
-import { Logger } from '@nestjs/common'
+import { Logger, NotFoundException } from '@nestjs/common'
 import { Job } from 'bullmq'
 
 import { DataImportService } from './data-import.service'
 import { DataImportStatus } from './entity/data-import.entity'
 import { getMapper } from './mappers'
 import { ImportError } from './mappers/mapper.interface'
-import { clickhouse } from '../common/integrations/clickhouse'
+import {
+  ASYNC_INSERT_BUSY_TIMEOUT_MS,
+  clickhouse,
+} from '../common/integrations/clickhouse'
 
 const CLICKHOUSE_DB = process.env.CLICKHOUSE_DATABASE || 'analytics'
 const BATCH_SIZE = 5000
@@ -53,31 +56,13 @@ export class DataImportProcessor extends WorkerHost {
     const isApiBased = provider === 'google-analytics'
     const filePath = isApiBased ? null : this.getImportFilePath(fileName)
 
+    this.logger.log(
+      `Processing import ${importId} for project ${projectId} (provider: ${provider})`,
+    )
+
+    const ready = await this.prepareImport(projectId, importId)
     try {
-      this.logger.log(
-        `Processing import ${importId} for project ${projectId} (provider: ${provider})`,
-      )
-
-      const dataImport = await this.dataImportService.findOne(
-        projectId,
-        importId,
-      )
-
-      if (dataImport.status === DataImportStatus.COMPLETED) {
-        this.logger.log(
-          `Import ${importId} already completed, skipping reprocessing`,
-        )
-        return
-      }
-
-      if (dataImport.status === DataImportStatus.PROCESSING) {
-        this.logger.warn(
-          `Import ${importId} has status PROCESSING (stalled job replay), cleaning up partial data before reprocessing`,
-        )
-        await this.dataImportService.cleanupImportedRows(projectId, importId)
-      }
-
-      await this.dataImportService.markProcessing(importId, projectId)
+      if (!ready) return
 
       if (!isApiBased && !filePath) {
         await this.dataImportService.markFailed(
@@ -222,6 +207,54 @@ export class DataImportProcessor extends WorkerHost {
       if (!isApiBased) {
         this.cleanupFile(fileName)
       }
+    }
+  }
+
+  private async prepareImport(
+    projectId: string,
+    importId: number,
+  ): Promise<boolean> {
+    try {
+      const dataImport = await this.dataImportService
+        .findOne(projectId, importId)
+        .catch(async (error) => {
+          if (!(error instanceof NotFoundException)) throw error
+
+          this.logger.warn(
+            `Import ${importId} for project ${projectId} is missing. Retrying after the ClickHouse insert buffer flush interval.`,
+          )
+          await new Promise((resolve) =>
+            setTimeout(resolve, ASYNC_INSERT_BUSY_TIMEOUT_MS),
+          )
+          return this.dataImportService.findOne(projectId, importId)
+        })
+
+      if (dataImport.status === DataImportStatus.COMPLETED) {
+        this.logger.log(
+          `Import ${importId} already completed, skipping reprocessing`,
+        )
+        return false
+      }
+
+      if (dataImport.status === DataImportStatus.PROCESSING) {
+        this.logger.warn(
+          `Import ${importId} has status PROCESSING (stalled job replay), cleaning up partial data before reprocessing`,
+        )
+        await this.dataImportService.cleanupImportedRows(projectId, importId)
+      }
+      await this.dataImportService.markProcessing(importId, projectId)
+      return true
+    } catch (error) {
+      this.logger.error(
+        `Failed to prepare import ${importId} for project ${projectId}: ${error.message}`,
+        error.stack,
+      )
+      await this.dataImportService.markFailed(
+        importId,
+        projectId,
+        'Could not start processing the import. Please try again.',
+      )
+      return false
     }
   }
 

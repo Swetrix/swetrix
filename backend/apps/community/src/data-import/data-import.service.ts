@@ -237,6 +237,13 @@ export class DataImportService {
     updates: Partial<DataImport>,
   ): Promise<void> {
     const existing = await this.findOne(projectId, id)
+    if (
+      updates.status === DataImportStatus.FAILED &&
+      existing.status === DataImportStatus.COMPLETED
+    ) {
+      return
+    }
+
     const nextVersion = (existing.version || 0) + 1
 
     await clickhouse.insert({
